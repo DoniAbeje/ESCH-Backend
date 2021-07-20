@@ -1,4 +1,7 @@
 import { Module } from '@nestjs/common';
+import { QaService } from './qa.service';
 
-@Module({})
+@Module({
+  providers: [QaService]
+})
 export class QaModule {}
