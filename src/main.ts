@@ -11,7 +11,7 @@ async function bootstrap() {
     .setTitle('ESCH')
     .setDescription('ESCH API description')
     .setVersion('1.0')
-    // .addBearerAuth()
+    .addBearerAuth()
     .build();
   const document = SwaggerModule.createDocument(app, options);
   SwaggerModule.setup('doc', app, document);
