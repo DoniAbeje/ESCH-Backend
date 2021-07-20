@@ -15,11 +15,11 @@ export class Question {
   @Prop({ type: [String], minlength: 1 })
   tags: string[];
 
-  @Prop({ default: [] })
-  upvotes: string[];
+  @Prop({ type: [MongooseSchema.Types.ObjectId], default: [] })
+  upvotes: MongooseSchema.Types.ObjectId[];
 
-  @Prop({ default: [] })
-  downvotes: string[];
+  @Prop({ type: [MongooseSchema.Types.ObjectId], default: [] })
+  downvotes: MongooseSchema.Types.ObjectId[];
 
   @Prop({ type: Answer, default: [] })
   answers: Answer[];

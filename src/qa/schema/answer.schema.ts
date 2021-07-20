@@ -11,11 +11,11 @@ export class Answer {
   @Prop({ type: MongooseSchema.Types.ObjectId, required: true })
   answeredBy: MongooseSchema.Types.ObjectId;
 
-  @Prop({ default: []})
-  upvotes: string[];
+  @Prop({ type: [MongooseSchema.Types.ObjectId], default: []})
+  upvotes: MongooseSchema.Types.ObjectId[];
 
-  @Prop({ default: []})
-  downvotes: string[];
+  @Prop({ type: [MongooseSchema.Types.ObjectId], default: []})
+  downvotes: MongooseSchema.Types.ObjectId[];
 
   @Prop({ default: Date.now })
   createdAt: Date;
