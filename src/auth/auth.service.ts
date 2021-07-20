@@ -7,16 +7,16 @@ import { UserDocument } from '../user/schemas/user.schema';
 @Injectable()
 export class AuthService {
   constructor(
-    private accountService: UserService,
+    private userService: UserService,
     private jwtService: JwtService,
   ) {}
 
   async authenticate(phone: string, password: string) {
-    const account = await this.accountService.findByPhone(phone);
-    const valid = await bcrypt.compare(password, account.password);
+    const user = await this.userService.findByPhone(phone);
+    const valid = await bcrypt.compare(password, user.password);
 
     if (valid) {
-      return account;
+      return user;
     }
     return null;
   }
