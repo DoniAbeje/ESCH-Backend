@@ -23,8 +23,6 @@ export class AuthService {
 
   async signToken(user: UserDocument) {
     const payload = { phone: user.phone, id: user._id };
-    return {
-      token: this.jwtService.sign(payload),
-    };
+    return this.jwtService.sign(payload);
   }
 }
