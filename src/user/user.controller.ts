@@ -50,7 +50,6 @@ export class UserController {
   @Put('/')
   async updateUser(@Body() updateUserDto: UpdateUserDto, @User('id') userId) {
     await this.userService.updateUser(userId, updateUserDto);
-    return 'user updated';
   }
 
   @ApiTags('get single user detail')
