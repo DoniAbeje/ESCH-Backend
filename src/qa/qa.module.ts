@@ -1,7 +1,16 @@
 import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
 import { QaService } from './qa.service';
+import { Answer, AnswerSchema } from './schema/answer.schema';
+import { Question, QuestionSchema } from './schema/question.schema';
 
 @Module({
-  providers: [QaService]
+  imports: [
+    MongooseModule.forFeature([
+      { name: Question.name, schema: QuestionSchema },
+      { name: Answer.name, schema: AnswerSchema },
+    ]),
+  ],
+  providers: [QaService],
 })
 export class QaModule {}
