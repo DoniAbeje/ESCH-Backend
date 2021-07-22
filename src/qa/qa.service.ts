@@ -16,7 +16,7 @@ export class QaService {
     return await this.questionModel.create(raiseQuestionDto);
   }
 
-  async findAll() {
+  async findAllQuestions() {
     return await this.questionModel.aggregate([
       {
         $project: {
