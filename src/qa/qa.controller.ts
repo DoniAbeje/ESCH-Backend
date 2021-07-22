@@ -25,7 +25,7 @@ export class QaController {
 
   @ApiTags('Fetch Questions')
   @Get('/')
-  async fetchAll(){
+  async fetchAllQuestions(){
     return this.qaService.findAllQuestions();
   }
 }
