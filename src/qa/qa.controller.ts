@@ -44,4 +44,10 @@ export class QaController {
     const answer = await this.qaService.answerQuestion(answerQuestionDto);
     return { _id: answer._id };
   }
+
+  @ApiTags('Fetch Answers for single question')
+  @Get('/:questionId/answer')
+  async fetchAnswersForSingleQuestions(@Param('questionId') questionId: string) {
+    return await this.qaService.findAnswersByQuestionId(questionId);
+  }
 }
