@@ -5,8 +5,12 @@ export type AnswerDocument = Answer & Document;
 
 @Schema()
 export class Answer {
+
   @Prop({ required: true })
   answer: string;
+
+  @Prop({ type: MongooseSchema.Types.ObjectId, required: true })
+  question: MongooseSchema.Types.ObjectId;
 
   @Prop({ type: MongooseSchema.Types.ObjectId, required: true })
   answeredBy: MongooseSchema.Types.ObjectId;
