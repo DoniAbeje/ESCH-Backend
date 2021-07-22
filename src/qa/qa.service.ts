@@ -15,4 +15,19 @@ export class QaService {
   async raiseQuestion(raiseQuestionDto: RaiseQuestionDto) {
     return await this.questionModel.create(raiseQuestionDto);
   }
+
+  async findAll() {
+    return await this.questionModel.aggregate([
+      {
+        $project: {
+          question: 1,
+          askedBy: 1,
+          tags: 1,
+          createdAt: 1,
+          upvotes: { $size: '$upvotes' },
+          downvotes: { $size: '$downvotes' },
+        },
+      },
+    ]);
+  }
 }

@@ -1,4 +1,4 @@
-import { Body, Controller, Post, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { User } from 'src/utils/user.decorator';
@@ -21,5 +21,11 @@ export class QaController {
     raiseQuestionDto.askedBy = user.id;
     const question = await this.qaService.raiseQuestion(raiseQuestionDto);
     return { _id: question._id };
+  }
+
+  @ApiTags('Fetch Questions')
+  @Get('/')
+  async fetchAll(){
+    return this.qaService.findAll();
   }
 }
