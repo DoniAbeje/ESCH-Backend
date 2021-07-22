@@ -21,9 +21,6 @@ export class Question {
   @Prop({ type: [MongooseSchema.Types.ObjectId], default: [] })
   downvotes: MongooseSchema.Types.ObjectId[];
 
-  @Prop({ type: Answer, default: [] })
-  answers: Answer[];
-
   @Prop({ default: Date.now })
   createdAt: Date;
 }
