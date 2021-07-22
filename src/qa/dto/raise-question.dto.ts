@@ -1,9 +1,13 @@
-import { IsString, MinLength } from "class-validator";
+import { ApiHideProperty } from "@nestjs/swagger";
+import { ArrayMinSize, IsString } from "class-validator";
 
 export class RaiseQuestionDto {
     @IsString()
     readonly question: string
 
-    @MinLength(1)
+    @ArrayMinSize(1)
     readonly tags: string[]
+
+    @ApiHideProperty()
+    askedBy: string
 }
