@@ -30,16 +30,16 @@ export class QuestionService {
     ]);
   }
 
-  async findById(id: string) {
+  async exists(id: string, throwException = true) {
     const question = await this.questionModel.findById(id);
-    if (!question) {
+    if (!question && throwException) {
       throw new QuestionDoesNotExistException();
     }
     return question;
   }
 
   async upvote(questionId: string, userId: string) {
-    const question = await this.findById(questionId);
+    await this.exists(questionId);
     await this.questionModel.updateOne(
       { _id: questionId, upvotes: { $nin: [userId] } },
       { $pull: { downvotes: userId }, $push: { upvotes: userId } },
@@ -47,7 +47,7 @@ export class QuestionService {
   }
 
   async downvote(questionId: string, userId: string) {
-    const question = await this.findById(questionId);
+    await this.exists(questionId);
     await this.questionModel.updateOne(
       { _id: questionId, downvotes: { $nin: [userId] } },
       { $pull: { upvotes: userId }, $push: { downvotes: userId } },
@@ -55,7 +55,7 @@ export class QuestionService {
   }
 
   async cancelVote(questionId: string, userId: string){
-    const question = await this.findById(questionId)
+    await this.exists(questionId)
     await this.questionModel.updateOne(
       { _id: questionId },
       { $pull: { upvotes: userId, downvotes: userId } },

@@ -14,7 +14,7 @@ export class AnswerService {
   ) {}
 
   async findByQuestionId(questionId: string) {
-    await this.questionService.findById(questionId);
+    await this.questionService.exists(questionId);
     return await this.answerModel.aggregate([
       {
         $match: { question: mongoose.Types.ObjectId(questionId) },
@@ -33,7 +33,7 @@ export class AnswerService {
   }
 
   async answerQuestion(answerQuestionDto: AnswerQuestionDto) {
-    await this.questionService.findById(answerQuestionDto.question);
+    await this.questionService.exists(answerQuestionDto.question);
     return this.answerModel.create(answerQuestionDto);
   }
 }
