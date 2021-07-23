@@ -1,6 +1,6 @@
-import { Body, Controller, Get, Post, UseGuards, Param } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { Body, Controller, Get, Param } from '@nestjs/common';
+import { ApiTags } from '@nestjs/swagger';
+import { PostAuth } from 'src/utils/post-auth.decorator';
 import { User } from 'src/utils/user.decorator';
 import { AnswerService } from './answer.service';
 import { AnswerQuestionDto } from './dto/answer-question.dto';
@@ -15,10 +15,7 @@ export class QaController {
     private answerService: AnswerService,
   ) {}
 
-  @ApiTags('Raise Question')
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
-  @Post('/')
+  @PostAuth('/', 'Raise Question')
   async raiseQuestion(
     @Body() raiseQuestionDto: RaiseQuestionDto,
     @User() user,
@@ -34,10 +31,7 @@ export class QaController {
     return this.questionService.findAll();
   }
 
-  @ApiTags('Answer Question')
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
-  @Post('/:questionId/answer')
+  @PostAuth('/:questionId/answer', 'Answer Question')
   async answerQuestion(
     @Body() answerQuestionDto: AnswerQuestionDto,
     @User() user,
@@ -57,10 +51,7 @@ export class QaController {
     return await this.answerService.findByQuestionId(questionId);
   }
 
-  @ApiTags('Upvote Question')
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
-  @Post('/:questionId/upvote')
+  @PostAuth('/:questionId/upvote', 'Upvote Question')
   async upvote(
     @Param('questionId') questionId: string,
     @User('id') userId: string,
@@ -68,10 +59,7 @@ export class QaController {
     await this.questionService.upvote(questionId, userId);
   }
 
-  @ApiTags('Downvote Question')
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
-  @Post('/:questionId/downvote')
+  @PostAuth('/:questionId/downvote', 'Downvote Question')
   async downvote(
     @Param('questionId') questionId: string,
     @User('id') userId: string,
@@ -79,10 +67,7 @@ export class QaController {
     await this.questionService.downvote(questionId, userId);
   }
 
-  @ApiTags('Cancel vote')
-  @ApiBearerAuth()
-  @UseGuards(JwtAuthGuard)
-  @Post('/:questionId/cancel-vote')
+  @PostAuth('/:questionId/cancel-vote', 'Cancel vote')
   async cancelVote(
     @Param('questionId') questionId: string,
     @User('id') userId: string,
