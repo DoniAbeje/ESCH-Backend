@@ -67,4 +67,15 @@ export class QaController {
   ) {
     await this.questionService.upvote(questionId, userId);
   }
+
+  @ApiTags('Down Question')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Post('/:questionId/downvote')
+  async downvote(
+    @Param('questionId') questionId: string,
+    @User('id') userId: string,
+  ) {
+    await this.questionService.downvote(questionId, userId);
+  }
 }

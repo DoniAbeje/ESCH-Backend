@@ -45,4 +45,12 @@ export class QuestionService {
       { $pull: { downvotes: userId }, $push: { upvotes: userId } },
     );
   }
+
+  async downvote(questionId: string, userId: string) {
+    const question = await this.findById(questionId);
+    await this.questionModel.updateOne(
+      { _id: questionId, downvotes: { $nin: [userId] } },
+      { $pull: { upvotes: userId }, $push: { downvotes: userId } },
+    );
+  }
 }
