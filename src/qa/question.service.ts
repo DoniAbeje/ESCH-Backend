@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { RaiseQuestionDto } from './dto/raise-question.dto';
 import { QuestionDoesNotExistException } from './exceptions/question-doesnot-exist.exception';
 import { Question, QuestionDocument } from './schema/question.schema';
+import * as mongoose from 'mongoose';
 
 @Injectable()
 export class QuestionService {
@@ -15,8 +16,24 @@ export class QuestionService {
     return await this.questionModel.create(raiseQuestionDto);
   }
 
-  async findAll() {
+  async fetchAll() {
     return await this.questionModel.aggregate([
+      {
+        $project: {
+          question: 1,
+          askedBy: 1,
+          tags: 1,
+          createdAt: 1,
+          upvotes: { $size: '$upvotes' },
+          downvotes: { $size: '$downvotes' },
+        },
+      },
+    ]);
+  }
+
+  async fetchOne(questionId: string) {
+    return await this.questionModel.aggregate([
+      { $match: { _id: mongoose.Types.ObjectId(questionId) } },
       {
         $project: {
           question: 1,
@@ -54,11 +71,11 @@ export class QuestionService {
     );
   }
 
-  async cancelVote(questionId: string, userId: string){
-    await this.exists(questionId)
+  async cancelVote(questionId: string, userId: string) {
+    await this.exists(questionId);
     await this.questionModel.updateOne(
       { _id: questionId },
       { $pull: { upvotes: userId, downvotes: userId } },
-    )
+    );
   }
 }

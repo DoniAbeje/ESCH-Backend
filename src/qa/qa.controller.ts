@@ -28,7 +28,13 @@ export class QaController {
   @ApiTags('Fetch Questions')
   @Get('/')
   async fetchAllQuestions() {
-    return this.questionService.findAll();
+    return this.questionService.fetchAll();
+  }
+
+  @ApiTags('Fetch Single Question')
+  @Get('/:questionId')
+  async fetchSingleQuestions(@Param('questionId') questionId: string) {
+    return this.questionService.fetchOne(questionId);
   }
 
   @PostAuth('/:questionId/answer', 'Answer Question')
