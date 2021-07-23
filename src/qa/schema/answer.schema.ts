@@ -9,17 +9,17 @@ export class Answer {
   @Prop({ required: true })
   answer: string;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, required: true })
-  question: MongooseSchema.Types.ObjectId;
+  @Prop({ required: true })
+  question: string;
 
-  @Prop({ type: MongooseSchema.Types.ObjectId, required: true })
-  answeredBy: MongooseSchema.Types.ObjectId;
+  @Prop({ type: String, required: true })
+  answeredBy: string;
 
-  @Prop({ type: [MongooseSchema.Types.ObjectId], default: []})
-  upvotes: MongooseSchema.Types.ObjectId[];
+  @Prop({ type: [String], default: []})
+  upvotes: string[];
 
-  @Prop({ type: [MongooseSchema.Types.ObjectId], default: []})
-  downvotes: MongooseSchema.Types.ObjectId[];
+  @Prop({ type: [String], default: []})
+  downvotes: string[];
 
   @Prop({ default: Date.now })
   createdAt: Date;
