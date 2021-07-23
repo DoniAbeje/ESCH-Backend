@@ -10,7 +10,10 @@ import { QuestionService } from './question.service';
 @ApiTags('Question and Answer')
 @Controller('question')
 export class QaController {
-  constructor(private questionService: QuestionService, private answerService: AnswerService) {}
+  constructor(
+    private questionService: QuestionService,
+    private answerService: AnswerService,
+  ) {}
 
   @ApiTags('Raise Question')
   @ApiBearerAuth()
@@ -48,7 +51,20 @@ export class QaController {
 
   @ApiTags('Fetch Answers for single question')
   @Get('/:questionId/answer')
-  async fetchAnswersForSingleQuestions(@Param('questionId') questionId: string) {
+  async fetchAnswersForSingleQuestions(
+    @Param('questionId') questionId: string,
+  ) {
     return await this.answerService.findByQuestionId(questionId);
+  }
+
+  @ApiTags('Upvote Question')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Post('/:questionId/upvote')
+  async upvote(
+    @Param('questionId') questionId: string,
+    @User('id') userId: string,
+  ) {
+    await this.questionService.upvote(questionId, userId);
   }
 }

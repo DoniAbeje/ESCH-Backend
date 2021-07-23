@@ -37,4 +37,12 @@ export class QuestionService {
     }
     return question;
   }
+
+  async upvote(questionId: string, userId: string) {
+    const question = await this.findById(questionId);
+    await this.questionModel.updateOne(
+      { _id: questionId, upvotes: { $nin: [userId] } },
+      { $pull: { downvotes: userId }, $push: { upvotes: userId } },
+    );
+  }
 }
