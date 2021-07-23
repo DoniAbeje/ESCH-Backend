@@ -68,7 +68,7 @@ export class QaController {
     await this.questionService.upvote(questionId, userId);
   }
 
-  @ApiTags('Down Question')
+  @ApiTags('Downvote Question')
   @ApiBearerAuth()
   @UseGuards(JwtAuthGuard)
   @Post('/:questionId/downvote')
@@ -77,5 +77,16 @@ export class QaController {
     @User('id') userId: string,
   ) {
     await this.questionService.downvote(questionId, userId);
+  }
+
+  @ApiTags('Cancel vote')
+  @ApiBearerAuth()
+  @UseGuards(JwtAuthGuard)
+  @Post('/:questionId/cancel-vote')
+  async cancelVote(
+    @Param('questionId') questionId: string,
+    @User('id') userId: string,
+  ) {
+    await this.questionService.cancelVote(questionId, userId);
   }
 }

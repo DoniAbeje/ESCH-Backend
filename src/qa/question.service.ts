@@ -53,4 +53,12 @@ export class QuestionService {
       { $pull: { upvotes: userId }, $push: { downvotes: userId } },
     );
   }
+
+  async cancelVote(questionId: string, userId: string){
+    const question = await this.findById(questionId)
+    await this.questionModel.updateOne(
+      { _id: questionId },
+      { $pull: { upvotes: userId, downvotes: userId } },
+    )
+  }
 }
