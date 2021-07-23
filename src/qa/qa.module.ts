@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { QaService } from './qa.service';
+import { QuestionService } from './question.service';
 import { Answer, AnswerSchema } from './schema/answer.schema';
 import { Question, QuestionSchema } from './schema/question.schema';
 import { QaController } from './qa.controller';
+import { AnswerService } from './answer.service';
 
 @Module({
   imports: [
@@ -12,7 +13,7 @@ import { QaController } from './qa.controller';
       { name: Answer.name, schema: AnswerSchema },
     ]),
   ],
-  providers: [QaService],
+  providers: [QuestionService, AnswerService],
   controllers: [QaController],
 })
 export class QaModule {}

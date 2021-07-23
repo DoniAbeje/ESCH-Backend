@@ -2,14 +2,15 @@ import { Body, Controller, Get, Post, UseGuards, Param } from '@nestjs/common';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { User } from 'src/utils/user.decorator';
+import { AnswerService } from './answer.service';
 import { AnswerQuestionDto } from './dto/answer-question.dto';
 import { RaiseQuestionDto } from './dto/raise-question.dto';
-import { QaService } from './qa.service';
+import { QuestionService } from './question.service';
 
 @ApiTags('Question and Answer')
 @Controller('question')
 export class QaController {
-  constructor(private qaService: QaService) {}
+  constructor(private questionService: QuestionService, private answerService: AnswerService) {}
 
   @ApiTags('Raise Question')
   @ApiBearerAuth()
@@ -20,14 +21,14 @@ export class QaController {
     @User() user,
   ) {
     raiseQuestionDto.askedBy = user.id;
-    const question = await this.qaService.raiseQuestion(raiseQuestionDto);
+    const question = await this.questionService.raiseQuestion(raiseQuestionDto);
     return { _id: question._id };
   }
 
   @ApiTags('Fetch Questions')
   @Get('/')
   async fetchAllQuestions() {
-    return this.qaService.findAllQuestions();
+    return this.questionService.findAll();
   }
 
   @ApiTags('Answer Question')
@@ -41,13 +42,13 @@ export class QaController {
   ) {
     answerQuestionDto.answeredBy = user.id;
     answerQuestionDto.question = questionId;
-    const answer = await this.qaService.answerQuestion(answerQuestionDto);
+    const answer = await this.answerService.answerQuestion(answerQuestionDto);
     return { _id: answer._id };
   }
 
   @ApiTags('Fetch Answers for single question')
   @Get('/:questionId/answer')
   async fetchAnswersForSingleQuestions(@Param('questionId') questionId: string) {
-    return await this.qaService.findAnswersByQuestionId(questionId);
+    return await this.answerService.findByQuestionId(questionId);
   }
 }
