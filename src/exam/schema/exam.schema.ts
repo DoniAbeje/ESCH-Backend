@@ -1,0 +1,31 @@
+import { User } from './../../user/schemas/user.schema';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document, Schema as MongooseSchema } from 'mongoose';
+
+export type ExamDocument = Exam & Document;
+
+@Schema()
+export class Exam {
+  @Prop({ required: true })
+  title: string;
+
+  @Prop({ required: true })
+  description: string;
+
+  @Prop({ default: 0 })
+  price: number;
+
+  @Prop({ type: [String], minlength: 1 })
+  tags: string[];
+
+  @Prop({ type: [String], default: [] })
+  samples: string[];
+
+  @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', required: true })
+  preparedBy: User;
+
+  @Prop({ default: Date.now })
+  createdAt: Date;
+}
+
+export const ExamSchema = SchemaFactory.createForClass(Exam);
