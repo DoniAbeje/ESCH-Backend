@@ -1,3 +1,6 @@
+import { ExamController } from './exam.controller';
+import { ExamQuestionService } from './exam-question.service';
+import { ExamService } from './exam.service';
 import {
   ExamQuestion,
   ExamQuestionSchema,
@@ -13,7 +16,7 @@ import { MongooseModule } from '@nestjs/mongoose';
       { name: ExamQuestion.name, schema: ExamQuestionSchema },
     ]),
   ],
-  providers: [],
-  controllers: [],
+  providers: [ExamService, ExamQuestionService],
+  controllers: [ExamController],
 })
 export class ExamModule {}
