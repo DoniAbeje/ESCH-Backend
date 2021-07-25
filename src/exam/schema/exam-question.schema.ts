@@ -1,4 +1,4 @@
-import { Prop, Schema } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 
 export type ExamQuestionDocument = ExamQuestion & Document;
@@ -20,3 +20,5 @@ export class ExamQuestion {
   @Prop({ type: MongooseSchema.Types.ObjectId, required: true })
   examId: string;
 }
+
+export const ExamQuestionSchema = SchemaFactory.createForClass(ExamQuestion);
