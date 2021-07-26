@@ -19,30 +19,18 @@ export class QuestionService {
   async fetchAll() {
     return await this.questionModel.aggregate([
       {
-        $project: {
-          question: 1,
-          askedBy: 1,
-          tags: 1,
-          createdAt: 1,
-          upvotes: { $size: '$upvotes' },
-          downvotes: { $size: '$downvotes' },
-        },
+        $project: this.getProjection(),
       },
     ]);
   }
 
   async fetchOne(questionId: string) {
     return await this.questionModel.aggregate([
-      { $match: { _id: mongoose.Types.ObjectId(questionId) } },
       {
-        $project: {
-          question: 1,
-          askedBy: 1,
-          tags: 1,
-          createdAt: 1,
-          upvotes: { $size: '$upvotes' },
-          downvotes: { $size: '$downvotes' },
-        },
+        $match: { _id: mongoose.Types.ObjectId(questionId) },
+      },
+      {
+        $project: this.getProjection(),
       },
     ]);
   }
@@ -77,5 +65,16 @@ export class QuestionService {
       { _id: questionId },
       { $pull: { upvotes: userId, downvotes: userId } },
     );
+  }
+
+  private getProjection() {
+    return {
+      question: 1,
+      askedBy: 1,
+      tags: 1,
+      createdAt: 1,
+      upvotes: { $size: '$upvotes' },
+      downvotes: { $size: '$downvotes' },
+    };
   }
 }
