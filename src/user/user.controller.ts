@@ -51,7 +51,6 @@ export class UserController {
     await this.userService.updateUser(userId, updateUserDto);
   }
 
-  @UseGuards(JwtAuthGuard)
   @GetAuth('/:id', 'get single user detail')
   async getUserDetail(@Param('id') userId: string) {
     const user = await this.userService.exists(userId);
