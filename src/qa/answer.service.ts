@@ -3,14 +3,14 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { AnswerQuestionDto } from './dto/answer-question.dto';
 import { Answer, AnswerDocument } from './schema/answer.schema';
-import  * as mongoose from 'mongoose'
+import * as mongoose from 'mongoose';
 import { QuestionService } from './question.service';
 
 @Injectable()
 export class AnswerService {
   constructor(
     @InjectModel(Answer.name) public answerModel: Model<AnswerDocument>,
-    private questionService: QuestionService
+    private questionService: QuestionService,
   ) {}
 
   async findByQuestionId(questionId: string) {

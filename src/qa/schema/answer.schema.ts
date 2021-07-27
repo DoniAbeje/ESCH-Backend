@@ -5,7 +5,6 @@ export type AnswerDocument = Answer & Document;
 
 @Schema()
 export class Answer {
-
   @Prop({ required: true })
   answer: string;
 
@@ -15,10 +14,10 @@ export class Answer {
   @Prop({ type: String, required: true })
   answeredBy: string;
 
-  @Prop({ type: [String], default: []})
+  @Prop({ type: [String], default: [] })
   upvotes: string[];
 
-  @Prop({ type: [String], default: []})
+  @Prop({ type: [String], default: [] })
   downvotes: string[];
 
   @Prop({ default: Date.now })
