@@ -12,7 +12,7 @@ export class AuthService {
   ) {}
 
   async authenticate(phone: string, password: string) {
-    const user = await this.userService.findByPhone(phone);
+    const user = await this.userService.existsByPhone(phone);
     const valid = await bcrypt.compare(password, user.password);
 
     if (valid) {

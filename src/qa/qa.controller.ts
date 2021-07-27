@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
-import { PostAuth } from 'src/utils/post-auth.decorator';
-import { User } from 'src/utils/user.decorator';
+import { PostAuth } from 'src/common/decorators/post-auth.decorator';
+import { User } from 'src/common/decorators/user.decorator';
 import { AnswerService } from './answer.service';
 import { AnswerQuestionDto } from './dto/answer-question.dto';
 import { RaiseQuestionDto } from './dto/raise-question.dto';
