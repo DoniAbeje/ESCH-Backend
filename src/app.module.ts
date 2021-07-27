@@ -5,6 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserModule } from './user/user.module';
 import { QaModule } from './qa/qa.module';
+import { CommonModule } from './common/common.module';
 @Module({
   imports: [
     QaModule,
@@ -20,6 +21,7 @@ import { QaModule } from './qa/qa.module';
       inject: [ConfigService],
     }),
     UserModule,
+    CommonModule,
   ],
   controllers: [AppController],
   providers: [AppService],

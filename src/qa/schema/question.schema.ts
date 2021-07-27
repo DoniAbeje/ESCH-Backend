@@ -1,11 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
-import { Answer } from './answer.schema';
+import { Vote } from 'src/common/schemas/vote.schema';
 
 export type QuestionDocument = Question & Document;
 
 @Schema()
-export class Question {
+export class Question extends Vote {
   @Prop({ required: true })
   question: string;
 
@@ -14,12 +14,6 @@ export class Question {
 
   @Prop({ type: [String], minlength: 1 })
   tags: string[];
-
-  @Prop({ type: [String], default: [] })
-  upvotes: string[];
-
-  @Prop({ type: [String], default: [] })
-  downvotes: string[];
 
   @Prop({ default: Date.now })
   createdAt: Date;
