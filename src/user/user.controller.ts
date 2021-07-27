@@ -28,7 +28,7 @@ export class UserController {
     private authService: AuthService,
   ) {}
 
-  @ApiTags('create user')
+  @ApiTags('Create user')
   @Post('/')
   async createUser(@Body() createUserDto: CreateUserDto) {
     const user = await this.userService.createUser(createUserDto);
@@ -37,7 +37,7 @@ export class UserController {
     return { token, userInfo };
   }
 
-  @ApiTags('login')
+  @ApiTags('Login')
   @UseGuards(LocalAuthGuard)
   @Post('/login')
   async login(@Body() loginDto: LoginDto, @User() user) {
@@ -46,12 +46,12 @@ export class UserController {
     return { token, accountInfo };
   }
 
-  @PutAuth('/', 'change user info')
+  @PutAuth('/', 'Change user info')
   async updateUser(@Body() updateUserDto: UpdateUserDto, @User('id') userId) {
     await this.userService.updateUser(userId, updateUserDto);
   }
 
-  @GetAuth('/:id', 'get single user detail')
+  @GetAuth('/:id', 'Get single user detail')
   async getUserDetail(@Param('id') userId: string) {
     const user = await this.userService.exists(userId);
     return this.filterUserInfo(user);
