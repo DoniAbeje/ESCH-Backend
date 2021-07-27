@@ -15,7 +15,7 @@ import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
-import { User } from '../utils/user.decorator';
+import { User } from '../common/decorators/user.decorator';
 import { LoginDto } from './dto/login.dto';
 import { PutAuth } from 'src/common/decorators/put-auth.decorator';
 import { GetAuth } from 'src/common/decorators/get-auth.decorator';
