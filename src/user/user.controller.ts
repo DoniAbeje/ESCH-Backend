@@ -52,7 +52,7 @@ export class UserController {
   }
 
   @GetAuth('/:id', 'Get single user detail')
-  async getUserDetail(@Param('id') userId: string) {
+  async fetchSingleUser(@Param('id') userId: string) {
     const user = await this.userService.exists(userId);
     return this.filterUserInfo(user);
   }
