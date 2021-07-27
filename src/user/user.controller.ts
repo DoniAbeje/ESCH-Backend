@@ -54,7 +54,7 @@ export class UserController {
   @UseGuards(JwtAuthGuard)
   @GetAuth('/:id', 'get single user detail')
   async getUserDetail(@Param('id') userId: string) {
-    const user = await this.userService.findById(userId);
+    const user = await this.userService.exists(userId);
     return this.filterUserInfo(user);
   }
 
