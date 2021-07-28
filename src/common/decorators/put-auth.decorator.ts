@@ -1,6 +1,6 @@
 import { applyDecorators, Put, UseGuards } from '@nestjs/common';
 import { ApiTags, ApiBearerAuth } from '@nestjs/swagger';
-import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 export function PutAuth(route: string, title: string) {
   return applyDecorators(
     ApiTags(title),

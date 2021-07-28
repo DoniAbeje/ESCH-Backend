@@ -8,8 +8,8 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiTags } from '@nestjs/swagger';
 import { User } from '../common/decorators/user.decorator';
 import { LoginDto } from './dto/login.dto';
-import { PutAuth } from 'src/common/decorators/put-auth.decorator';
-import { GetAuth } from 'src/common/decorators/get-auth.decorator';
+import { PutAuth } from '../common/decorators/put-auth.decorator';
+import { GetAuth } from '../common/decorators/get-auth.decorator';
 
 @ApiTags('Users')
 @Controller('users')
