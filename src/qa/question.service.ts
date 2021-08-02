@@ -5,12 +5,15 @@ import { RaiseQuestionDto } from './dto/raise-question.dto';
 import { QuestionDoesNotExistException } from './exceptions/question-doesnot-exist.exception';
 import { Question, QuestionDocument } from './schema/question.schema';
 import * as mongoose from 'mongoose';
+import { VoteService } from 'src/common/services/vote.service';
 
 @Injectable()
-export class QuestionService {
+export class QuestionService extends VoteService {
   constructor(
     @InjectModel(Question.name) public questionModel: Model<QuestionDocument>,
-  ) {}
+  ) {
+    super(questionModel);
+  }
 
   async raiseQuestion(raiseQuestionDto: RaiseQuestionDto) {
     return await this.questionModel.create(raiseQuestionDto);
@@ -19,30 +22,18 @@ export class QuestionService {
   async fetchAll() {
     return await this.questionModel.aggregate([
       {
-        $project: {
-          question: 1,
-          askedBy: 1,
-          tags: 1,
-          createdAt: 1,
-          upvotes: { $size: '$upvotes' },
-          downvotes: { $size: '$downvotes' },
-        },
+        $project: this.getProjection(),
       },
     ]);
   }
 
   async fetchOne(questionId: string) {
     return await this.questionModel.aggregate([
-      { $match: { _id: mongoose.Types.ObjectId(questionId) } },
       {
-        $project: {
-          question: 1,
-          askedBy: 1,
-          tags: 1,
-          createdAt: 1,
-          upvotes: { $size: '$upvotes' },
-          downvotes: { $size: '$downvotes' },
-        },
+        $match: { _id: mongoose.Types.ObjectId(questionId) },
+      },
+      {
+        $project: this.getProjection(),
       },
     ]);
   }
@@ -55,27 +46,14 @@ export class QuestionService {
     return question;
   }
 
-  async upvote(questionId: string, userId: string) {
-    await this.exists(questionId);
-    await this.questionModel.updateOne(
-      { _id: questionId, upvotes: { $nin: [userId] } },
-      { $pull: { downvotes: userId }, $push: { upvotes: userId } },
-    );
-  }
-
-  async downvote(questionId: string, userId: string) {
-    await this.exists(questionId);
-    await this.questionModel.updateOne(
-      { _id: questionId, downvotes: { $nin: [userId] } },
-      { $pull: { upvotes: userId }, $push: { downvotes: userId } },
-    );
-  }
-
-  async cancelVote(questionId: string, userId: string) {
-    await this.exists(questionId);
-    await this.questionModel.updateOne(
-      { _id: questionId },
-      { $pull: { upvotes: userId, downvotes: userId } },
-    );
+  private getProjection() {
+    return {
+      question: 1,
+      askedBy: 1,
+      tags: 1,
+      createdAt: 1,
+      upvotes: { $size: '$upvotes' },
+      downvotes: { $size: '$downvotes' },
+    };
   }
 }
