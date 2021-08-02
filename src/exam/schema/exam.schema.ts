@@ -35,7 +35,7 @@ export class Exam {
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', required: true })
   preparedBy: User;
 
-  @Prop({ type: [Rating] })
+  @Prop({ type: [Rating], default: [] })
   ratings: Rating[];
 
   @Prop({ default: Date.now })
