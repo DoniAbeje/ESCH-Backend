@@ -9,10 +9,13 @@ import {
 
 export class CreateExamDto {
   @IsString()
+  readonly title: string;
+
+  @IsString()
   readonly description: string;
 
   @IsNumber()
-  readonly number: number;
+  readonly price: number;
 
   @ArrayMinSize(1)
   readonly tags: string[];
