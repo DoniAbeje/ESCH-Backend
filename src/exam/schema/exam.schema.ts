@@ -5,7 +5,7 @@ import { Document, Schema as MongooseSchema } from 'mongoose';
 export type ExamDocument = Exam & Document;
 
 @Schema({ _id: false })
-class Rating extends Document {
+class Rating {
   @Prop({ type: MongooseSchema.Types.ObjectId, required: true })
   userId: string;
 
@@ -15,6 +15,8 @@ class Rating extends Document {
   @Prop()
   review: string;
 }
+
+export const RatingSchema = SchemaFactory.createForClass(Rating);
 @Schema()
 export class Exam {
   @Prop({ required: true })
@@ -35,7 +37,7 @@ export class Exam {
   @Prop({ type: MongooseSchema.Types.ObjectId, ref: 'User', required: true })
   preparedBy: User;
 
-  @Prop({ type: [Rating], default: [] })
+  @Prop({ type: [RatingSchema], default: [] })
   ratings: Rating[];
 
   @Prop({ default: Date.now })

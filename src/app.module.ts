@@ -5,6 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserModule } from './user/user.module';
 import { QaModule } from './qa/qa.module';
+import { ExamModule } from './exam/exam.module';
 @Module({
   imports: [
     QaModule,
@@ -20,6 +21,7 @@ import { QaModule } from './qa/qa.module';
       inject: [ConfigService],
     }),
     UserModule,
+    ExamModule,
   ],
   controllers: [AppController],
   providers: [AppService],
