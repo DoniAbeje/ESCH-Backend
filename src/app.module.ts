@@ -6,6 +6,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { UserModule } from './user/user.module';
 import { QaModule } from './qa/qa.module';
 import { CommonModule } from './common/common.module';
+import { ExamModule } from './exam/exam.module';
 @Module({
   imports: [
     QaModule,
@@ -22,6 +23,7 @@ import { CommonModule } from './common/common.module';
     }),
     UserModule,
     CommonModule,
+    ExamModule,
   ],
   controllers: [AppController],
   providers: [AppService],
