@@ -2,6 +2,8 @@ import { Body, Controller, Get, Param } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { PostAuth } from 'src/common/decorators/post-auth.decorator';
 import { User } from 'src/common/decorators/user.decorator';
+import { Pagination } from '../common/decorators/pagination.decorator';
+import { PaginationOption } from '../common/pagination-option';
 import { AnswerService } from './answer.service';
 import { AnswerQuestionDto } from './dto/answer-question.dto';
 import { RaiseQuestionDto } from './dto/raise-question.dto';
@@ -27,8 +29,8 @@ export class QaController {
 
   @ApiTags('Fetch Questions')
   @Get('/')
-  async fetchAllQuestions() {
-    return this.questionService.fetchAll();
+  async fetchAllQuestions( @Pagination() paginationOption: PaginationOption) {
+    return this.questionService.fetchAll(paginationOption);
   }
 
   @ApiTags('Fetch Single Question')
