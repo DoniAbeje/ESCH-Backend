@@ -6,6 +6,7 @@ import { QuestionDoesNotExistException } from './exceptions/question-doesnot-exi
 import { Question, QuestionDocument } from './schema/question.schema';
 import * as mongoose from 'mongoose';
 import { VoteService } from 'src/common/services/vote.service';
+import { PaginationOption } from '../common/pagination-option';
 
 @Injectable()
 export class QuestionService extends VoteService {
@@ -19,8 +20,16 @@ export class QuestionService extends VoteService {
     return await this.questionModel.create(raiseQuestionDto);
   }
 
-  async fetchAll() {
+  async fetchAll(
+    paginationOption: PaginationOption = PaginationOption.getDefault(),
+  ) {
     return await this.questionModel.aggregate([
+      {
+        $skip: paginationOption.offset,
+      },
+      {
+        $limit: paginationOption.limit,
+      },
       {
         $project: this.getProjection(),
       },

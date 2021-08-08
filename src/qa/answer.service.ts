@@ -5,6 +5,7 @@ import { AnswerQuestionDto } from './dto/answer-question.dto';
 import { Answer, AnswerDocument } from './schema/answer.schema';
 import * as mongoose from 'mongoose';
 import { QuestionService } from './question.service';
+import { PaginationOption } from '../common/pagination-option';
 
 @Injectable()
 export class AnswerService {
@@ -13,11 +14,20 @@ export class AnswerService {
     private questionService: QuestionService,
   ) {}
 
-  async findByQuestionId(questionId: string) {
+  async findByQuestionId(
+    questionId: string,
+    paginationOption: PaginationOption = PaginationOption.getDefault(),
+  ) {
     await this.questionService.exists(questionId);
     return await this.answerModel.aggregate([
       {
         $match: { question: mongoose.Types.ObjectId(questionId) },
+      },
+      {
+        $skip: paginationOption.offset,
+      },
+      {
+        $limit: paginationOption.limit,
       },
       {
         $project: {
