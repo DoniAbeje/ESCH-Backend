@@ -22,8 +22,9 @@ export class QuestionService extends VoteService {
 
   async fetchAll(
     paginationOption: PaginationOption = PaginationOption.getDefault(),
+    tags: string[] = [],
   ) {
-    return await this.questionModel.aggregate([
+    const aggregation:any[] = [
       {
         $skip: paginationOption.offset,
       },
@@ -33,7 +34,16 @@ export class QuestionService extends VoteService {
       {
         $project: this.getProjection(),
       },
-    ]);
+    ];
+
+    if (tags && tags.length) {
+      aggregation.unshift({
+        $match: {
+          tags: { $all: tags },
+        },
+      });
+    }
+    return await this.questionModel.aggregate(aggregation);
   }
 
   async fetchOne(questionId: string) {
