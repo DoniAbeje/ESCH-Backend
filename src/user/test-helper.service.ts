@@ -24,8 +24,8 @@ export class UserTestHelperService  {
     return { ..._default, ...override}
   }
 
-  async createTestUser() {
-      return await this.userService.createUser(this.generateCreateUserDto())
+  async createTestUser(createUserDto: CreateUserDto = null) {
+      return await this.userService.createUser(createUserDto || this.generateCreateUserDto())
   }
 
   async clearUsersData() {

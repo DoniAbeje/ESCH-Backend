@@ -7,6 +7,7 @@ import { UserTestHelperService } from '../src/user/test-helper.service';
 import { CreateUserDto } from '../src/user/dto/create-user.dto';
 import { PhoneTakenException } from '../src/user/exceptions/phone-taken.exception';
 import { UserService } from '../src/user/user.service';
+import { LoginDto } from '../src/user/dto/login.dto';
 
 describe('User Module (e2e)', () => {
   let app: INestApplication;
@@ -89,5 +90,27 @@ describe('User Module (e2e)', () => {
         expect.objectContaining(expectedSavedData),
       );
     });
+  });
+
+  describe('login', () => {
+    it('should reject with wrong credentials', async () => {
+      const loginDto: LoginDto = { phone: '0912345678', password: 'wrong-password'}
+      await request(app.getHttpServer())
+        .post(`${baseUrl}/login`)
+        .send(loginDto)
+        .expect(HttpStatus.UNAUTHORIZED);
+
+    })
+
+    it('should login successfully', async () => {
+      const createUserDto: CreateUserDto = userTestHelper.generateCreateUserDto();
+      await userTestHelper.createTestUser(createUserDto);
+      const loginDto: LoginDto = { phone: createUserDto.phone, password: createUserDto.password }
+      await request(app.getHttpServer())
+        .post(`${baseUrl}/login`)
+        .send(loginDto)
+        .expect(HttpStatus.CREATED);
+
+    })
   });
 });
