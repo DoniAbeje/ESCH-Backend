@@ -96,7 +96,7 @@ export class QuestionQueryBuilder {
     if (this.shouldPopulateAskedBy) {
       questions = await this.questionModel.populate(questions, {
         path: 'askedBy',
-        select: ['_id', 'firstName', 'lastName'],
+        select: ['_id', 'firstName', 'lastName', 'profilePicture'],
       });
     }
     return questions;
