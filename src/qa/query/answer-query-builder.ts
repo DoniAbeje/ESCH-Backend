@@ -1,34 +1,29 @@
 import { PaginationOption } from '../../common/pagination-option';
 import * as mongoose from 'mongoose';
-import { QuestionDocument } from '../schema/question.schema';
 import { Model } from 'mongoose';
 import { ExecResult } from './exec-result';
+import { AnswerDocument } from '../schema/answer.schema';
 
-export class QuestionQueryBuilder {
+export class AnswerQueryBuilder {
   private isBuilt = false;
   private aggregations: any[] = [];
   private paginationOption: PaginationOption;
-  private tagFilters: string[] = [];
   private idFilters: mongoose.Types.ObjectId[] = [];
-  private shouldPopulateAskedBy = false;
+  private questionIdFilters: string[] = [];
+  private shouldPopulateAnsweredBy = false;
   private projections = {
+    answer: 1,
     question: 1,
-    askedBy: 1,
-    tags: 1,
+    answeredBy: 1,
     createdAt: 1,
     upvotes: { $size: '$upvotes' },
     downvotes: { $size: '$downvotes' },
   };
 
-  constructor(private questionModel: Model<QuestionDocument>) {}
+  constructor(private answerModel: Model<AnswerDocument>) {}
 
   paginate(paginationOption: PaginationOption) {
     this.paginationOption = paginationOption;
-    return this;
-  }
-
-  filterByTags(tags: string[]) {
-    this.tagFilters = tags;
     return this;
   }
 
@@ -37,13 +32,18 @@ export class QuestionQueryBuilder {
     return this;
   }
 
-  populateAskedBy(shouldPopulateAskedBy = true) {
-    this.shouldPopulateAskedBy = shouldPopulateAskedBy;
+  filterByQuestionIds(ids: string[]) {
+    this.questionIdFilters = ids
+    return this;
+  }
+
+  populateAnsweredBy(shouldPopulateAnsweredBy = true) {
+    this.shouldPopulateAnsweredBy = shouldPopulateAnsweredBy;
     return this;
   }
 
   build() {
-    const match: QuestionMatchQuery = this.processFilter();
+    const match: AnswerMatchQuery = this.processFilter();
 
     if (match != {}) {
       this.aggregations.push({
@@ -73,37 +73,38 @@ export class QuestionQueryBuilder {
       this.build();
     }
 
-    let questions = await this.questionModel.aggregate(this.aggregations);
-    questions = await this.processPopulate(questions);
+    let answered = await this.answerModel.aggregate(this.aggregations);
+    answered = await this.processPopulate(answered);
 
-    return new ExecResult(questions);
+    return new ExecResult(answered);
   }
 
-  private processFilter(): QuestionMatchQuery {
-    const match: QuestionMatchQuery = {};
+  private processFilter(): AnswerMatchQuery {
+    const match: AnswerMatchQuery = {};
 
     if (this.idFilters.length) {
       match._id = { $in: this.idFilters };
     }
 
-    if (this.tagFilters.length) {
-      match.tags = { $all: this.tagFilters };
+    if (this.questionIdFilters.length) {
+      match.question = { $in: this.questionIdFilters };
     }
+
     return match;
   }
 
-  private async processPopulate(questions: any[]) {
-    if (this.shouldPopulateAskedBy) {
-      questions = await this.questionModel.populate(questions, {
-        path: 'askedBy',
+  private async processPopulate(answers: any[]) {
+    if (this.shouldPopulateAnsweredBy) {
+      answers = await this.answerModel.populate(answers, {
+        path: 'answeredBy',
         select: ['_id', 'firstName', 'lastName', 'profilePicture'],
       });
     }
-    return questions;
+    return answers;
   }
 }
 
-class QuestionMatchQuery {
+class AnswerMatchQuery {
   _id?: any;
-  tags?: any;
+  question?: any;
 }

@@ -11,7 +11,7 @@ export class Answer {
   @Prop({ required: true })
   question: string;
 
-  @Prop({ type: String, required: true })
+  @Prop({ type: String, required: true, ref: 'User' })
   answeredBy: string;
 
   @Prop({ type: [String], default: [] })
