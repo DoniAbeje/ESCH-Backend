@@ -3,14 +3,14 @@ import { HttpStatus, INestApplication } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
 import { configApp } from '../src/utils/config-app';
-import { TestHelperService } from '../src/common/services/test-helper.service';
+import { UserTestHelperService } from '../src/user/test-helper.service';
 import { CreateUserDto } from '../src/user/dto/create-user.dto';
 import { PhoneTakenException } from '../src/user/exceptions/phone-taken.exception';
 import { UserService } from '../src/user/user.service';
 
 describe('User Module (e2e)', () => {
   let app: INestApplication;
-  let helper: TestHelperService;
+  let userTestHelper: UserTestHelperService;
   let userService: UserService;
   const baseUrl = '/users';
 
@@ -20,7 +20,7 @@ describe('User Module (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    helper = moduleFixture.get<TestHelperService>(TestHelperService);
+    userTestHelper = moduleFixture.get<UserTestHelperService>(UserTestHelperService);
     userService = moduleFixture.get<UserService>(UserService);
     configApp(app);
 
@@ -28,7 +28,7 @@ describe('User Module (e2e)', () => {
   });
 
   beforeEach(async () => {
-    await helper.clearUsersData();
+    await userTestHelper.clearUsersData();
   });
 
   afterAll(async () => {
@@ -52,8 +52,8 @@ describe('User Module (e2e)', () => {
     });
 
     it(`should reject with ${PhoneTakenException.name}`, async () => {
-      await helper.createTestUser();
-      const createUserDto: CreateUserDto = helper.generateCreateUserDto();
+      await userTestHelper.createTestUser();
+      const createUserDto: CreateUserDto = userTestHelper.generateCreateUserDto();
 
       const { body } = await request(app.getHttpServer())
         .post(baseUrl)
@@ -64,7 +64,7 @@ describe('User Module (e2e)', () => {
     });
 
     it('should create new user', async () => {
-      const createUserDto: CreateUserDto = helper.generateCreateUserDto();
+      const createUserDto: CreateUserDto = userTestHelper.generateCreateUserDto();
 
       const { body } = await request(app.getHttpServer())
         .post(baseUrl)
