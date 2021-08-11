@@ -8,11 +8,14 @@ import { CreateUserDto } from '../src/user/dto/create-user.dto';
 import { PhoneTakenException } from '../src/user/exceptions/phone-taken.exception';
 import { UserService } from '../src/user/user.service';
 import { LoginDto } from '../src/user/dto/login.dto';
+import { AuthService } from '../src/auth/auth.service';
+import { UpdateUserDto } from '../src/user/dto/update-user.dto';
 
 describe('User Module (e2e)', () => {
   let app: INestApplication;
   let userTestHelper: UserTestHelperService;
   let userService: UserService;
+  let authService: AuthService;
   const baseUrl = '/users';
 
   beforeAll(async () => {
@@ -21,7 +24,10 @@ describe('User Module (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    userTestHelper = moduleFixture.get<UserTestHelperService>(UserTestHelperService);
+    userTestHelper = moduleFixture.get<UserTestHelperService>(
+      UserTestHelperService,
+    );
+    authService = moduleFixture.get<AuthService>(AuthService);
     userService = moduleFixture.get<UserService>(UserService);
     configApp(app);
 
@@ -54,7 +60,8 @@ describe('User Module (e2e)', () => {
 
     it(`should reject with ${PhoneTakenException.name}`, async () => {
       await userTestHelper.createTestUser();
-      const createUserDto: CreateUserDto = userTestHelper.generateCreateUserDto();
+      const createUserDto: CreateUserDto =
+        userTestHelper.generateCreateUserDto();
 
       const { body } = await request(app.getHttpServer())
         .post(baseUrl)
@@ -65,7 +72,8 @@ describe('User Module (e2e)', () => {
     });
 
     it('should create new user', async () => {
-      const createUserDto: CreateUserDto = userTestHelper.generateCreateUserDto();
+      const createUserDto: CreateUserDto =
+        userTestHelper.generateCreateUserDto();
 
       const { body } = await request(app.getHttpServer())
         .post(baseUrl)
@@ -94,23 +102,56 @@ describe('User Module (e2e)', () => {
 
   describe('login', () => {
     it('should reject with wrong credentials', async () => {
-      const loginDto: LoginDto = { phone: '0912345678', password: 'wrong-password'}
+      const loginDto: LoginDto = {
+        phone: '0912345678',
+        password: 'wrong-password',
+      };
       await request(app.getHttpServer())
         .post(`${baseUrl}/login`)
         .send(loginDto)
         .expect(HttpStatus.UNAUTHORIZED);
-
-    })
+    });
 
     it('should login successfully', async () => {
-      const createUserDto: CreateUserDto = userTestHelper.generateCreateUserDto();
+      const createUserDto: CreateUserDto =
+        userTestHelper.generateCreateUserDto();
       await userTestHelper.createTestUser(createUserDto);
-      const loginDto: LoginDto = { phone: createUserDto.phone, password: createUserDto.password }
+      const loginDto: LoginDto = {
+        phone: createUserDto.phone,
+        password: createUserDto.password,
+      };
       await request(app.getHttpServer())
         .post(`${baseUrl}/login`)
         .send(loginDto)
         .expect(HttpStatus.CREATED);
+    });
+  });
 
-    })
+  describe('updateUser', () => {
+    it('should reject with unauthenticated user', async () => {
+      await request(app.getHttpServer())
+        .put(baseUrl)
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+
+    it('should update user info successfully', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const updateUserDto: UpdateUserDto = {
+        firstName: 'updated first name',
+        lastName: 'updated last name',
+        profilePicture:
+          'https://images.unsplash.com/no-image.jpg',
+      };
+
+      await request(app.getHttpServer())
+        .put(baseUrl)
+        .set('Authorization', `Bearer ${token}`)
+        .send(updateUserDto)
+        .expect(HttpStatus.OK);
+
+      const updatedUser = await userService.exists(user._id);
+      expect(updatedUser).toMatchObject(expect.objectContaining(updateUserDto));
+    });
   });
 });

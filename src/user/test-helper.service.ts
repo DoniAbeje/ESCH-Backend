@@ -25,7 +25,7 @@ export class UserTestHelperService  {
   }
 
   async createTestUser(createUserDto: CreateUserDto = null) {
-      return await this.userService.createUser(createUserDto || this.generateCreateUserDto())
+      return await this.userService.createUser(createUserDto ||  this.generateCreateUserDto())
   }
 
   async clearUsersData() {
