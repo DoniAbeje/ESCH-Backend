@@ -82,8 +82,8 @@ describe('User Module (e2e)', () => {
       });
 
       const savedUser = await userService.exists(body.userInfo._id);
-      const { firstName, lastName, phone } = createUserDto;
-      const expectedSavedData = { firstName, lastName, phone };
+      const { firstName, lastName, phone, profilePicture } = createUserDto;
+      const expectedSavedData = { firstName, lastName, phone, profilePicture };
 
       expect(savedUser).toMatchObject(
         expect.objectContaining(expectedSavedData),

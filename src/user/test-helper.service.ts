@@ -18,7 +18,8 @@ export class UserTestHelperService  {
         firstName: faker.name.firstName(),
         lastName: faker.name.lastName(),
         phone: '0987654321',
-        password: 'password'
+        password: 'password',
+        profilePicture: 'https://www.gravatar.com/avatar/7d1caf9df777b3b2cf474ff743494335?s=64&d=identicon&r=PG'
     }
     return { ..._default, ...override}
   }
