@@ -1,10 +1,9 @@
-import { IsString, MinLength } from 'class-validator';
+import { Matches, MinLength } from 'class-validator';
 
 export class LoginDto {
-  @IsString()
+  @Matches(/^09\d{8}/, { message: 'phone must be in the format 09xxxxxxxx' })
   readonly phone: string;
 
-  @IsString()
   @MinLength(5)
   readonly password: string;
 }
