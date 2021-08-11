@@ -4,8 +4,9 @@ import { Model } from 'mongoose';
 import { RaiseQuestionDto } from './dto/raise-question.dto';
 import { QuestionDoesNotExistException } from './exceptions/question-doesnot-exist.exception';
 import { Question, QuestionDocument } from './schema/question.schema';
-import * as mongoose from 'mongoose';
 import { VoteService } from 'src/common/services/vote.service';
+import { PaginationOption } from '../common/pagination-option';
+import { QuestionQueryBuilder } from './query/question-query-builder';
 
 @Injectable()
 export class QuestionService extends VoteService {
@@ -19,23 +20,26 @@ export class QuestionService extends VoteService {
     return await this.questionModel.create(raiseQuestionDto);
   }
 
-  async fetchAll() {
-    return await this.questionModel.aggregate([
-      {
-        $project: this.getProjection(),
-      },
-    ]);
+  async fetchAll(
+    paginationOption: PaginationOption = PaginationOption.getDefault(),
+    tags: string[] = [],
+  ) {
+    return (
+      await new QuestionQueryBuilder(this.questionModel)
+        .filterByTags(tags)
+        .paginate(paginationOption)
+        .populateAskedBy()
+        .exec()
+    ).all();
   }
 
   async fetchOne(questionId: string) {
-    return await this.questionModel.aggregate([
-      {
-        $match: { _id: mongoose.Types.ObjectId(questionId) },
-      },
-      {
-        $project: this.getProjection(),
-      },
-    ]);
+    return (
+      await new QuestionQueryBuilder(this.questionModel)
+        .filterByIds([questionId])
+        .populateAskedBy()
+        .exec()
+    ).first();
   }
 
   async exists(id: string, throwException = true) {
@@ -44,16 +48,5 @@ export class QuestionService extends VoteService {
       throw new QuestionDoesNotExistException();
     }
     return question;
-  }
-
-  private getProjection() {
-    return {
-      question: 1,
-      askedBy: 1,
-      tags: 1,
-      createdAt: 1,
-      upvotes: { $size: '$upvotes' },
-      downvotes: { $size: '$downvotes' },
-    };
   }
 }

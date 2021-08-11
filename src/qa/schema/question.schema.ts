@@ -9,7 +9,7 @@ export class Question extends Vote {
   @Prop({ required: true })
   question: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, ref: 'User' })
   askedBy: string;
 
   @Prop({ type: [String], minlength: 1 })

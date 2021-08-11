@@ -17,6 +17,9 @@ export class User {
   @Prop({ required: true })
   password: string;
 
+  @Prop({ default: null })
+  profilePicture: string;
+
   @Prop({ default: Date.now })
   createdDate: Date;
 }
