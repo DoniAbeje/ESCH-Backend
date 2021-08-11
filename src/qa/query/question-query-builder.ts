@@ -2,7 +2,7 @@ import { PaginationOption } from '../../common/pagination-option';
 import * as mongoose from 'mongoose';
 import { QuestionDocument } from '../schema/question.schema';
 import { Model } from 'mongoose';
-import { QuestionExecResult } from './question-exec-result';
+import { ExecResult } from './exec-result';
 
 export class QuestionQueryBuilder {
   private isBuilt = false;
@@ -76,7 +76,7 @@ export class QuestionQueryBuilder {
     let questions = await this.questionModel.aggregate(this.aggregations);
     questions = await this.processPopulate(questions);
 
-    return new QuestionExecResult(questions);
+    return new ExecResult(questions);
   }
 
   private processFilter(): QuestionMatchQuery {
