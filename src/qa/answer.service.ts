@@ -3,9 +3,9 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { AnswerQuestionDto } from './dto/answer-question.dto';
 import { Answer, AnswerDocument } from './schema/answer.schema';
-import * as mongoose from 'mongoose';
 import { QuestionService } from './question.service';
 import { PaginationOption } from '../common/pagination-option';
+import { AnswerQueryBuilder } from './query/answer-query-builder';
 
 @Injectable()
 export class AnswerService {
@@ -19,27 +19,13 @@ export class AnswerService {
     paginationOption: PaginationOption = PaginationOption.getDefault(),
   ) {
     await this.questionService.exists(questionId);
-    return await this.answerModel.aggregate([
-      {
-        $match: { question: mongoose.Types.ObjectId(questionId) },
-      },
-      {
-        $skip: paginationOption.offset,
-      },
-      {
-        $limit: paginationOption.limit,
-      },
-      {
-        $project: {
-          answer: 1,
-          question: 1,
-          answeredBy: 1,
-          createdAt: 1,
-          upvotes: { $size: '$upvotes' },
-          downvotes: { $size: '$downvotes' },
-        },
-      },
-    ]);
+    return (
+      await new AnswerQueryBuilder(this.answerModel)
+        .paginate(paginationOption)
+        .filterByQuestionIds([questionId])
+        .populateAnsweredBy()
+        .exec()
+    ).all();
   }
 
   async answerQuestion(answerQuestionDto: AnswerQuestionDto) {
