@@ -1,7 +1,7 @@
 import { Body, Controller, Get, Param, ParseArrayPipe, Query } from '@nestjs/common';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
-import { PostAuth } from 'src/common/decorators/post-auth.decorator';
-import { User } from 'src/common/decorators/user.decorator';
+import { PostAuth } from '../common/decorators/post-auth.decorator';
+import { User } from '../common/decorators/user.decorator';
 import { ApiPagination } from '../common/decorators/api-pagination.decorator';
 import { Pagination } from '../common/decorators/pagination.decorator';
 import { PaginationOption } from '../common/pagination-option';

@@ -4,7 +4,7 @@ import { Model } from 'mongoose';
 import { RaiseQuestionDto } from './dto/raise-question.dto';
 import { QuestionDoesNotExistException } from './exceptions/question-doesnot-exist.exception';
 import { Question, QuestionDocument } from './schema/question.schema';
-import { VoteService } from 'src/common/services/vote.service';
+import { VoteService } from '../common/services/vote.service';
 import { PaginationOption } from '../common/pagination-option';
 import { QuestionQueryBuilder } from './query/question-query-builder';
 
