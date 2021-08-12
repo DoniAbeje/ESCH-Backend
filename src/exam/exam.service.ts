@@ -17,7 +17,7 @@ export class ExamService {
     return this.examModel.find({});
   }
 
-  async fetchOne(examId: string) {
+  async findExamById(examId: string) {
     return this.exists(examId);
   }
 
