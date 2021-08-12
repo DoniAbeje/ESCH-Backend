@@ -1,6 +1,6 @@
 import { ExamQuestionService } from './exam-question.service';
 import { ExamService } from './exam.service';
-import { Body, Controller } from '@nestjs/common';
+import { Body, Controller, Param } from '@nestjs/common';
 import { ApiTags } from '@nestjs/swagger';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { User } from '../common/decorators/user.decorator';
@@ -25,5 +25,10 @@ export class ExamController {
   @GetAuth('/', 'Get all exams detail')
   async fetchAllExams() {
     return this.examService.fetchAll();
+  }
+
+  @GetAuth('/:examId', 'Get single exam')
+  async fetchSingleExam(@Param('examId') examId: string) {
+    return this.examService.fetchOne(examId);
   }
 }
