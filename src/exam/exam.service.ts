@@ -9,10 +9,10 @@ export class ExamService {
   constructor(@InjectModel(Exam.name) public examModel: Model<ExamDocument>) {}
 
   async createExam(createExamDto: CreateExamDto) {
-    return await this.examModel.create(createExamDto);
+    return this.examModel.create(createExamDto);
   }
 
   async fetchAll() {
-    return await this.examModel.find({});
+    return this.examModel.find({});
   }
 }
