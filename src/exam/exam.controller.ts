@@ -29,6 +29,6 @@ export class ExamController {
 
   @GetAuth('/:examId', 'Get single exam')
   async fetchSingleExam(@Param('examId') examId: string) {
-    return this.examService.fetchOne(examId);
+    return this.examService.findExamById(examId);
   }
 }
