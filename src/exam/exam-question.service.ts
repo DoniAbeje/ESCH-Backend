@@ -7,6 +7,9 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { AddExamQuestionDto } from './dto/add-exam-question.dto';
 import { ExamService } from './exam.service';
+import { DuplicateChoiceKeyFoundException } from './exceptions/duplicate-choice-key-found.exception';
+import { DuplicateChoiceValueFoundException } from './exceptions/duplicate-choice-value-found.exception';
+import { AnswerKeyNotPartOfChoiceException } from './exceptions/answer-key-not-part-of-choice.exception';
 
 @Injectable()
 export class ExamQuestionService {
@@ -18,17 +21,16 @@ export class ExamQuestionService {
 
   async addQuestionToExam(addExamQuestionDto: AddExamQuestionDto) {
     // check if keys and choices are unique
-    // check if the given correctAnswer value(key) is part of the choice
     const keySet = new Set(),
       choiceSet = new Set();
     let correctAnswerKeyFound = false;
 
     for (const choice of addExamQuestionDto.choice) {
       if (keySet.has(choice.key.toLocaleLowerCase())) {
-        throw new Error('Duplicate key found');
+        throw new DuplicateChoiceKeyFoundException();
       }
       if (choiceSet.has(choice.choice.toLocaleLowerCase())) {
-        throw new Error('Duplicate choice found');
+        throw new DuplicateChoiceValueFoundException();
       }
       if (choice.key === addExamQuestionDto.correctAnswer) {
         correctAnswerKeyFound = true;
@@ -38,8 +40,9 @@ export class ExamQuestionService {
       choiceSet.add(choice.choice.toLocaleLowerCase());
     }
 
+    // check if the given correctAnswer value(key) is part of the choice
     if (!correctAnswerKeyFound) {
-      throw new Error('Correct answer key is not part of the choice');
+      throw new AnswerKeyNotPartOfChoiceException();
     }
 
     // check if the question is unique for this exam
