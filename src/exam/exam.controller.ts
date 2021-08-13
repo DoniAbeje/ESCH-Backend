@@ -6,6 +6,7 @@ import { CreateExamDto } from './dto/create-exam.dto';
 import { User } from '../common/decorators/user.decorator';
 import { PostAuth } from '../common/decorators/post-auth.decorator';
 import { GetAuth } from '../common/decorators/get-auth.decorator';
+import { AddExamQuestionDto } from './dto/add-exam-question.dto';
 @ApiTags('Exam')
 @Controller('exam')
 export class ExamController {
@@ -30,5 +31,15 @@ export class ExamController {
   @GetAuth('/:examId', 'Get single exam')
   async fetchSingleExam(@Param('examId') examId: string) {
     return this.examService.findExamById(examId);
+  }
+
+  // ExamQuestion
+  @PostAuth('/question', 'Add question to exam')
+  async addExamQuestion(@Body() addExamQuestionDto: AddExamQuestionDto) {
+    const examQuestion = await this.examQuestionService.addQuestionToExam(
+      addExamQuestionDto,
+    );
+
+    return { _id: examQuestion._id };
   }
 }
