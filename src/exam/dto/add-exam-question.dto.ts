@@ -1,15 +1,12 @@
 import { Type } from 'class-transformer';
-import { IsArray, IsNumber, IsString, ValidateNested } from 'class-validator';
+import { IsArray, IsString, ValidateNested } from 'class-validator';
 
 class Choice {
   @IsString()
-  userId: string;
-
-  @IsNumber()
-  stars: number;
+  key: string;
 
   @IsString()
-  review: string;
+  choice: string;
 }
 
 export class AddExamQuestionDto {

@@ -5,14 +5,11 @@ export type ExamQuestionDocument = ExamQuestion & Document;
 
 @Schema({ _id: false })
 class Choice {
-  @Prop({ type: MongooseSchema.Types.ObjectId, required: true })
-  userId: string;
+  @Prop({ required: true })
+  key: string;
 
-  @Prop({ default: 0 })
-  stars: number;
-
-  @Prop()
-  review: string;
+  @Prop({ required: true })
+  choice: string;
 }
 
 export const ChoiceSchema = SchemaFactory.createForClass(Choice);
