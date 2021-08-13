@@ -12,7 +12,7 @@ class Choice {
   review: string;
 }
 
-export class CreateExamDto {
+export class AddExamQuestionDto {
   @IsString()
   readonly question: string;
 
