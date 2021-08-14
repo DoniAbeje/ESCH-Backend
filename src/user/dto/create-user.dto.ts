@@ -1,4 +1,4 @@
-import { IsOptional, IsString, IsUrl, MinLength } from 'class-validator';
+import { IsOptional, IsString, IsUrl, MinLength, Matches } from 'class-validator';
 
 export class CreateUserDto {
   @IsString()
@@ -7,11 +7,10 @@ export class CreateUserDto {
   @IsString()
   readonly lastName: string;
 
-  @IsString()
+  @Matches(/^09\d{8}/, { message: 'phone must be in the format 09xxxxxxxx' })
   readonly phone: string;
 
-  @IsString()
-  @MinLength(5)
+  @MinLength(8)
   readonly password: string;
 
   @IsUrl()
