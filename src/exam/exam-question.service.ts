@@ -10,6 +10,8 @@ import { ExamService } from './exam.service';
 import { DuplicateChoiceKeyFoundException } from './exceptions/duplicate-choice-key-found.exception';
 import { DuplicateChoiceValueFoundException } from './exceptions/duplicate-choice-value-found.exception';
 import { AnswerKeyNotPartOfChoiceException } from './exceptions/answer-key-not-part-of-choice.exception';
+import { UpdateExamQuestionDto } from './dto/update-exam-question.dto';
+import { ExamQuestionDoesNotExistException } from './exceptions/examQuestion-doesnot-exist.exception';
 
 @Injectable()
 export class ExamQuestionService {
@@ -57,5 +59,26 @@ export class ExamQuestionService {
     await this.examService.exists(examId);
 
     return this.examQuestionModel.find({ examId });
+  }
+
+  async exists(examQuestionId: string) {
+    const examQuestion = await this.examQuestionModel.findById(examQuestionId);
+
+    if (!examQuestion) {
+      throw new ExamQuestionDoesNotExistException();
+    }
+
+    return examQuestion;
+  }
+
+  async updateExamQuestion(
+    examQuestionId: string,
+    updateExamQuestionDto: UpdateExamQuestionDto,
+  ) {
+    const examQuestion = await this.exists(examQuestionId);
+
+    await examQuestion.updateOne(updateExamQuestionDto);
+
+    return examQuestion;
   }
 }
