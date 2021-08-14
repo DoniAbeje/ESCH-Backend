@@ -7,6 +7,8 @@ import { User } from '../common/decorators/user.decorator';
 import { PostAuth } from '../common/decorators/post-auth.decorator';
 import { GetAuth } from '../common/decorators/get-auth.decorator';
 import { AddExamQuestionDto } from './dto/add-exam-question.dto';
+import { PutAuth } from 'src/common/decorators/put-auth.decorator';
+import { UpdateExamQuestionDto } from './dto/update-exam-question.dto';
 @ApiTags('Exam')
 @Controller('exam')
 export class ExamController {
@@ -46,5 +48,18 @@ export class ExamController {
   @GetAuth('/:examId/question', 'Fetch Questions for single exam')
   async fetchQuestionsForSingleExam(@Param('examId') examId: string) {
     return await this.examQuestionService.findByExamId(examId);
+  }
+
+  @PutAuth('question/:examQuestionId', 'Update Exam Question')
+  async updateExamQuestion(
+    @Param('examQuestionId') examQuestionId: string,
+    @Body() updateExamQuestionDto: UpdateExamQuestionDto,
+  ) {
+    const examQuestion = await this.examQuestionService.updateExamQuestion(
+      examQuestionId,
+      updateExamQuestionDto,
+    );
+
+    return { _id: examQuestion._id };
   }
 }
