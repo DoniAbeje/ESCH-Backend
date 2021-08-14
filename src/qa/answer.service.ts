@@ -6,13 +6,17 @@ import { Answer, AnswerDocument } from './schema/answer.schema';
 import { QuestionService } from './question.service';
 import { PaginationOption } from '../common/pagination-option';
 import { AnswerQueryBuilder } from './query/answer-query-builder';
+import { VoteService } from '../common/services/vote.service';
+import { AnswerDoesNotExistException } from './exceptions/answer-doesnot-exist.exception';
 
 @Injectable()
-export class AnswerService {
+export class AnswerService extends VoteService{
   constructor(
     @InjectModel(Answer.name) public answerModel: Model<AnswerDocument>,
     private questionService: QuestionService,
-  ) {}
+  ) {
+    super(answerModel);
+  }
 
   async findByQuestionId(
     questionId: string,
@@ -31,5 +35,13 @@ export class AnswerService {
   async answerQuestion(answerQuestionDto: AnswerQuestionDto) {
     await this.questionService.exists(answerQuestionDto.question);
     return this.answerModel.create(answerQuestionDto);
+  }
+
+  async exists(id: string, throwException = true) {
+    const answer = await this.answerModel.findById(id);
+    if (!answer && throwException) {
+      throw new AnswerDoesNotExistException();
+    }
+    return answer;
   }
 }
