@@ -46,7 +46,6 @@ describe('QA Module (e2e)', () => {
   });
 
   describe('raiseQuestion', () => {
-    // check authentication
     it('should reject with unauthenticated user', async () => {
       await request(app.getHttpServer())
         .post(baseUrl)
