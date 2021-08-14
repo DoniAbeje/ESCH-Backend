@@ -10,6 +10,8 @@ import { UserService } from '../src/user/user.service';
 import { LoginDto } from '../src/user/dto/login.dto';
 import { AuthService } from '../src/auth/auth.service';
 import { UpdateUserDto } from '../src/user/dto/update-user.dto';
+import { UserDoesNotExistException } from '../src/user/exceptions/user-doesnot-exist.exception';
+import * as mongoose from 'mongoose';
 
 describe('User Module (e2e)', () => {
   let app: INestApplication;
@@ -87,6 +89,7 @@ describe('User Module (e2e)', () => {
           firstName: createUserDto.firstName,
           lastName: createUserDto.lastName,
           phone: createUserDto.phone,
+          profilePicture: createUserDto.profilePicture
         },
       });
 
@@ -140,8 +143,7 @@ describe('User Module (e2e)', () => {
       const updateUserDto: UpdateUserDto = {
         firstName: 'updated first name',
         lastName: 'updated last name',
-        profilePicture:
-          'https://images.unsplash.com/no-image.jpg',
+        profilePicture: 'https://images.unsplash.com/no-image.jpg',
       };
 
       await request(app.getHttpServer())
@@ -152,6 +154,32 @@ describe('User Module (e2e)', () => {
 
       const updatedUser = await userService.exists(user._id);
       expect(updatedUser).toMatchObject(expect.objectContaining(updateUserDto));
+    });
+  });
+
+  describe('fetchSingleUser', () => {
+    it('should reject with non existing user id', async () => {
+      const userId = new mongoose.Types.ObjectId();
+      const { body } = await request(app.getHttpServer())
+        .get(`${baseUrl}/${userId}`)
+        .expect(HttpStatus.NOT_FOUND);
+
+      expect(body.exception).toBe(UserDoesNotExistException.name);
+    });
+
+    it('should return user details', async () => {
+      const user = await userTestHelper.createTestUser();
+
+      const { body } = await request(app.getHttpServer())
+        .get(`${baseUrl}/${user._id}`)
+        .expect(HttpStatus.OK);
+      expect(body).toMatchObject({
+        _id: user._id.toString(),
+        firstName: user.firstName,
+        lastName: user.lastName,
+        phone: user.phone,
+        profilePicture: user.profilePicture
+      });
     });
   });
 });

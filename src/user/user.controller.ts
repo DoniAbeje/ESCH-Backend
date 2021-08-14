@@ -1,7 +1,7 @@
 import { LocalAuthGuard } from './../auth/guards/local-auth.guard';
 import { AuthService } from './../auth/auth.service';
 import { UserDocument } from './schemas/user.schema';
-import { Controller, Post, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, Param, UseGuards, Get } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -42,14 +42,15 @@ export class UserController {
     await this.userService.updateUser(userId, updateUserDto);
   }
 
-  @GetAuth('/:id', 'Get single user detail')
+  @ApiTags('Get single user detail')
+  @Get('/:id')
   async fetchSingleUser(@Param('id') userId: string) {
     const user = await this.userService.exists(userId);
     return this.filterUserInfo(user);
   }
 
   filterUserInfo(user: UserDocument) {
-    const { _id, firstName, lastName, phone } = user;
-    return { _id, firstName, lastName, phone };
+    const { _id, firstName, lastName, phone, profilePicture } = user;
+    return { _id, firstName, lastName, phone, profilePicture };
   }
 }
