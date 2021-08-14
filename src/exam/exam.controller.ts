@@ -42,4 +42,9 @@ export class ExamController {
 
     return { _id: examQuestion._id };
   }
+
+  @GetAuth('/:examId/question', 'Fetch Questions for single exam')
+  async fetchQuestionsForSingleExam(@Param('examId') examId: string) {
+    return await this.examQuestionService.findByExamId(examId);
+  }
 }

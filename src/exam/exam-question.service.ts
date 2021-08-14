@@ -52,4 +52,10 @@ export class ExamQuestionService {
 
     return this.examQuestionModel.create(addExamQuestionDto);
   }
+
+  async findByExamId(examId: string) {
+    await this.examService.exists(examId);
+
+    return this.examQuestionModel.find({ examId });
+  }
 }
