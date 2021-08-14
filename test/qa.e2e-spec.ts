@@ -9,6 +9,7 @@ import { AuthService } from '../src/auth/auth.service';
 import { RaiseQuestionDto } from '../src/qa/dto/raise-question.dto';
 import { QuestionService } from '../src/qa/question.service';
 import { toJSON } from '../src/utils/utils';
+import { PaginationOption } from '../src/common/pagination-option';
 
 describe('QA Module (e2e)', () => {
   let app: INestApplication;
@@ -89,5 +90,25 @@ describe('QA Module (e2e)', () => {
         expect.objectContaining(raiseQuestionDto),
       );
     });
+  });
+
+  describe('fetchAllQuestions', () => {
+    // without filter
+    it('should return all questions', async () => {
+      const user = await userTestHelper.createTestUser();
+      const questions = await qaTestHelper.createTestQuestions(
+        user._id,
+        PaginationOption.getDefault().limit,
+      );
+
+      const { body } = await request(app.getHttpServer())
+        .get(baseUrl)
+        .expect(HttpStatus.OK);
+      const expectedResponse = qaTestHelper.getResponse(questions, user);
+      expect(body).toEqual(expectedResponse);
+    });
+
+    // with pagination
+    // with tags filter
   });
 });
