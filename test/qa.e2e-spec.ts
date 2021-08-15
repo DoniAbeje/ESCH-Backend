@@ -73,7 +73,7 @@ describe('QA Module (e2e)', () => {
       const user = await userTestHelper.createTestUser();
       const token = await authService.signToken(user);
       const raiseQuestionDto: RaiseQuestionDto =
-        qaTestHelper.generateraiseQuestionDto();
+        qaTestHelper.generateRaiseQuestionDto();
 
       const { body } = await request(app.getHttpServer())
         .post(baseUrl)

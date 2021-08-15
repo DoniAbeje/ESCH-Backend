@@ -25,7 +25,7 @@ export class QaTestHelperService {
     return await this.answerModel.deleteMany({});
   }
 
-  generateraiseQuestionDto(
+  generateRaiseQuestionDto(
     override: Partial<RaiseQuestionDto> = {},
   ): RaiseQuestionDto {
     const _default: RaiseQuestionDto = {
@@ -51,7 +51,7 @@ export class QaTestHelperService {
     override: Partial<RaiseQuestionDto> = {},
   ): Promise<QuestionDocument> {
     const raiseQuestionDto: RaiseQuestionDto =
-      this.generateraiseQuestionDto(override);
+      this.generateRaiseQuestionDto(override);
     return await this.questionService.raiseQuestion(raiseQuestionDto);
   }
 
