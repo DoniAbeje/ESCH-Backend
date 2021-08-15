@@ -55,17 +55,17 @@ export class QaTestHelperService {
     return await this.questionService.raiseQuestion(raiseQuestionDto);
   }
 
-  getResponse(
+  getQuestionResponse(
     question: QuestionDocument | QuestionDocument[],
     user: UserDocument,
   ) {
     if (Array.isArray(question)) {
-      return question.map((q) => this.getSingleResponse(q, user));
+      return question.map((q) => this.getSingleQuestionResponse(q, user));
     }
-    return this.getSingleResponse(question, user);
+    return this.getSingleQuestionResponse(question, user);
   }
 
-  getSingleResponse(
+  private getSingleQuestionResponse(
     questionDocument: QuestionDocument,
     userDocument: UserDocument,
   ) {

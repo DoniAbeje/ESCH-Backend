@@ -104,7 +104,7 @@ describe('QA Module (e2e)', () => {
       const { body } = await request(app.getHttpServer())
         .get(baseUrl)
         .expect(HttpStatus.OK);
-      const expectedResponse = qaTestHelper.getResponse(questions, user);
+      const expectedResponse = qaTestHelper.getQuestionResponse(questions, user);
       expect(body).toEqual(expectedResponse);
     });
 
