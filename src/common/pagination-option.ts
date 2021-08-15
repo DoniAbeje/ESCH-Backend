@@ -2,7 +2,11 @@ export class PaginationOption {
   offset: number;
   limit: number;
 
-  static getDefault(): PaginationOption {
-    return { offset: 0, limit: 15 };
-  }
+  static readonly DEFAULT_LIMIT = 15;
+  static readonly DEFAULT_OFFSET = 0;
+
+  static readonly DEFAULT: PaginationOption = {
+    offset: PaginationOption.DEFAULT_OFFSET,
+    limit: PaginationOption.DEFAULT_OFFSET,
+  };
 }

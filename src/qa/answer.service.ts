@@ -20,7 +20,7 @@ export class AnswerService extends VoteService{
 
   async findByQuestionId(
     questionId: string,
-    paginationOption: PaginationOption = PaginationOption.getDefault(),
+    paginationOption: PaginationOption = PaginationOption.DEFAULT,
   ) {
     await this.questionService.exists(questionId);
     return (

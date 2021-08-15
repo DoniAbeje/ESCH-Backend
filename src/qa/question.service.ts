@@ -21,7 +21,7 @@ export class QuestionService extends VoteService {
   }
 
   async fetchAll(
-    paginationOption: PaginationOption = PaginationOption.getDefault(),
+    paginationOption: PaginationOption = PaginationOption.DEFAULT,
     tags: string[] = [],
   ) {
     return (
