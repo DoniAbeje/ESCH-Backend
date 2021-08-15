@@ -10,6 +10,7 @@ import { RaiseQuestionDto } from '../src/qa/dto/raise-question.dto';
 import { QuestionService } from '../src/qa/question.service';
 import { toJSON } from '../src/utils/utils';
 import { PaginationOption } from '../src/common/pagination-option';
+import { Pagination } from '../src/common/decorators/pagination.decorator';
 
 describe('QA Module (e2e)', () => {
   let app: INestApplication;
@@ -97,18 +98,84 @@ describe('QA Module (e2e)', () => {
     it('should return all questions', async () => {
       const user = await userTestHelper.createTestUser();
       const questions = await qaTestHelper.createTestQuestions(
-        user._id,
-        PaginationOption.getDefault().limit,
+        PaginationOption.DEFAULT_LIMIT,
+        { askedBy: user._id },
       );
 
       const { body } = await request(app.getHttpServer())
         .get(baseUrl)
         .expect(HttpStatus.OK);
-      const expectedResponse = qaTestHelper.getQuestionResponse(questions, user);
+      const expectedResponse = qaTestHelper.getQuestionResponse(
+        questions,
+        user,
+      );
       expect(body).toEqual(expectedResponse);
     });
 
-    // with pagination
-    // with tags filter
+    it('should return questions with default pagination', async () => {
+      const user = await userTestHelper.createTestUser();
+      const questions = await qaTestHelper.createTestQuestions(
+        PaginationOption.DEFAULT_LIMIT * 2,
+        { askedBy: user._id },
+      );
+
+      const { body } = await request(app.getHttpServer())
+        .get(baseUrl)
+        .expect(HttpStatus.OK);
+
+      const expectedResponse = qaTestHelper.getQuestionResponse(
+        questions.filter((_, index) => index < PaginationOption.DEFAULT_LIMIT),
+        user,
+      );
+
+      expect(body).toEqual(expectedResponse);
+    });
+
+    it('should return paginated questions with given limit and offset', async () => {
+      const user = await userTestHelper.createTestUser();
+      const questions = await qaTestHelper.createTestQuestions(
+        PaginationOption.DEFAULT_LIMIT,
+        { askedBy: user._id },
+      );
+
+      const { body } = await request(app.getHttpServer())
+        .get(`${baseUrl}?limit=5&offset=5`)
+        .expect(HttpStatus.OK);
+      const expectedResponse = qaTestHelper.getQuestionResponse(
+        questions.filter((_, index) => index >= 5 && index < 10),
+        user,
+      );
+
+      expect(body).toEqual(expectedResponse);
+    });
+
+    it('should return questions filterd by tags', async () => {
+      const user = await userTestHelper.createTestUser();
+      const mathEasyQuestions = await qaTestHelper.createTestQuestions(10, {
+        askedBy: user._id,
+        tags: ['math', '11th', 'easy'],
+      });
+
+      const mathHardQuestions = await qaTestHelper.createTestQuestions(10, {
+        askedBy: user._id,
+        tags: ['math', '11th', 'hard'],
+      });
+
+      await qaTestHelper.createTestQuestions(10, {
+        askedBy: user._id,
+        tags: ['physics', '11th'],
+      });
+
+      const { body } = await request(app.getHttpServer())
+        .get(`${baseUrl}?tags=math&tags=11th&limit=25`)
+        .expect(HttpStatus.OK);
+
+      const expectedResponse = qaTestHelper.getQuestionResponse(
+        [...mathEasyQuestions, ...mathHardQuestions],
+        user,
+      );
+
+      expect(body).toEqual(expectedResponse);
+    });
   });
 });

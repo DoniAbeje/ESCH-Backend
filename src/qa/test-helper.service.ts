@@ -37,12 +37,12 @@ export class QaTestHelperService {
   }
 
   async createTestQuestions(
-    askedBy: string,
     amount: number,
+    raiseQuestionDto: Partial<RaiseQuestionDto> = {}
   ): Promise<QuestionDocument[]> {
     const questions = [];
     for (let index = 0; index < amount; index++) {
-      questions.push(await this.createTestQuestion({ askedBy }));
+      questions.push(await this.createTestQuestion(raiseQuestionDto));
     }
     return questions;
   }
