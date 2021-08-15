@@ -182,7 +182,6 @@ describe('QA Module (e2e)', () => {
   });
 
   describe('fetchSingleQuestions', () => {
-    // test non existing
     it('should reject with non existing id', async () => {
       const id = mongoose.Types.ObjectId();
       const { body } = await request(app.getHttpServer())
@@ -191,6 +190,19 @@ describe('QA Module (e2e)', () => {
 
       expect(body.exception).toEqual(QuestionDoesNotExistException.name);
     });
-    // success
+
+    it('should reject return single question details', async () => {
+      const user = await userTestHelper.createTestUser();
+      const question = await qaTestHelper.createTestQuestion({
+        askedBy: user._id,
+      });
+      const { body } = await request(app.getHttpServer())
+        .get(`${baseUrl}/${question._id}`)
+        .expect(HttpStatus.OK);
+
+      expect(body).toMatchObject(
+        qaTestHelper.getQuestionResponse(question, user),
+      );
+    });
   });
 });
