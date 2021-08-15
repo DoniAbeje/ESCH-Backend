@@ -70,27 +70,53 @@ export class QaController {
     );
   }
 
-  @PostAuth('/:questionId/upvote', 'Upvote Question')
-  async upvote(
+  @PostAuth('/:questionId/upvote', 'Upvote question')
+  async upvoteQuestion(
     @Param('questionId') questionId: string,
     @User('id') userId: string,
   ) {
     await this.questionService.upvote(questionId, userId);
   }
 
-  @PostAuth('/:questionId/downvote', 'Downvote Question')
-  async downvote(
+  @PostAuth('/:questionId/downvote', 'Downvote question')
+  async downvoteQuestion(
     @Param('questionId') questionId: string,
     @User('id') userId: string,
   ) {
     await this.questionService.downvote(questionId, userId);
   }
 
-  @PostAuth('/:questionId/cancel-vote', 'Cancel vote')
-  async cancelVote(
+  @PostAuth('/:questionId/cancel-vote', 'Cancel question vote')
+  async cancelQuestionVote(
     @Param('questionId') questionId: string,
     @User('id') userId: string,
   ) {
     await this.questionService.cancelVote(questionId, userId);
+  }
+
+  
+  @PostAuth('/answer/:answerId/upvote', 'Upvote answer')
+  async upvoteAnswer(
+    @Param('answerId') answerId: string,
+    @User('id') userId: string,
+  ) {
+    await this.answerService.upvote(answerId, userId);
+  }
+
+    
+  @PostAuth('/answer/:answerId/downvote', 'Downvote answer')
+  async downAnswer(
+    @Param('answerId') answerId: string,
+    @User('id') userId: string,
+  ) {
+    await this.answerService.downvote(answerId, userId);
+  }
+
+  @PostAuth('/answer/answerId:/cancel-vote', 'Cancel answer vote')
+  async cancelAnswerVote(
+    @Param('answerId') answerId: string,
+    @User('id') userId: string,
+  ) {
+    await this.answerService.cancelVote(answerId, userId);
   }
 }
