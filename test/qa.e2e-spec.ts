@@ -10,7 +10,9 @@ import { RaiseQuestionDto } from '../src/qa/dto/raise-question.dto';
 import { QuestionService } from '../src/qa/question.service';
 import { toJSON } from '../src/utils/utils';
 import { PaginationOption } from '../src/common/pagination-option';
-import { Pagination } from '../src/common/decorators/pagination.decorator';
+import * as mongoose from 'mongoose';
+import { identity } from 'rxjs';
+import { QuestionDoesNotExistException } from '../src/qa/exceptions/question-doesnot-exist.exception';
 
 describe('QA Module (e2e)', () => {
   let app: INestApplication;
@@ -177,5 +179,18 @@ describe('QA Module (e2e)', () => {
 
       expect(body).toEqual(expectedResponse);
     });
+  });
+
+  describe('fetchSingleQuestions', () => {
+    // test non existing
+    it('should reject with non existing id', async () => {
+      const id = mongoose.Types.ObjectId();
+      const { body } = await request(app.getHttpServer())
+        .get(`${baseUrl}/${id}`)
+        .expect(HttpStatus.NOT_FOUND);
+
+      expect(body.exception).toEqual(QuestionDoesNotExistException.name);
+    });
+    // success
   });
 });
