@@ -281,5 +281,30 @@ describe('QA Module (e2e)', () => {
       const expectedResponse = qaTestHelper.getAnswerResponse(answers, user);
       expect(body).toEqual(expectedResponse);
     });
+
+    it('should return answers with default pagination', async () => {
+      const user = await userTestHelper.createTestUser();
+      const question = await qaTestHelper.createTestQuestion({
+        askedBy: user._id,
+      });
+      const answers = await qaTestHelper.createTestAnswers(
+        PaginationOption.DEFAULT_LIMIT * 2,
+        {
+          answeredBy: user._id,
+          question: question._id,
+        },
+      );
+
+      const { body } = await request(app.getHttpServer())
+        .get(`${baseUrl}/${question._id}/answer`)
+        .expect(HttpStatus.OK);
+
+      const expectedResponse = qaTestHelper.getAnswerResponse(
+        answers.filter((_, index) => index < PaginationOption.DEFAULT_LIMIT),
+        user,
+      );
+
+      expect(body).toEqual(expectedResponse);
+    });
   });
 });
