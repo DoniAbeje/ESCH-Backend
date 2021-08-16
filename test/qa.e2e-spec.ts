@@ -306,5 +306,37 @@ describe('QA Module (e2e)', () => {
 
       expect(body).toEqual(expectedResponse);
     });
+
+    it('should return paginated answers with given limit and offset', async () => {
+      const user = await userTestHelper.createTestUser();
+      const question = await qaTestHelper.createTestQuestion({
+        askedBy: user._id,
+      });
+      const answers = await qaTestHelper.createTestAnswers(
+        PaginationOption.DEFAULT_LIMIT * 2,
+        {
+          answeredBy: user._id,
+          question: question._id,
+        },
+      );
+
+      const limit = 5;
+      const offset = 5;
+
+      const { body } = await request(app.getHttpServer())
+        .get(
+          `${baseUrl}/${question._id}/answer?limit=${limit}&offset=${offset}`,
+        )
+        .expect(HttpStatus.OK);
+
+      const expectedResponse = qaTestHelper.getAnswerResponse(
+        answers.filter(
+          (_, index) => index >= offset && index <= offset + limit,
+        ),
+        user,
+      );
+
+      expect(body).toEqual(expectedResponse);
+    });
   });
 });
