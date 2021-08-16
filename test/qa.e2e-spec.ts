@@ -232,7 +232,7 @@ describe('QA Module (e2e)', () => {
       expect(body.message).toEqual(expectedMessage);
     });
 
-    it.only('should answer a question successfully', async () => {
+    it('should answer a question successfully', async () => {
       const user = await userTestHelper.createTestUser();
       const token = await authService.signToken(user);
       const question = await qaTestHelper.createTestQuestion({
@@ -331,7 +331,7 @@ describe('QA Module (e2e)', () => {
 
       const expectedResponse = qaTestHelper.getAnswerResponse(
         answers.filter(
-          (_, index) => index >= offset && index <= offset + limit,
+          (_, index) => index >= offset && index < offset + limit,
         ),
         user,
       );
