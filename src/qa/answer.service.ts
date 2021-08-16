@@ -34,7 +34,11 @@ export class AnswerService extends VoteService{
 
   async answerQuestion(answerQuestionDto: AnswerQuestionDto) {
     await this.questionService.exists(answerQuestionDto.question);
-    return this.answerModel.create(answerQuestionDto);
+    return await this.answerModel.create(answerQuestionDto);
+  }
+
+  async exists(answerId: string){
+    return this.answerModel.findById(answerId);
   }
 
   async exists(id: string, throwException = true) {

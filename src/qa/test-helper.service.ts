@@ -8,6 +8,7 @@ import * as faker from 'faker';
 import { QuestionService } from './question.service';
 import { UserDocument } from '../user/schemas/user.schema';
 import { toJSON } from '../utils/utils';
+import { AnswerQuestionDto } from './dto/answer-question.dto';
 
 @Injectable()
 export class QaTestHelperService {
@@ -36,6 +37,16 @@ export class QaTestHelperService {
     return { ..._default, ...override };
   }
 
+  generateAnswerQuestionDto(
+    override: Partial<AnswerQuestionDto> = {},
+  ): AnswerQuestionDto {
+    const _default: AnswerQuestionDto = {
+      answer: faker.lorem.sentence(),
+      answeredBy: '',
+      question: ''
+    };
+    return { ..._default, ...override };
+  }
   async createTestQuestions(
     amount: number,
     raiseQuestionDto: Partial<RaiseQuestionDto> = {}

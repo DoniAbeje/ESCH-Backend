@@ -13,6 +13,8 @@ import { PaginationOption } from '../src/common/pagination-option';
 import * as mongoose from 'mongoose';
 import { identity } from 'rxjs';
 import { QuestionDoesNotExistException } from '../src/qa/exceptions/question-doesnot-exist.exception';
+import { AnswerQuestionDto } from '../src/qa/dto/answer-question.dto';
+import { AnswerService } from '../src/qa/answer.service';
 
 describe('QA Module (e2e)', () => {
   let app: INestApplication;
@@ -20,6 +22,7 @@ describe('QA Module (e2e)', () => {
   let userTestHelper: UserTestHelperService;
   let authService: AuthService;
   let questionService: QuestionService;
+  let answerService: AnswerService;
   const baseUrl = '/question';
 
   beforeAll(async () => {
@@ -34,6 +37,7 @@ describe('QA Module (e2e)', () => {
     );
     authService = moduleFixture.get<AuthService>(AuthService);
     questionService = moduleFixture.get<QuestionService>(QuestionService);
+    answerService = moduleFixture.get<AnswerService>(AnswerService);
     configApp(app);
 
     await app.init();
@@ -96,7 +100,6 @@ describe('QA Module (e2e)', () => {
   });
 
   describe('fetchAllQuestions', () => {
-    // without filter
     it('should return all questions', async () => {
       const user = await userTestHelper.createTestUser();
       const questions = await qaTestHelper.createTestQuestions(
@@ -202,6 +205,57 @@ describe('QA Module (e2e)', () => {
 
       expect(body).toMatchObject(
         qaTestHelper.getQuestionResponse(question, user),
+      );
+    });
+  });
+
+  describe('answerQuestion', () => {
+    it('should reject with unauthenticated user', async () => {
+      await request(app.getHttpServer())
+        .post(`${baseUrl}/id/answer`)
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+
+    it('should reject with input validation', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const question = await qaTestHelper.createTestQuestion({
+        askedBy: user._id,
+      });
+      const expectedMessage = ['answer must be a string'];
+
+      const { body } = await request(app.getHttpServer())
+        .post(`${baseUrl}/${question._id}/answer`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(body.message).toEqual(expectedMessage);
+    });
+
+    it.only('should answer a question successfully', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const question = await qaTestHelper.createTestQuestion({
+        askedBy: user._id,
+      });
+      const answerQuestionDto: AnswerQuestionDto =
+        qaTestHelper.generateAnswerQuestionDto();
+
+      const { body } = await request(app.getHttpServer())
+        .post(`${baseUrl}/${question._id}/answer`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(answerQuestionDto)
+        .expect(HttpStatus.CREATED);
+
+      const savedAnswer = await answerService.exists(body._id);
+
+      answerQuestionDto.answeredBy = toJSON(user)._id;
+      answerQuestionDto.question = toJSON(question)._id;
+      const savedAnswerJson = toJSON(savedAnswer);
+
+      expect(body).toEqual({ _id: savedAnswerJson._id });
+      expect(savedAnswerJson).toMatchObject(
+        expect.objectContaining(answerQuestionDto),
       );
     });
   });
