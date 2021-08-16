@@ -338,5 +338,13 @@ describe('QA Module (e2e)', () => {
 
       expect(body).toEqual(expectedResponse);
     });
+
+    it('shoul reject with non existing questionId', async () => {
+      const questionId = mongoose.Types.ObjectId();
+      const { body } = await request(app.getHttpServer())
+        .get(`${baseUrl}/${questionId}/answer`)
+        .expect(HttpStatus.NOT_FOUND);
+      expect(body.exception).toEqual(QuestionDoesNotExistException.name);
+    });
   });
 });
