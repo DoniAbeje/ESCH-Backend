@@ -259,4 +259,27 @@ describe('QA Module (e2e)', () => {
       );
     });
   });
+
+  describe('fetchAnswersForSingleQuestions', () => {
+    it('should return all answers', async () => {
+      const user = await userTestHelper.createTestUser();
+      const question = await qaTestHelper.createTestQuestion({
+        askedBy: user._id,
+      });
+      const answers = await qaTestHelper.createTestAnswers(
+        PaginationOption.DEFAULT_LIMIT,
+        {
+          answeredBy: user._id,
+          question: question._id,
+        },
+      );
+
+      const { body } = await request(app.getHttpServer())
+        .get(`${baseUrl}/${question._id}/answer`)
+        .expect(HttpStatus.OK);
+
+      const expectedResponse = qaTestHelper.getAnswerResponse(answers, user);
+      expect(body).toEqual(expectedResponse);
+    });
+  });
 });

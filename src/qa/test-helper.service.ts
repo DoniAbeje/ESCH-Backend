@@ -9,6 +9,7 @@ import { QuestionService } from './question.service';
 import { UserDocument } from '../user/schemas/user.schema';
 import { toJSON } from '../utils/utils';
 import { AnswerQuestionDto } from './dto/answer-question.dto';
+import { AnswerService } from './answer.service';
 
 @Injectable()
 export class QaTestHelperService {
@@ -16,6 +17,7 @@ export class QaTestHelperService {
     @InjectModel(Question.name) private questionModel: Model<QuestionDocument>,
     @InjectModel(Answer.name) private answerModel: Model<AnswerDocument>,
     private questionService: QuestionService,
+    private answerService: AnswerService,
   ) {}
 
   async clearQuestions() {
@@ -43,19 +45,30 @@ export class QaTestHelperService {
     const _default: AnswerQuestionDto = {
       answer: faker.lorem.sentence(),
       answeredBy: '',
-      question: ''
+      question: '',
     };
     return { ..._default, ...override };
   }
   async createTestQuestions(
     amount: number,
-    raiseQuestionDto: Partial<RaiseQuestionDto> = {}
+    raiseQuestionDto: Partial<RaiseQuestionDto> = {},
   ): Promise<QuestionDocument[]> {
     const questions = [];
     for (let index = 0; index < amount; index++) {
       questions.push(await this.createTestQuestion(raiseQuestionDto));
     }
     return questions;
+  }
+
+  async createTestAnswers(
+    amount: number,
+    answerQuestionDto: Partial<AnswerQuestionDto> = {},
+  ): Promise<AnswerDocument[]> {
+    const answers = [];
+    for (let index = 0; index < amount; index++) {
+      answers.push(await this.createTestAnswer(answerQuestionDto));
+    }
+    return answers;
   }
 
   async createTestQuestion(
@@ -66,6 +79,14 @@ export class QaTestHelperService {
     return await this.questionService.raiseQuestion(raiseQuestionDto);
   }
 
+  async createTestAnswer(
+    override: Partial<AnswerQuestionDto> = {},
+  ): Promise<AnswerDocument> {
+    const answerQuestionDto: AnswerQuestionDto =
+      this.generateAnswerQuestionDto(override);
+    return await this.answerService.answerQuestion(answerQuestionDto);
+  }
+
   getQuestionResponse(
     question: QuestionDocument | QuestionDocument[],
     user: UserDocument,
@@ -74,6 +95,16 @@ export class QaTestHelperService {
       return question.map((q) => this.getSingleQuestionResponse(q, user));
     }
     return this.getSingleQuestionResponse(question, user);
+  }
+
+  getAnswerResponse(
+    answer: AnswerDocument | AnswerDocument[],
+    user: UserDocument,
+  ) {
+    if (Array.isArray(answer)) {
+      return answer.map((a) => this.getSingleAnswerResponse(a, user));
+    }
+    return this.getSingleAnswerResponse(answer, user);
   }
 
   private getSingleQuestionResponse(
@@ -94,5 +125,25 @@ export class QaTestHelperService {
 
     const { _id, question, createdAt, tags } = _question;
     return { _id, question, createdAt, tags, askedBy, upvotes, downvotes };
+  }
+
+  private getSingleAnswerResponse(
+    answerDocument: AnswerDocument,
+    userDocument: UserDocument,
+  ) {
+    const userJson: LeanDocument<UserDocument> = toJSON(userDocument);
+    const answerJson: LeanDocument<AnswerDocument> = toJSON(answerDocument);
+
+    const answeredBy = {
+      _id: userJson._id,
+      firstName: userJson.firstName,
+      lastName: userJson.lastName,
+      profilePicture: userJson.profilePicture,
+    };
+    const upvotes = answerJson.upvotes.length;
+    const downvotes = answerJson.downvotes.length;
+
+    const { _id, answer, question, createdAt } = answerJson;
+    return { _id, answer, question, createdAt, answeredBy, upvotes, downvotes };
   }
 }
