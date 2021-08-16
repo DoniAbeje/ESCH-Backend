@@ -7,6 +7,6 @@ export class PaginationOption {
 
   static readonly DEFAULT: PaginationOption = {
     offset: PaginationOption.DEFAULT_OFFSET,
-    limit: PaginationOption.DEFAULT_OFFSET,
+    limit: PaginationOption.DEFAULT_LIMIT,
   };
 }
