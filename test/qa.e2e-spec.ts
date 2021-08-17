@@ -11,7 +11,6 @@ import { QuestionService } from '../src/qa/question.service';
 import { toJSON } from '../src/utils/utils';
 import { PaginationOption } from '../src/common/pagination-option';
 import * as mongoose from 'mongoose';
-import { identity } from 'rxjs';
 import { QuestionDoesNotExistException } from '../src/qa/exceptions/question-doesnot-exist.exception';
 import { AnswerQuestionDto } from '../src/qa/dto/answer-question.dto';
 import { AnswerService } from '../src/qa/answer.service';
