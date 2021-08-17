@@ -650,4 +650,98 @@ describe('QA Module (e2e)', () => {
         .expect(HttpStatus.UNAUTHORIZED);
     });
   });
+
+  describe('downvoteAnswer', () => {
+    it('should downvote answer that is not voted before', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const question = await qaTestHelper.createTestQuestion({
+        askedBy: user._id,
+      });
+      const answer = await qaTestHelper.createTestAnswer({
+        answeredBy: user._id,
+        question: question._id,
+      });
+
+      await request(app.getHttpServer())
+        .post(`${baseUrl}/answer/${answer._id}/downvote`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HttpStatus.CREATED);
+
+      const downvotedAnswer = await answerService.exists(answer._id);
+      const downvotedAnswerJson = toJSON(downvotedAnswer);
+
+      expect(downvotedAnswerJson.downvotes).toEqual([toJSON(user)._id]);
+      expect(downvotedAnswerJson.upvotes).toHaveLength(0);
+    });
+
+    it('should downvote answer that is voted before', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const question = await qaTestHelper.createTestQuestion({
+        askedBy: user._id,
+      });
+      const answer = await qaTestHelper.createTestAnswer({
+        answeredBy: user._id,
+        question: question._id,
+      });
+      await answerService.downvote(answer._id, user._id);
+
+      await request(app.getHttpServer())
+        .post(`${baseUrl}/answer/${answer._id}/downvote`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HttpStatus.CREATED);
+
+      const downvotedAnswer = await answerService.exists(answer._id);
+      const downvotedAnswerJson = toJSON(downvotedAnswer);
+
+      expect(downvotedAnswerJson.downvotes).toEqual([toJSON(user)._id]);
+      expect(downvotedAnswerJson.upvotes).toHaveLength(0);
+    });
+
+    it('should downvote answer that is upvoted before', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const question = await qaTestHelper.createTestQuestion({
+        askedBy: user._id,
+      });
+      const answer = await qaTestHelper.createTestAnswer({
+        answeredBy: user._id,
+        question: question._id,
+      });
+      await answerService.upvote(answer._id, user._id);
+
+      await request(app.getHttpServer())
+        .post(`${baseUrl}/answer/${answer._id}/downvote`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HttpStatus.CREATED);
+
+      const downvotedAnswer = await answerService.exists(answer._id);
+      const downvotedAnswerJson = toJSON(downvotedAnswer);
+
+      expect(downvotedAnswerJson.downvotes).toEqual([toJSON(user)._id]);
+      expect(downvotedAnswerJson.upvotes).toHaveLength(0);
+    });
+
+    it('should reject with non existing id', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const answerId = mongoose.Types.ObjectId();
+
+      const { body } = await request(app.getHttpServer())
+        .post(`${baseUrl}/answer/${answerId}/downvote`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HttpStatus.NOT_FOUND);
+
+      expect(body.exception).toEqual(AnswerDoesNotExistException.name);
+    });
+
+    it('should reject with unauthenticated user', async () => {
+      const answerId = mongoose.Types.ObjectId();
+
+      await request(app.getHttpServer())
+        .post(`${baseUrl}/answer/${answerId}/downvote`)
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+  });
 });
