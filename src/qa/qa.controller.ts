@@ -112,7 +112,7 @@ export class QaController {
     await this.answerService.downvote(answerId, userId);
   }
 
-  @PostAuth('/answer/answerId:/cancel-vote', 'Cancel answer vote')
+  @PostAuth('/answer/:answerId/cancel-vote', 'Cancel answer vote')
   async cancelAnswerVote(
     @Param('answerId') answerId: string,
     @User('id') userId: string,

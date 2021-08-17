@@ -744,4 +744,58 @@ describe('QA Module (e2e)', () => {
         .expect(HttpStatus.UNAUTHORIZED);
     });
   });
+
+  describe('cancelAnswerVote', () => {
+    it('should cancel vote that is downvoted before', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const question = await qaTestHelper.createTestQuestion({
+        askedBy: user._id,
+      });
+      let answer = await qaTestHelper.createTestAnswer({
+        answeredBy: user._id,
+        question: question._id,
+      });
+      await answerService.downvote(answer._id, user._id);
+      answer = await answerService.exists(answer._id);
+      expect(toJSON(answer).downvotes).toEqual([toJSON(user)._id]);
+
+      await request(app.getHttpServer())
+        .post(`${baseUrl}/answer/${answer._id}/cancel-vote`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HttpStatus.CREATED);
+
+      const updatedAnswer = await answerService.exists(answer._id);
+      const updatedAnswerJson = toJSON(updatedAnswer);
+
+      expect(updatedAnswerJson.downvotes).toHaveLength(0);
+      expect(updatedAnswerJson.upvotes).toHaveLength(0);
+    });
+
+    it('should cancel vote that is upvoted before', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const question = await qaTestHelper.createTestQuestion({
+        askedBy: user._id,
+      });
+      let answer = await qaTestHelper.createTestAnswer({
+        answeredBy: user._id,
+        question: question._id,
+      });
+      await answerService.upvote(answer._id, user._id);
+      answer = await answerService.exists(answer._id);
+      expect(toJSON(answer).upvotes).toEqual([toJSON(user)._id]);
+
+      await request(app.getHttpServer())
+        .post(`${baseUrl}/answer/${answer._id}/cancel-vote`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HttpStatus.CREATED);
+
+      const updatedAnswer = await answerService.exists(answer._id);
+      const updatedAnswerJson = toJSON(updatedAnswer);
+
+      expect(updatedAnswerJson.downvotes).toHaveLength(0);
+      expect(updatedAnswerJson.upvotes).toHaveLength(0);
+    });
+  });
 });
