@@ -15,6 +15,7 @@ import { identity } from 'rxjs';
 import { QuestionDoesNotExistException } from '../src/qa/exceptions/question-doesnot-exist.exception';
 import { AnswerQuestionDto } from '../src/qa/dto/answer-question.dto';
 import { AnswerService } from '../src/qa/answer.service';
+import { AnswerDoesNotExistException } from '../src/qa/exceptions/answer-doesnot-exist.exception';
 
 describe('QA Module (e2e)', () => {
   let app: INestApplication;
@@ -553,6 +554,100 @@ describe('QA Module (e2e)', () => {
 
       expect(updatedQuestionJson.downvotes).toHaveLength(0);
       expect(updatedQuestionJson.upvotes).toHaveLength(0);
+    });
+  });
+
+  describe('upvoteAnswer', () => {
+    it('should upvote answer that is not voted before', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const question = await qaTestHelper.createTestQuestion({
+        askedBy: user._id,
+      });
+      const answer = await qaTestHelper.createTestAnswer({
+        answeredBy: user._id,
+        question: question._id,
+      });
+
+      await request(app.getHttpServer())
+        .post(`${baseUrl}/answer/${answer._id}/upvote`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HttpStatus.CREATED);
+
+      const upvotedAnswer = await answerService.exists(answer._id);
+      const upvotedAnswerJson = toJSON(upvotedAnswer);
+
+      expect(upvotedAnswerJson.upvotes).toEqual([toJSON(user)._id]);
+      expect(upvotedAnswerJson.downvotes).toHaveLength(0);
+    });
+
+    it('should upvote answer that is voted before', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const question = await qaTestHelper.createTestQuestion({
+        askedBy: user._id,
+      });
+      const answer = await qaTestHelper.createTestAnswer({
+        answeredBy: user._id,
+        question: question._id,
+      });
+      await answerService.upvote(answer._id, user._id);
+
+      await request(app.getHttpServer())
+        .post(`${baseUrl}/answer/${answer._id}/upvote`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HttpStatus.CREATED);
+
+      const upvotedAnswer = await answerService.exists(answer._id);
+      const upvotedAnswerJson = toJSON(upvotedAnswer);
+
+      expect(upvotedAnswerJson.upvotes).toEqual([toJSON(user)._id]);
+      expect(upvotedAnswerJson.downvotes).toHaveLength(0);
+    });
+
+    it('should upvote answer that is downvoted before', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const question = await qaTestHelper.createTestQuestion({
+        askedBy: user._id,
+      });
+      const answer = await qaTestHelper.createTestAnswer({
+        answeredBy: user._id,
+        question: question._id,
+      });
+      await answerService.downvote(answer._id, user._id);
+
+      await request(app.getHttpServer())
+        .post(`${baseUrl}/answer/${answer._id}/upvote`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HttpStatus.CREATED);
+
+      const upvotedAnswer = await answerService.exists(answer._id);
+      const upvotedAnswerJson = toJSON(upvotedAnswer);
+
+      expect(upvotedAnswerJson.upvotes).toEqual([toJSON(user)._id]);
+      expect(upvotedAnswerJson.downvotes).toHaveLength(0);
+    });
+
+    it('should reject with non existing id', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const answerId = mongoose.Types.ObjectId();
+
+      const { body } = await request(app.getHttpServer())
+        .post(`${baseUrl}/answer/${answerId}/upvote`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HttpStatus.NOT_FOUND);
+
+      expect(body.exception).toEqual(AnswerDoesNotExistException.name);
+    });
+
+    it('should reject with unauthenticated user', async () => {
+      const answerId = mongoose.Types.ObjectId();
+
+      await request(app.getHttpServer())
+        .post(`${baseUrl}/answer/${answerId}/upvote`)
+        .expect(HttpStatus.UNAUTHORIZED);
     });
   });
 });
