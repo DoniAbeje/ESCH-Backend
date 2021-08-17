@@ -22,7 +22,7 @@ export class AuthService {
   }
 
   async signToken(user: UserDocument) {
-    const payload = { phone: user.phone, id: user._id };
+    const payload = { phone: user.phone, id: user._id, role: user.role };
     return this.jwtService.sign(payload);
   }
 }
