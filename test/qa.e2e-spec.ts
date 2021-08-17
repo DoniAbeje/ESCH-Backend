@@ -330,9 +330,7 @@ describe('QA Module (e2e)', () => {
         .expect(HttpStatus.OK);
 
       const expectedResponse = qaTestHelper.getAnswerResponse(
-        answers.filter(
-          (_, index) => index >= offset && index < offset + limit,
-        ),
+        answers.filter((_, index) => index >= offset && index < offset + limit),
         user,
       );
 
@@ -345,6 +343,90 @@ describe('QA Module (e2e)', () => {
         .get(`${baseUrl}/${questionId}/answer`)
         .expect(HttpStatus.NOT_FOUND);
       expect(body.exception).toEqual(QuestionDoesNotExistException.name);
+    });
+  });
+
+  describe('upvoteQuestion', () => {
+
+    it('should upvote question that is not voted before', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const question = await qaTestHelper.createTestQuestion({
+        askedBy: user._id,
+      });
+
+      await request(app.getHttpServer())
+        .post(`${baseUrl}/${question._id}/upvote`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HttpStatus.CREATED);
+
+      const upvotedQuestion = await questionService.exists(question._id);
+      const upvotedQuestionJson = toJSON(upvotedQuestion);
+
+      expect(upvotedQuestionJson.upvotes).toEqual([toJSON(user)._id]);
+      expect(upvotedQuestionJson.downvotes).toHaveLength(0);
+    });
+
+
+    it('should upvote question that is voted before', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const question = await qaTestHelper.createTestQuestion({
+        askedBy: user._id,
+      });
+      await questionService.upvote(question._id, user._id);
+
+      await request(app.getHttpServer())
+        .post(`${baseUrl}/${question._id}/upvote`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HttpStatus.CREATED);
+
+      const upvotedQuestion = await questionService.exists(question._id);
+      const upvotedQuestionJson = toJSON(upvotedQuestion);
+
+      expect(upvotedQuestionJson.upvotes).toEqual([toJSON(user)._id]);
+      expect(upvotedQuestionJson.downvotes).toHaveLength(0);
+    });
+
+    it('should upvote question that is downvoted before', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const question = await qaTestHelper.createTestQuestion({
+        askedBy: user._id,
+      });
+      await questionService.downvote(question._id, user._id);
+
+      await request(app.getHttpServer())
+        .post(`${baseUrl}/${question._id}/upvote`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HttpStatus.CREATED);
+
+      const upvotedQuestion = await questionService.exists(question._id);
+      const upvotedQuestionJson = toJSON(upvotedQuestion);
+
+      expect(upvotedQuestionJson.upvotes).toEqual([toJSON(user)._id]);
+      expect(upvotedQuestionJson.downvotes).toHaveLength(0);
+    });
+
+    it('should reject with non existing id', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const questionId = mongoose.Types.ObjectId();
+
+      const { body } = await request(app.getHttpServer())
+        .post(`${baseUrl}/${questionId}/upvote`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HttpStatus.NOT_FOUND);
+
+      expect(body.exception).toEqual(QuestionDoesNotExistException.name);
+    });
+
+    it('should reject with unauthenticated user', async () => {
+      const questionId = mongoose.Types.ObjectId();
+
+      const { body } = await request(app.getHttpServer())
+        .post(`${baseUrl}/${questionId}/upvote`)
+        .expect(HttpStatus.UNAUTHORIZED);
     });
   });
 });
