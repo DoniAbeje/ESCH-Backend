@@ -12,7 +12,7 @@ import { DuplicateChoiceValueFoundException } from './exceptions/duplicate-choic
 import { AnswerKeyNotPartOfChoiceException } from './exceptions/answer-key-not-part-of-choice.exception';
 import { UpdateExamQuestionDto } from './dto/update-exam-question.dto';
 import { ExamQuestionDoesNotExistException } from './exceptions/examQuestion-doesnot-exist.exception';
-import { DuplicateQuestionFoundException } from './exceptions/duplicate-question-found.exception';
+import { QuestionAlreadyAddedException } from './exceptions/question-already-added.exception';
 
 @Injectable()
 export class ExamQuestionService {
@@ -22,7 +22,9 @@ export class ExamQuestionService {
     private examService: ExamService,
   ) {}
 
-  async addQuestionToExam(addExamQuestionDto: AddExamQuestionDto) {
+  async checkForDuplicateAndCorrectAnswer(
+    addExamQuestionDto: AddExamQuestionDto,
+  ) {
     // check if keys and choices are unique
     const keySet = new Set(),
       choiceSet = new Set();
@@ -47,7 +49,8 @@ export class ExamQuestionService {
     if (!correctAnswerKeyFound) {
       throw new AnswerKeyNotPartOfChoiceException();
     }
-
+  }
+  async existsByQuestionAndExamId(addExamQuestionDto) {
     // check if exam with the given exam id exists
     await this.examService.exists(addExamQuestionDto.examId);
 
@@ -58,8 +61,13 @@ export class ExamQuestionService {
     });
 
     if (examQuestion) {
-      throw new DuplicateQuestionFoundException();
+      throw new QuestionAlreadyAddedException();
     }
+  }
+  async addQuestionToExam(addExamQuestionDto: AddExamQuestionDto) {
+    await this.checkForDuplicateAndCorrectAnswer(addExamQuestionDto);
+
+    await this.existsByQuestionAndExamId(addExamQuestionDto);
 
     return this.examQuestionModel.create(addExamQuestionDto);
   }
