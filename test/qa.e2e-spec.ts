@@ -347,7 +347,6 @@ describe('QA Module (e2e)', () => {
   });
 
   describe('upvoteQuestion', () => {
-
     it('should upvote question that is not voted before', async () => {
       const user = await userTestHelper.createTestUser();
       const token = await authService.signToken(user);
@@ -366,7 +365,6 @@ describe('QA Module (e2e)', () => {
       expect(upvotedQuestionJson.upvotes).toEqual([toJSON(user)._id]);
       expect(upvotedQuestionJson.downvotes).toHaveLength(0);
     });
-
 
     it('should upvote question that is voted before', async () => {
       const user = await userTestHelper.createTestUser();
@@ -426,6 +424,88 @@ describe('QA Module (e2e)', () => {
 
       const { body } = await request(app.getHttpServer())
         .post(`${baseUrl}/${questionId}/upvote`)
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+  });
+
+  describe('downvoteQuestion', () => {
+    it('should downvote question that is not voted before', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const question = await qaTestHelper.createTestQuestion({
+        askedBy: user._id,
+      });
+
+      await request(app.getHttpServer())
+        .post(`${baseUrl}/${question._id}/downvote`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HttpStatus.CREATED);
+
+      const downvotedQuestion = await questionService.exists(question._id);
+      const downvotedQuestionJson = toJSON(downvotedQuestion);
+
+      expect(downvotedQuestionJson.downvotes).toEqual([toJSON(user)._id]);
+      expect(downvotedQuestionJson.upvotes).toHaveLength(0);
+    });
+
+    it('should downvote question that is downvoted before', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const question = await qaTestHelper.createTestQuestion({
+        askedBy: user._id,
+      });
+      await questionService.downvote(question._id, user._id);
+
+      await request(app.getHttpServer())
+        .post(`${baseUrl}/${question._id}/downvote`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HttpStatus.CREATED);
+
+      const downvotedQuestion = await questionService.exists(question._id);
+      const downvotedQuestionJson = toJSON(downvotedQuestion);
+
+      expect(downvotedQuestionJson.downvotes).toEqual([toJSON(user)._id]);
+      expect(downvotedQuestionJson.upvotes).toHaveLength(0);
+    });
+
+    it('should downvote question that is upvoted before', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const question = await qaTestHelper.createTestQuestion({
+        askedBy: user._id,
+      });
+      await questionService.upvote(question._id, user._id);
+
+      await request(app.getHttpServer())
+        .post(`${baseUrl}/${question._id}/downvote`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HttpStatus.CREATED);
+
+      const downvotedQuestion = await questionService.exists(question._id);
+      const downvotedQuestionJson = toJSON(downvotedQuestion);
+
+      expect(downvotedQuestionJson.downvotes).toEqual([toJSON(user)._id]);
+      expect(downvotedQuestionJson.upvotes).toHaveLength(0);
+    });
+
+    it('should reject with non existing id', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const questionId = mongoose.Types.ObjectId();
+
+      const { body } = await request(app.getHttpServer())
+        .post(`${baseUrl}/${questionId}/downvote`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HttpStatus.NOT_FOUND);
+
+      expect(body.exception).toEqual(QuestionDoesNotExistException.name);
+    });
+
+    it('should reject with unauthenticated user', async () => {
+      const questionId = mongoose.Types.ObjectId();
+
+      const { body } = await request(app.getHttpServer())
+        .post(`${baseUrl}/${questionId}/downvote`)
         .expect(HttpStatus.UNAUTHORIZED);
     });
   });
