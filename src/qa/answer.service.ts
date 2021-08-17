@@ -37,10 +37,6 @@ export class AnswerService extends VoteService{
     return await this.answerModel.create(answerQuestionDto);
   }
 
-  async exists(answerId: string){
-    return this.answerModel.findById(answerId);
-  }
-
   async exists(id: string, throwException = true) {
     const answer = await this.answerModel.findById(id);
     if (!answer && throwException) {
