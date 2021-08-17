@@ -3,9 +3,9 @@ import { Document } from 'mongoose';
 
 export type UserDocument = User & Document;
 export enum UserRole {
-  ADMIN,
-  INSTRUCTOR,
-  STUDENT,
+  ADMIN = 0,
+  STUDENT = 1,
+  INSTRUCTOR = 2,
 }
 
 @Schema()
