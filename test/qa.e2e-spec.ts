@@ -509,4 +509,50 @@ describe('QA Module (e2e)', () => {
         .expect(HttpStatus.UNAUTHORIZED);
     });
   });
+
+  describe('cancelQuestionVote', () => {
+    it('should cancel vote that is downvoted before', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      let question = await qaTestHelper.createTestQuestion({
+        askedBy: user._id,
+      });
+      await questionService.downvote(question._id, user._id);
+      question = await questionService.exists(question._id);
+      expect(toJSON(question).downvotes).toEqual([toJSON(user)._id]);
+
+      await request(app.getHttpServer())
+        .post(`${baseUrl}/${question._id}/cancel-vote`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HttpStatus.CREATED);
+
+      const updatedQuestion = await questionService.exists(question._id);
+      const updatedQuestionJson = toJSON(updatedQuestion);
+
+      expect(updatedQuestionJson.downvotes).toHaveLength(0);
+      expect(updatedQuestionJson.upvotes).toHaveLength(0);
+    });
+
+    it('should cancel vote that is upvoted before', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      let question = await qaTestHelper.createTestQuestion({
+        askedBy: user._id,
+      });
+      await questionService.upvote(question._id, user._id);
+      question = await questionService.exists(question._id);
+      expect(toJSON(question).upvotes).toEqual([toJSON(user)._id]);
+
+      await request(app.getHttpServer())
+        .post(`${baseUrl}/${question._id}/cancel-vote`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HttpStatus.CREATED);
+
+      const updatedQuestion = await questionService.exists(question._id);
+      const updatedQuestionJson = toJSON(updatedQuestion);
+
+      expect(updatedQuestionJson.downvotes).toHaveLength(0);
+      expect(updatedQuestionJson.upvotes).toHaveLength(0);
+    });
+  });
 });
