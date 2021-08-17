@@ -12,6 +12,7 @@ import { DuplicateChoiceValueFoundException } from './exceptions/duplicate-choic
 import { AnswerKeyNotPartOfChoiceException } from './exceptions/answer-key-not-part-of-choice.exception';
 import { UpdateExamQuestionDto } from './dto/update-exam-question.dto';
 import { ExamQuestionDoesNotExistException } from './exceptions/examQuestion-doesnot-exist.exception';
+import { DuplicateQuestionFoundException } from './exceptions/duplicate-question-found.exception';
 
 @Injectable()
 export class ExamQuestionService {
@@ -47,10 +48,18 @@ export class ExamQuestionService {
       throw new AnswerKeyNotPartOfChoiceException();
     }
 
-    // check if the question is unique for this exam
-
     // check if exam with the given exam id exists
     await this.examService.exists(addExamQuestionDto.examId);
+
+    // check if the question is unique for this exam
+    const examQuestion = await this.examQuestionModel.findOne({
+      examId: addExamQuestionDto.examId,
+      question: addExamQuestionDto.question,
+    });
+
+    if (examQuestion) {
+      throw new DuplicateQuestionFoundException();
+    }
 
     return this.examQuestionModel.create(addExamQuestionDto);
   }
