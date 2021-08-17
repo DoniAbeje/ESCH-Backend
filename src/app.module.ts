@@ -6,8 +6,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { UserModule } from './user/user.module';
 import { QaModule } from './qa/qa.module';
 import { CommonModule } from './common/common.module';
-import { APP_GUARD } from '@nestjs/core';
-import { RolesGuard } from './auth/guards/role.guard';
 @Module({
   imports: [
     QaModule,
@@ -26,12 +24,6 @@ import { RolesGuard } from './auth/guards/role.guard';
     CommonModule,
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    {
-      provide: APP_GUARD,
-      useClass: RolesGuard,
-    },
-  ],
+  providers: [AppService],
 })
 export class AppModule {}
