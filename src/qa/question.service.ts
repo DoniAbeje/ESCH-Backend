@@ -21,7 +21,7 @@ export class QuestionService extends VoteService {
   }
 
   async fetchAll(
-    paginationOption: PaginationOption = PaginationOption.getDefault(),
+    paginationOption: PaginationOption = PaginationOption.DEFAULT,
     tags: string[] = [],
   ) {
     return (
@@ -34,6 +34,7 @@ export class QuestionService extends VoteService {
   }
 
   async fetchOne(questionId: string) {
+    await this.exists(questionId);
     return (
       await new QuestionQueryBuilder(this.questionModel)
         .filterByIds([questionId])

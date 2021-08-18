@@ -5,6 +5,7 @@ import { Answer, AnswerSchema } from './schema/answer.schema';
 import { Question, QuestionSchema } from './schema/question.schema';
 import { QaController } from './qa.controller';
 import { AnswerService } from './answer.service';
+import { QaTestHelperService } from './test-helper.service';
 
 @Module({
   imports: [
@@ -13,7 +14,8 @@ import { AnswerService } from './answer.service';
       { name: Answer.name, schema: AnswerSchema },
     ]),
   ],
-  providers: [QuestionService, AnswerService],
+  providers: [QuestionService, AnswerService, QaTestHelperService],
   controllers: [QaController],
+  exports: [QaTestHelperService]
 })
 export class QaModule {}
