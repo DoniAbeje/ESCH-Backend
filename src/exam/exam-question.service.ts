@@ -5,7 +5,7 @@ import {
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { AddExamQuestionDto } from './dto/add-exam-question.dto';
+import { AddExamQuestionDto, Choice } from './dto/add-exam-question.dto';
 import { ExamService } from './exam.service';
 import { DuplicateChoiceKeyFoundException } from './exceptions/duplicate-choice-key-found.exception';
 import { DuplicateChoiceValueFoundException } from './exceptions/duplicate-choice-value-found.exception';
@@ -23,21 +23,32 @@ export class ExamQuestionService {
   ) {}
 
   async checkForDuplicateAndCorrectAnswer(
-    addExamQuestionDto: AddExamQuestionDto,
+    choices: Choice[],
+    correctAnswer: string,
+    savedCorrectAnswer: string = null,
   ) {
     // check if keys and choices are unique
     const keySet = new Set(),
       choiceSet = new Set();
     let correctAnswerKeyFound = false;
 
-    for (const choice of addExamQuestionDto.choice) {
+    for (const choice of choices) {
       if (keySet.has(choice.key.toLocaleLowerCase())) {
         throw new DuplicateChoiceKeyFoundException();
       }
       if (choiceSet.has(choice.choice.toLocaleLowerCase())) {
         throw new DuplicateChoiceValueFoundException();
       }
-      if (choice.key === addExamQuestionDto.correctAnswer) {
+      if (
+        choice.key.toLocaleLowerCase() === correctAnswer.toLocaleLowerCase()
+      ) {
+        correctAnswerKeyFound = true;
+      }
+      if (
+        !correctAnswer &&
+        choice.key.toLocaleLowerCase() ===
+          savedCorrectAnswer.toLocaleLowerCase()
+      ) {
         correctAnswerKeyFound = true;
       }
 
@@ -65,7 +76,10 @@ export class ExamQuestionService {
     }
   }
   async addQuestionToExam(addExamQuestionDto: AddExamQuestionDto) {
-    await this.checkForDuplicateAndCorrectAnswer(addExamQuestionDto);
+    await this.checkForDuplicateAndCorrectAnswer(
+      addExamQuestionDto.choices,
+      addExamQuestionDto.correctAnswer,
+    );
 
     await this.existsByQuestionAndExamId(addExamQuestionDto);
 
@@ -93,6 +107,32 @@ export class ExamQuestionService {
     updateExamQuestionDto: UpdateExamQuestionDto,
   ) {
     const examQuestion = await this.exists(examQuestionId);
+    if (
+      updateExamQuestionDto.choices &&
+      updateExamQuestionDto.choices.length > 0
+    ) {
+      await this.checkForDuplicateAndCorrectAnswer(
+        updateExamQuestionDto.choices,
+        updateExamQuestionDto.correctAnswer,
+        examQuestion.correctAnswer,
+      );
+    } else {
+      if (updateExamQuestionDto.correctAnswer) {
+        let correctAnswerKeyFound = false;
+        for (const choice of examQuestion.choices) {
+          if (
+            choice.key.toLocaleLowerCase() ===
+            updateExamQuestionDto.correctAnswer.toLocaleLowerCase()
+          ) {
+            correctAnswerKeyFound = true;
+          }
+        }
+
+        if (!correctAnswerKeyFound) {
+          throw new AnswerKeyNotPartOfChoiceException();
+        }
+      }
+    }
 
     await examQuestion.updateOne(updateExamQuestionDto);
 

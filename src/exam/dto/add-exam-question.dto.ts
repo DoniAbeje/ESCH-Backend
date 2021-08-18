@@ -16,7 +16,7 @@ export class AddExamQuestionDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => Choice)
-  readonly choice: Choice[];
+  readonly choices: Choice[];
 
   @IsString()
   readonly explanation: string;
