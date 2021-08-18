@@ -29,7 +29,7 @@ export class Exam {
   @Prop({ required: true })
   description: string;
 
-  @Prop({ default: 0 })
+  @Prop({ default: 0, min: 0 })
   price: number;
 
   @Prop({ type: [String], minlength: 1 })
