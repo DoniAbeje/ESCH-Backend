@@ -11,7 +11,7 @@ export class UpdateExamQuestionDto {
   @ValidateNested({ each: true })
   @Type(() => Choice)
   @IsOptional()
-  readonly choice: Choice[];
+  readonly choices: Choice[];
 
   @IsString()
   @IsOptional()

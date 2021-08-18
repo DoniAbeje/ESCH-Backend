@@ -13,13 +13,13 @@ class Choice {
 }
 
 export const ChoiceSchema = SchemaFactory.createForClass(Choice);
-@Schema()
+@Schema({ autoIndex: true })
 export class ExamQuestion {
   @Prop({ required: true })
   question: string;
 
   @Prop({ type: [ChoiceSchema], minlength: 1 })
-  choice: Choice[];
+  choices: Choice[];
 
   @Prop()
   explanation: string;
@@ -32,3 +32,5 @@ export class ExamQuestion {
 }
 
 export const ExamQuestionSchema = SchemaFactory.createForClass(ExamQuestion);
+
+ExamQuestionSchema.index({ question: 1, examId: 1 }, { unique: true });
