@@ -5,6 +5,8 @@ import { Model } from 'mongoose';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { ExamDoesNotExistException } from './exceptions/exam-doesnot-exist.exception';
 import { UpdateExamDto } from './dto/update-exam.dto';
+import { PaginationOption } from '../common/pagination-option';
+import { ExamQueryBuilder } from './query/exam-query-builder';
 
 @Injectable()
 export class ExamService {
@@ -19,12 +21,26 @@ export class ExamService {
     return exam.update(updateExamDto);
   }
 
-  async fetchAll() {
-    return this.examModel.find({});
+  async fetchAll(
+    paginationOption: PaginationOption = PaginationOption.getDefault(),
+  ) {
+    return (
+      await new ExamQueryBuilder(this.examModel)
+        .paginate(paginationOption)
+        .populatePreparedBy()
+        .exec()
+    ).all();
   }
 
-  async findExamById(examId: string) {
-    return this.exists(examId);
+  async fetchOne(examId: string) {
+    const result = await new ExamQueryBuilder(this.examModel)
+      .filterByIds([examId])
+      .populatePreparedBy()
+      .exec();
+    if (result.isEmpty()) {
+      throw new ExamDoesNotExistException();
+    }
+    return result.first();
   }
 
   async delete(examId: string) {

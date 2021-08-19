@@ -11,6 +11,9 @@ import { PutAuth } from 'src/common/decorators/put-auth.decorator';
 import { UpdateExamQuestionDto } from './dto/update-exam-question.dto';
 import { UpdateExamDto } from './dto/update-exam.dto';
 import { DeleteAuth } from '../common/decorators/delete-auth.decorator';
+import { ApiPagination } from '../common/decorators/api-pagination.decorator';
+import { Pagination } from '../common/decorators/pagination.decorator';
+import { PaginationOption } from '../common/pagination-option';
 @ApiTags('Exam')
 @Controller('exam')
 export class ExamController {
@@ -36,15 +39,16 @@ export class ExamController {
   }
 
   @ApiTags('Get all exams detail')
+  @ApiPagination()
   @Get('/')
-  async fetchAllExams() {
-    return this.examService.fetchAll();
+    async fetchAllExams(@Pagination() paginationOption: PaginationOption) {
+    return this.examService.fetchAll(paginationOption);
   }
 
   @ApiTags('Get single exam')
   @Get('/:examId')
   async fetchSingleExam(@Param('examId') examId: string) {
-    return this.examService.findExamById(examId);
+    return this.examService.fetchOne(examId);
   }
 
   @DeleteAuth('/:examId', 'Delete exam')

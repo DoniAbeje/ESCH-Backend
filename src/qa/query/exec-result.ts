@@ -18,4 +18,8 @@ export class ExecResult {
     first() {
       return this.data[0];
     }
+
+    isEmpty() {
+      return this.data.length == 0;
+    }
   }
