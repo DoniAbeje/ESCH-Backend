@@ -37,7 +37,6 @@ export class ExamController {
     return this.examService.findExamById(examId);
   }
 
-  // ExamQuestion
   @PostAuth('/question', 'Add question to exam')
   async addExamQuestion(@Body() addExamQuestionDto: AddExamQuestionDto) {
     const examQuestion = await this.examQuestionService.addQuestionToExam(
