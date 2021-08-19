@@ -58,7 +58,7 @@ export class ExamQuestionService {
         updateExamQuestionDto.correctAnswer,
       );
     }
-    
+
     if (updateExamQuestionDto.question) {
       await this.checkForDuplicateQuestion(
         examQuestion.examId,
@@ -123,5 +123,9 @@ export class ExamQuestionService {
     }
 
     return examQuestion;
+  }
+
+  async deleteByExamId(examId: string) {
+    return await this.examQuestionModel.deleteMany({ examId });
   }
 }
