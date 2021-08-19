@@ -34,12 +34,15 @@ export class QuestionService extends VoteService {
   }
 
   async fetchOne(questionId: string) {
-    return (
-      await new QuestionQueryBuilder(this.questionModel)
-        .filterByIds([questionId])
-        .populateAskedBy()
-        .exec()
-    ).first();
+    const result = await new QuestionQueryBuilder(this.questionModel)
+      .filterByIds([questionId])
+      .populateAskedBy()
+      .exec();
+
+    if (result.isEmpty()) {
+      throw new QuestionDoesNotExistException();
+    }
+    return result.first();
   }
 
   async exists(id: string, throwException = true) {
