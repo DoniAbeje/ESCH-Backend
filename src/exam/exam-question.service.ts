@@ -22,40 +22,6 @@ export class ExamQuestionService {
     private examService: ExamService,
   ) {}
 
-  async checkForDuplicateAndCorrectAnswer(
-    choices: Choice[],
-    correctAnswer: string,
-    savedCorrectAnswer: string = null,
-  ) {
-    const keySet = new Set();
-    const choiceSet = new Set();
-    let correctAnswerKeyFound = false;
-
-    for (const { key, choice } of choices) {
-      if (keySet.has(key)) {
-        throw new DuplicateChoiceKeyFoundException();
-      }
-      if (choiceSet.has(choice)) {
-        throw new DuplicateChoiceValueFoundException();
-      }
-
-      if (key === correctAnswer) {
-        correctAnswerKeyFound = true;
-      }
-
-      if (!correctAnswer && key === savedCorrectAnswer) {
-        correctAnswerKeyFound = true;
-      }
-
-      keySet.add(key);
-      choiceSet.add(choice);
-    }
-
-    if (!correctAnswerKeyFound) {
-      throw new AnswerKeyNotPartOfChoiceException();
-    }
-  }
-  
   async existsByQuestionAndExamId(addExamQuestionDto) {
     // check if exam with the given exam id exists
     await this.examService.exists(addExamQuestionDto.examId);
@@ -71,11 +37,8 @@ export class ExamQuestionService {
     }
   }
   async addQuestionToExam(addExamQuestionDto: AddExamQuestionDto) {
-    await this.checkForDuplicateAndCorrectAnswer(
-      addExamQuestionDto.choices,
-      addExamQuestionDto.correctAnswer,
-    );
-
+    await this.checkForDuplicateAnswer(addExamQuestionDto);
+    await this.checkForCorrectAnswer(addExamQuestionDto);
     await this.existsByQuestionAndExamId(addExamQuestionDto);
 
     return this.examQuestionModel.create(addExamQuestionDto);
@@ -102,35 +65,55 @@ export class ExamQuestionService {
     updateExamQuestionDto: UpdateExamQuestionDto,
   ) {
     const examQuestion = await this.exists(examQuestionId);
-    if (
-      updateExamQuestionDto.choices &&
-      updateExamQuestionDto.choices.length > 0
-    ) {
-      await this.checkForDuplicateAndCorrectAnswer(
-        updateExamQuestionDto.choices,
-        updateExamQuestionDto.correctAnswer,
-        examQuestion.correctAnswer,
-      );
-    } else {
-      if (updateExamQuestionDto.correctAnswer) {
-        let correctAnswerKeyFound = false;
-        for (const choice of examQuestion.choices) {
-          if (
-            choice.key.toLocaleLowerCase() ===
-            updateExamQuestionDto.correctAnswer.toLocaleLowerCase()
-          ) {
-            correctAnswerKeyFound = true;
-          }
-        }
 
-        if (!correctAnswerKeyFound) {
-          throw new AnswerKeyNotPartOfChoiceException();
-        }
-      }
+    if (updateExamQuestionDto.choices) {
+      this.checkForDuplicateAnswer(updateExamQuestionDto);
+      this.checkForCorrectAnswer(
+        updateExamQuestionDto,
+        updateExamQuestionDto.correctAnswer || examQuestion.correctAnswer,
+      );
+    } else if (updateExamQuestionDto.correctAnswer) {
+      this.checkForCorrectAnswer(
+        examQuestion,
+        updateExamQuestionDto.correctAnswer,
+      );
     }
 
     await examQuestion.updateOne(updateExamQuestionDto);
 
     return examQuestion;
+  }
+
+  checkForCorrectAnswer(
+    {
+      choices,
+      correctAnswer,
+    }: AddExamQuestionDto | UpdateExamQuestionDto | ExamQuestionDocument,
+    _correctAnswer: string = null,
+  ) {
+    correctAnswer = _correctAnswer || correctAnswer;
+    const hasCorrectAnswerKey = choices.some((c) => c.key == correctAnswer);
+    if (!hasCorrectAnswerKey) {
+      throw new AnswerKeyNotPartOfChoiceException();
+    }
+  }
+
+  checkForDuplicateAnswer({
+    choices,
+  }: AddExamQuestionDto | UpdateExamQuestionDto | ExamQuestionDocument) {
+    const keySet = new Set();
+    const choiceSet = new Set();
+
+    for (const { key, choice } of choices) {
+      if (keySet.has(key)) {
+        throw new DuplicateChoiceKeyFoundException();
+      }
+      if (choiceSet.has(choice)) {
+        throw new DuplicateChoiceValueFoundException();
+      }
+
+      keySet.add(key);
+      choiceSet.add(choice);
+    }
   }
 }
