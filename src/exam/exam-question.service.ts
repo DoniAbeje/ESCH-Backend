@@ -128,4 +128,9 @@ export class ExamQuestionService {
   async deleteByExamId(examId: string) {
     return await this.examQuestionModel.deleteMany({ examId });
   }
+
+  async delete(examQuestionId: string) {
+    const question = await this.exists(examQuestionId);
+    return await question.delete();
+  }
 }

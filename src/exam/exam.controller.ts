@@ -79,4 +79,9 @@ export class ExamController {
 
     return { _id: examQuestion._id };
   }
+
+  @DeleteAuth('question/:examQuestionId', 'Delete Exam Question')
+  async deleteExamQuestion(@Param('examQuestionId') examQuestionId: string) {
+    await this.examQuestionService.delete(examQuestionId);
+  }
 }
