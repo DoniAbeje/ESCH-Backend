@@ -10,6 +10,7 @@ import { AddExamQuestionDto } from './dto/add-exam-question.dto';
 import { PutAuth } from 'src/common/decorators/put-auth.decorator';
 import { UpdateExamQuestionDto } from './dto/update-exam-question.dto';
 import { UpdateExamDto } from './dto/update-exam.dto';
+import { DeleteAuth } from '../common/decorators/delete-auth.decorator';
 @ApiTags('Exam')
 @Controller('exam')
 export class ExamController {
@@ -44,6 +45,11 @@ export class ExamController {
   @Get('/:examId')
   async fetchSingleExam(@Param('examId') examId: string) {
     return this.examService.findExamById(examId);
+  }
+
+  @DeleteAuth('/:examId', 'Delete exam')
+  async deleteExam(@Param('examId') examId: string) {
+    await this.examService.delete(examId);
   }
 
   @PostAuth('/question', 'Add question to exam')

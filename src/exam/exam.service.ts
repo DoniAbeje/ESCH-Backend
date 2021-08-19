@@ -15,7 +15,7 @@ export class ExamService {
   }
 
   async updateExam(examId: string, updateExamDto: UpdateExamDto) {
-    const exam =await this.exists(examId);
+    const exam = await this.exists(examId);
     return exam.update(updateExamDto);
   }
 
@@ -25,6 +25,11 @@ export class ExamService {
 
   async findExamById(examId: string) {
     return this.exists(examId);
+  }
+
+  async delete(examId: string) {
+    const exam = await this.exists(examId);
+    return await exam.delete();
   }
 
   async exists(examId: string) {
