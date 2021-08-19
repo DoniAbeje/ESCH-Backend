@@ -31,7 +31,8 @@ export class ExamController {
     return this.examService.fetchAll();
   }
 
-  @GetAuth('/:examId', 'Get single exam')
+  @ApiTags('Get single exam')
+  @Get('/:examId')
   async fetchSingleExam(@Param('examId') examId: string) {
     return this.examService.findExamById(examId);
   }
@@ -46,7 +47,8 @@ export class ExamController {
     return { _id: examQuestion._id };
   }
 
-  @GetAuth('/:examId/question', 'Fetch Questions for single exam')
+  @ApiTags('Fetch Questions for single exam')
+  @Get('/:examId/question')
   async fetchQuestionsForSingleExam(@Param('examId') examId: string) {
     return await this.examQuestionService.findByExamId(examId);
   }
