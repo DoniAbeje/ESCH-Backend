@@ -19,6 +19,9 @@ export class UpdateExamDto {
   @ArrayMinSize(1)
   readonly tags?: string[];
 
+  @IsOptional()
+  readonly samples?: string[];
+
   /**
    * 0 for DRAFT
    * 1 for PUBLISHED
