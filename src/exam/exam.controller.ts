@@ -48,13 +48,16 @@ export class ExamController {
   @ApiTags('Get all exams detail')
   @ApiPagination()
   @ApiQuery({ name: 'tags', type: [String], required: false })
+  @ApiQuery({ name: 'authors', type: [String], required: false })
   @Get('/')
   async fetchAllExams(
     @Pagination() paginationOption: PaginationOption,
     @Query('tags', new ParseArrayPipe({ items: String, optional: true }))
     tags: string[] = [],
+    @Query('authors', new ParseArrayPipe({ items: String, optional: true }))
+    authors: string[] = [],
   ) {
-    return this.examService.fetchAll(paginationOption, tags);
+    return this.examService.fetchAll(paginationOption, tags, authors);
   }
 
   @ApiTags('Get single exam')

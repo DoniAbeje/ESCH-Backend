@@ -9,6 +9,7 @@ export class ExamQueryBuilder {
   private aggregations: any[] = [];
   private paginationOption: PaginationOption;
   private tagFilters: string[] = [];
+  private authorFilters: mongoose.Types.ObjectId[] = [];
   private idFilters: mongoose.Types.ObjectId[] = [];
   private shouldPopulatePreparedBy = false;
 
@@ -22,6 +23,11 @@ export class ExamQueryBuilder {
 
   filterByTags(tags: string[]) {
     this.tagFilters = tags;
+    return this;
+  }
+
+  filterByAuthors(authors: string[]) {
+    this.authorFilters = authors.map((id) => mongoose.Types.ObjectId(id));;
     return this;
   }
 
@@ -80,6 +86,10 @@ export class ExamQueryBuilder {
     if (this.tagFilters.length) {
       match.tags = { $all: this.tagFilters };
     }
+
+    if (this.authorFilters.length) {
+      match.preparedBy = { $in: this.authorFilters };
+    }
     return match;
   }
 
@@ -97,4 +107,5 @@ export class ExamQueryBuilder {
 class ExamMatchQuery {
   _id?: any;
   tags?: any;
+  preparedBy?: any;
 }
