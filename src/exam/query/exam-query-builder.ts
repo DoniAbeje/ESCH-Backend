@@ -8,6 +8,7 @@ export class ExamQueryBuilder {
   private isBuilt = false;
   private aggregations: any[] = [];
   private paginationOption: PaginationOption;
+  private tagFilters: string[] = [];
   private idFilters: mongoose.Types.ObjectId[] = [];
   private shouldPopulatePreparedBy = false;
 
@@ -16,6 +17,11 @@ export class ExamQueryBuilder {
 
   paginate(paginationOption: PaginationOption) {
     this.paginationOption = paginationOption;
+    return this;
+  }
+
+  filterByTags(tags: string[]) {
+    this.tagFilters = tags;
     return this;
   }
 
@@ -71,6 +77,9 @@ export class ExamQueryBuilder {
       match._id = { $in: this.idFilters };
     }
 
+    if (this.tagFilters.length) {
+      match.tags = { $all: this.tagFilters };
+    }
     return match;
   }
 
@@ -87,4 +96,5 @@ export class ExamQueryBuilder {
 
 class ExamMatchQuery {
   _id?: any;
+  tags?: any;
 }
