@@ -22,24 +22,14 @@ export class ExamQuestionService {
     private examService: ExamService,
   ) {}
 
-  async existsByQuestionAndExamId(addExamQuestionDto) {
-    // check if exam with the given exam id exists
-    await this.examService.exists(addExamQuestionDto.examId);
-
-    // check if the question is unique for this exam
-    const examQuestion = await this.examQuestionModel.findOne({
-      examId: addExamQuestionDto.examId,
-      question: addExamQuestionDto.question,
-    });
-
-    if (examQuestion) {
-      throw new QuestionAlreadyAddedException();
-    }
-  }
   async addQuestionToExam(addExamQuestionDto: AddExamQuestionDto) {
-    await this.checkForDuplicateAnswer(addExamQuestionDto);
-    await this.checkForCorrectAnswer(addExamQuestionDto);
-    await this.existsByQuestionAndExamId(addExamQuestionDto);
+    await this.examService.exists(addExamQuestionDto.examId);
+    this.checkForDuplicateAnswer(addExamQuestionDto);
+    this.checkForCorrectAnswer(addExamQuestionDto);
+    await this.checkForDuplicateQuestion(
+      addExamQuestionDto.examId,
+      addExamQuestionDto.question,
+    );
 
     return this.examQuestionModel.create(addExamQuestionDto);
   }
@@ -78,6 +68,13 @@ export class ExamQuestionService {
         updateExamQuestionDto.correctAnswer,
       );
     }
+    
+    if (updateExamQuestionDto.question) {
+      await this.checkForDuplicateQuestion(
+        examQuestion.examId,
+        updateExamQuestionDto.question,
+      );
+    }
 
     await examQuestion.updateOne(updateExamQuestionDto);
 
@@ -114,6 +111,17 @@ export class ExamQuestionService {
 
       keySet.add(key);
       choiceSet.add(choice);
+    }
+  }
+
+  async checkForDuplicateQuestion(examId: string, question: string) {
+    const examQuestion = await this.examQuestionModel.findOne({
+      examId,
+      question,
+    });
+
+    if (examQuestion) {
+      throw new QuestionAlreadyAddedException();
     }
   }
 }
