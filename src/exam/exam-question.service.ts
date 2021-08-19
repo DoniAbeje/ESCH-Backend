@@ -13,6 +13,8 @@ import { AnswerKeyNotPartOfChoiceException } from './exceptions/answer-key-not-p
 import { UpdateExamQuestionDto } from './dto/update-exam-question.dto';
 import { ExamQuestionDoesNotExistException } from './exceptions/examQuestion-doesnot-exist.exception';
 import { QuestionAlreadyAddedException } from './exceptions/question-already-added.exception';
+import { PaginationOption } from '../common/pagination-option';
+import { ExamQuestionQueryBuilder } from './query/exam-question-query-builder';
 
 @Injectable()
 export class ExamQuestionService {
@@ -34,10 +36,17 @@ export class ExamQuestionService {
     return this.examQuestionModel.create(addExamQuestionDto);
   }
 
-  async findByExamId(examId: string) {
+  async fetchAll(
+    paginationOption: PaginationOption = PaginationOption.getDefault(),
+    examId: string,
+  ) {
     await this.examService.exists(examId);
-
-    return this.examQuestionModel.find({ examId });
+    return (
+      await new ExamQuestionQueryBuilder(this.examQuestionModel)
+        .paginate(paginationOption)
+        .filterByExam([examId])
+        .exec()
+    ).all();
   }
 
   async updateExamQuestion(

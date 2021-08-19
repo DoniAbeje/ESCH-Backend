@@ -81,9 +81,13 @@ export class ExamController {
   }
 
   @ApiTags('Fetch Questions for single exam')
+  @ApiPagination()
   @Get('/:examId/question')
-  async fetchQuestionsForSingleExam(@Param('examId') examId: string) {
-    return await this.examQuestionService.findByExamId(examId);
+  async fetchQuestionsForSingleExam(
+    @Pagination() paginationOption: PaginationOption,
+    @Param('examId') examId: string,
+  ) {
+    return await this.examQuestionService.fetchAll(paginationOption, examId);
   }
 
   @PutAuth('question/:examQuestionId', 'Update Exam Question')
