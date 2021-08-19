@@ -27,40 +27,35 @@ export class ExamQuestionService {
     correctAnswer: string,
     savedCorrectAnswer: string = null,
   ) {
-    // check if keys and choices are unique
-    const keySet = new Set(),
-      choiceSet = new Set();
+    const keySet = new Set();
+    const choiceSet = new Set();
     let correctAnswerKeyFound = false;
 
-    for (const choice of choices) {
-      if (keySet.has(choice.key.toLocaleLowerCase())) {
+    for (const { key, choice } of choices) {
+      if (keySet.has(key)) {
         throw new DuplicateChoiceKeyFoundException();
       }
-      if (choiceSet.has(choice.choice.toLocaleLowerCase())) {
+      if (choiceSet.has(choice)) {
         throw new DuplicateChoiceValueFoundException();
       }
-      if (
-        choice.key.toLocaleLowerCase() === correctAnswer.toLocaleLowerCase()
-      ) {
-        correctAnswerKeyFound = true;
-      }
-      if (
-        !correctAnswer &&
-        choice.key.toLocaleLowerCase() ===
-          savedCorrectAnswer.toLocaleLowerCase()
-      ) {
+
+      if (key === correctAnswer) {
         correctAnswerKeyFound = true;
       }
 
-      keySet.add(choice.key.toLocaleLowerCase());
-      choiceSet.add(choice.choice.toLocaleLowerCase());
+      if (!correctAnswer && key === savedCorrectAnswer) {
+        correctAnswerKeyFound = true;
+      }
+
+      keySet.add(key);
+      choiceSet.add(choice);
     }
 
-    // check if the given correctAnswer value(key) is part of the choice
     if (!correctAnswerKeyFound) {
       throw new AnswerKeyNotPartOfChoiceException();
     }
   }
+  
   async existsByQuestionAndExamId(addExamQuestionDto) {
     // check if exam with the given exam id exists
     await this.examService.exists(addExamQuestionDto.examId);
