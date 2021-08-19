@@ -40,16 +40,6 @@ export class ExamQuestionService {
     return this.examQuestionModel.find({ examId });
   }
 
-  async exists(examQuestionId: string) {
-    const examQuestion = await this.examQuestionModel.findById(examQuestionId);
-
-    if (!examQuestion) {
-      throw new ExamQuestionDoesNotExistException();
-    }
-
-    return examQuestion;
-  }
-
   async updateExamQuestion(
     examQuestionId: string,
     updateExamQuestionDto: UpdateExamQuestionDto,
@@ -123,5 +113,15 @@ export class ExamQuestionService {
     if (examQuestion) {
       throw new QuestionAlreadyAddedException();
     }
+  }
+
+  async exists(examQuestionId: string) {
+    const examQuestion = await this.examQuestionModel.findById(examQuestionId);
+
+    if (!examQuestion) {
+      throw new ExamQuestionDoesNotExistException();
+    }
+
+    return examQuestion;
   }
 }
