@@ -4,6 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { ExamDoesNotExistException } from './exceptions/exam-doesnot-exist.exception';
+import { UpdateExamDto } from './dto/update-exam.dto';
 
 @Injectable()
 export class ExamService {
@@ -11,6 +12,11 @@ export class ExamService {
 
   async createExam(createExamDto: CreateExamDto) {
     return this.examModel.create(createExamDto);
+  }
+
+  async updateExam(examId: string, updateExamDto: UpdateExamDto) {
+    const exam =await this.exists(examId);
+    return exam.update(updateExamDto);
   }
 
   async fetchAll() {
