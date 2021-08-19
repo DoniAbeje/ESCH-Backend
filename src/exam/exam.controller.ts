@@ -9,6 +9,7 @@ import { GetAuth } from '../common/decorators/get-auth.decorator';
 import { AddExamQuestionDto } from './dto/add-exam-question.dto';
 import { PutAuth } from 'src/common/decorators/put-auth.decorator';
 import { UpdateExamQuestionDto } from './dto/update-exam-question.dto';
+import { UpdateExamDto } from './dto/update-exam.dto';
 @ApiTags('Exam')
 @Controller('exam')
 export class ExamController {
@@ -23,6 +24,14 @@ export class ExamController {
 
     const exam = await this.examService.createExam(createExamDto);
     return { _id: exam._id };
+  }
+
+  @PutAuth('/:examId', 'Update Exam')
+  async updateExam(
+    @Param('examId') examId: string,
+    @Body() updateExamDto: UpdateExamDto,
+  ) {
+    await this.examService.updateExam(examId, updateExamDto);
   }
 
   @ApiTags('Get all exams detail')
