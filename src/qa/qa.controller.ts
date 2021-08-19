@@ -11,6 +11,7 @@ import { PostAuth } from '../common/decorators/post-auth.decorator';
 import { User } from '../common/decorators/user.decorator';
 import { ApiPagination } from '../common/decorators/api-pagination.decorator';
 import { Pagination } from '../common/decorators/pagination.decorator';
+import { QueryArray } from '../common/decorators/query-array.decorator';
 import { PaginationOption } from '../common/pagination-option';
 import { AnswerService } from './answer.service';
 import { AnswerQuestionDto } from './dto/answer-question.dto';
@@ -39,7 +40,7 @@ export class QaController {
   @ApiQuery({ name: 'tags', type: [String], required: false })
   async fetchAllQuestions(
     @Pagination() paginationOption: PaginationOption,
-    @Query('tags', new ParseArrayPipe({ items: String, optional: true }))
+    @QueryArray('tags')
     tags: string[] = [],
   ) {
     return this.questionService.fetchAll(paginationOption, tags);
