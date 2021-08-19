@@ -21,6 +21,7 @@ import { DeleteAuth } from '../common/decorators/delete-auth.decorator';
 import { ApiPagination } from '../common/decorators/api-pagination.decorator';
 import { Pagination } from '../common/decorators/pagination.decorator';
 import { PaginationOption } from '../common/pagination-option';
+import { QueryArray } from '../common/decorators/query-array.decorator';
 @ApiTags('Exam')
 @Controller('exam')
 export class ExamController {
@@ -50,9 +51,9 @@ export class ExamController {
   @ApiQuery({ name: 'authors', type: [String], required: false })
   async fetchAllExams(
     @Pagination() paginationOption: PaginationOption,
-    @Query('tags', new ParseArrayPipe({ items: String, optional: true }))
+    @QueryArray('tags')
     tags: string[] = [],
-    @Query('authors', new ParseArrayPipe({ items: String, optional: true }))
+    @QueryArray('authors')
     authors: string[] = [],
   ) {
     return this.examService.fetchAll(paginationOption, tags, authors);
