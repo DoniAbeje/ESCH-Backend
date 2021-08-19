@@ -23,10 +23,12 @@ export class ExamService {
 
   async fetchAll(
     paginationOption: PaginationOption = PaginationOption.getDefault(),
+    tags: string[] = [],
   ) {
     return (
       await new ExamQueryBuilder(this.examModel)
         .paginate(paginationOption)
+        .filterByTags(tags)
         .populatePreparedBy()
         .exec()
     ).all();

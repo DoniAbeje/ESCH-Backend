@@ -1,7 +1,14 @@
 import { ExamQuestionService } from './exam-question.service';
 import { ExamService } from './exam.service';
-import { Body, Controller, Get, Param } from '@nestjs/common';
-import { ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseArrayPipe,
+  Query,
+} from '@nestjs/common';
+import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { User } from '../common/decorators/user.decorator';
 import { PostAuth } from '../common/decorators/post-auth.decorator';
@@ -40,9 +47,14 @@ export class ExamController {
 
   @ApiTags('Get all exams detail')
   @ApiPagination()
+  @ApiQuery({ name: 'tags', type: [String], required: false })
   @Get('/')
-    async fetchAllExams(@Pagination() paginationOption: PaginationOption) {
-    return this.examService.fetchAll(paginationOption);
+  async fetchAllExams(
+    @Pagination() paginationOption: PaginationOption,
+    @Query('tags', new ParseArrayPipe({ items: String, optional: true }))
+    tags: string[] = [],
+  ) {
+    return this.examService.fetchAll(paginationOption, tags);
   }
 
   @ApiTags('Get single exam')
