@@ -1,4 +1,11 @@
-import { Body, Controller, Get, Param, ParseArrayPipe, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseArrayPipe,
+  Query,
+} from '@nestjs/common';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { PostAuth } from 'src/common/decorators/post-auth.decorator';
 import { User } from 'src/common/decorators/user.decorator';
@@ -28,13 +35,12 @@ export class QaController {
     return { _id: question._id };
   }
 
-  @ApiTags('Fetch Questions')
-  @ApiPagination()
-  @ApiQuery({name: 'tags', type: [String], required: false})
-  @Get('/')
+  @ApiPagination('/', 'Fetch Questions')
+  @ApiQuery({ name: 'tags', type: [String], required: false })
   async fetchAllQuestions(
     @Pagination() paginationOption: PaginationOption,
-    @Query('tags', new ParseArrayPipe({ items: String, optional: true })) tags: string[] = [],
+    @Query('tags', new ParseArrayPipe({ items: String, optional: true }))
+    tags: string[] = [],
   ) {
     return this.questionService.fetchAll(paginationOption, tags);
   }
@@ -57,9 +63,7 @@ export class QaController {
     return { _id: answer._id };
   }
 
-  @ApiTags('Fetch Answers for single question')
-  @ApiPagination()
-  @Get('/:questionId/answer')
+  @ApiPagination('/:questionId/answer', 'Fetch Answers for single question')
   async fetchAnswersForSingleQuestions(
     @Param('questionId') questionId: string,
     @Pagination() paginationOption: PaginationOption,

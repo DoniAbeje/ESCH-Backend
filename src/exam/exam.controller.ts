@@ -45,11 +45,9 @@ export class ExamController {
     await this.examService.updateExam(examId, updateExamDto);
   }
 
-  @ApiTags('Get all exams detail')
-  @ApiPagination()
+  @ApiPagination('/', 'Get all exams detail')
   @ApiQuery({ name: 'tags', type: [String], required: false })
   @ApiQuery({ name: 'authors', type: [String], required: false })
-  @Get('/')
   async fetchAllExams(
     @Pagination() paginationOption: PaginationOption,
     @Query('tags', new ParseArrayPipe({ items: String, optional: true }))
@@ -80,9 +78,7 @@ export class ExamController {
     return { _id: examQuestion._id };
   }
 
-  @ApiTags('Fetch Questions for single exam')
-  @ApiPagination()
-  @Get('/:examId/question')
+  @ApiPagination('/:examId/question', 'Fetch Questions for single exam')
   async fetchQuestionsForSingleExam(
     @Pagination() paginationOption: PaginationOption,
     @Param('examId') examId: string,
@@ -90,14 +86,18 @@ export class ExamController {
     return await this.examQuestionService.fetchAll(paginationOption, examId);
   }
 
-  @ApiTags('Fetch sample questions for single exam')
-  @ApiPagination()
-  @Get('/:examId/question/samples')
+  @ApiPagination(
+    '/:examId/question/samples',
+    'Fetch sample questions for single exam',
+  )
   async fetchSampleQuestionsForSingleExam(
     @Pagination() paginationOption: PaginationOption,
     @Param('examId') examId: string,
   ) {
-    return await this.examQuestionService.fetchSamples(paginationOption, examId);
+    return await this.examQuestionService.fetchSamples(
+      paginationOption,
+      examId,
+    );
   }
 
   @PutAuth('question/:examQuestionId', 'Update Exam Question')
