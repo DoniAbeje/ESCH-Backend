@@ -90,6 +90,16 @@ export class ExamController {
     return await this.examQuestionService.fetchAll(paginationOption, examId);
   }
 
+  @ApiTags('Fetch sample questions for single exam')
+  @ApiPagination()
+  @Get('/:examId/question/samples')
+  async fetchSampleQuestionsForSingleExam(
+    @Pagination() paginationOption: PaginationOption,
+    @Param('examId') examId: string,
+  ) {
+    return await this.examQuestionService.fetchSamples(paginationOption, examId);
+  }
+
   @PutAuth('question/:examQuestionId', 'Update Exam Question')
   async updateExamQuestion(
     @Param('examQuestionId') examQuestionId: string,

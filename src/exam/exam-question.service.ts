@@ -49,6 +49,20 @@ export class ExamQuestionService {
     ).all();
   }
 
+  async fetchSamples(
+    paginationOption: PaginationOption = PaginationOption.getDefault(),
+    examId: string,
+  ) {
+    const exam = await this.examService.exists(examId);
+    return (
+      await new ExamQuestionQueryBuilder(this.examQuestionModel)
+        .paginate(paginationOption)
+        .filterByExam([examId])
+        .filterByIds(exam.samples)
+        .exec()
+    ).all();
+  }
+
   async updateExamQuestion(
     examQuestionId: string,
     updateExamQuestionDto: UpdateExamQuestionDto,
