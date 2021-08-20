@@ -14,7 +14,7 @@ import { User } from '../common/decorators/user.decorator';
 import { PostAuth } from '../common/decorators/post-auth.decorator';
 import { GetAuth } from '../common/decorators/get-auth.decorator';
 import { AddExamQuestionDto } from './dto/add-exam-question.dto';
-import { PutAuth } from 'src/common/decorators/put-auth.decorator';
+import { PutAuth } from '../common/decorators/put-auth.decorator';
 import { UpdateExamQuestionDto } from './dto/update-exam-question.dto';
 import { UpdateExamDto } from './dto/update-exam.dto';
 import { DeleteAuth } from '../common/decorators/delete-auth.decorator';
