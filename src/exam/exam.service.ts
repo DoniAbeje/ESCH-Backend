@@ -22,7 +22,7 @@ export class ExamService {
   }
 
   async fetchAll(
-    paginationOption: PaginationOption = PaginationOption.getDefault(),
+    paginationOption: PaginationOption = PaginationOption.DEFAULT,
     tags: string[] = [],
     authors: string[] = []
   ) {

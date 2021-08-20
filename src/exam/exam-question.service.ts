@@ -37,7 +37,7 @@ export class ExamQuestionService {
   }
 
   async fetchAll(
-    paginationOption: PaginationOption = PaginationOption.getDefault(),
+    paginationOption: PaginationOption = PaginationOption.DEFAULT,
     examId: string,
   ) {
     await this.examService.exists(examId);
@@ -50,7 +50,7 @@ export class ExamQuestionService {
   }
 
   async fetchSamples(
-    paginationOption: PaginationOption = PaginationOption.getDefault(),
+    paginationOption: PaginationOption = PaginationOption.DEFAULT,
     examId: string,
   ) {
     const exam = await this.examService.exists(examId);
