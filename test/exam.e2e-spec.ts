@@ -241,4 +241,32 @@ describe('Exam Module (e2e)', () => {
       expect(body).toEqual([...responseForUser1, ...responseForUser2]);
     });
   });
+
+  describe('fetchSingleExam', () => {
+    it('should return single exam details', async () => {
+      const user = await userTestHelper.createTestUser();
+      const exam = await examTestHelper.createTestExam(
+        { preparedBy: user._id },
+      );
+
+      const { body } = await request(app.getHttpServer())
+        .get(`${baseUrl}/${exam._id}`)
+        .expect(HttpStatus.OK);
+
+      const expectedResponse = examTestHelper.getResponse(
+        exam,
+        user,
+      );
+
+      expect(body).toEqual(expectedResponse);
+    });
+
+    it('should reject with non exist exam', async () => {
+      const id = mongoose.Types.ObjectId();
+      const { body } = await request(app.getHttpServer())
+        .get(`${baseUrl}/${id}`)
+        .expect(HttpStatus.NOT_FOUND);
+      expect(body.exception).toEqual(ExamDoesNotExistException.name);
+    });
+  })
 });
