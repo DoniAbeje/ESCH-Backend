@@ -132,7 +132,7 @@ describe('Exam Module (e2e)', () => {
         tags: ['new tag'],
         price: 10,
         samples: [sampleQuestion],
-        status: 1
+        status: 1,
       };
 
       await request(app.getHttpServer())
@@ -142,7 +142,9 @@ describe('Exam Module (e2e)', () => {
         .expect(HttpStatus.OK);
 
       const updatedExam = await examService.exists(exam._id);
-      expect(toJSON(updatedExam)).toMatchObject(expect.objectContaining(updateExamDto));
+      expect(toJSON(updatedExam)).toMatchObject(
+        expect.objectContaining(updateExamDto),
+      );
     });
   });
 
@@ -245,18 +247,15 @@ describe('Exam Module (e2e)', () => {
   describe('fetchSingleExam', () => {
     it('should return single exam details', async () => {
       const user = await userTestHelper.createTestUser();
-      const exam = await examTestHelper.createTestExam(
-        { preparedBy: user._id },
-      );
+      const exam = await examTestHelper.createTestExam({
+        preparedBy: user._id,
+      });
 
       const { body } = await request(app.getHttpServer())
         .get(`${baseUrl}/${exam._id}`)
         .expect(HttpStatus.OK);
 
-      const expectedResponse = examTestHelper.getResponse(
-        exam,
-        user,
-      );
+      const expectedResponse = examTestHelper.getResponse(exam, user);
 
       expect(body).toEqual(expectedResponse);
     });
@@ -268,5 +267,42 @@ describe('Exam Module (e2e)', () => {
         .expect(HttpStatus.NOT_FOUND);
       expect(body.exception).toEqual(ExamDoesNotExistException.name);
     });
-  })
+  });
+
+  describe('deleteExam', () => {
+    it('should reject with unauthenticated user', async () => {
+      const id = mongoose.Types.ObjectId();
+      await request(app.getHttpServer())
+        .delete(`${baseUrl}/${id}`)
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+
+    it('should reject with non exist exam', async () => {
+      const id = mongoose.Types.ObjectId();
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+
+      const { body } = await request(app.getHttpServer())
+        .delete(`${baseUrl}/${id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HttpStatus.NOT_FOUND);
+      expect(body.exception).toEqual(ExamDoesNotExistException.name);
+    });
+
+    it('should delete exam successfully', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const exam = await examTestHelper.createTestExam({
+        preparedBy: user._id,
+      });
+
+      await request(app.getHttpServer())
+        .delete(`${baseUrl}/${exam._id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HttpStatus.OK);
+
+      const exists = await examService.exists(exam._id, false);
+      expect(exists).toBeNull();
+    });
+  });
 });
