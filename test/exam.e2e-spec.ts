@@ -208,5 +208,36 @@ describe('Exam Module (e2e)', () => {
 
       expect(body).toEqual(expectedResponse);
     });
+
+    it('should return exams filtered by authors', async () => {
+      const user1 = await userTestHelper.createTestUser();
+      const user2 = await userTestHelper.createTestUser({
+        phone: '0987654322',
+      });
+      const user3 = await userTestHelper.createTestUser({
+        phone: '0987654323',
+      });
+
+      const user1Exams = await examTestHelper.createTestExams(10, {
+        preparedBy: user1._id,
+      });
+
+      const user2Exams = await examTestHelper.createTestExams(10, {
+        preparedBy: user2._id,
+      });
+
+      const user3Exams = await examTestHelper.createTestExams(10, {
+        preparedBy: user3._id,
+      });
+
+      const { body } = await request(app.getHttpServer())
+        .get(`${baseUrl}?authors=${user1._id}&authors=${user2._id}&limit=25`)
+        .expect(HttpStatus.OK);
+
+      const responseForUser1 = examTestHelper.getResponse(user1Exams, user1);
+      const responseForUser2 = examTestHelper.getResponse(user2Exams, user2);
+
+      expect(body).toEqual([...responseForUser1, ...responseForUser2]);
+    });
   });
 });
