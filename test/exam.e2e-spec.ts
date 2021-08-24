@@ -13,6 +13,11 @@ import * as mongoose from 'mongoose';
 import { ExamDoesNotExistException } from '../src/exam/exceptions/exam-doesnot-exist.exception';
 import { UpdateExamDto } from '../src/exam/dto/update-exam.dto';
 import { PaginationOption } from '../src/common/pagination-option';
+import { AddExamQuestionDto } from '../src/exam/dto/add-exam-question.dto';
+import { ExamQuestionService } from '../src/exam/exam-question.service';
+import { QuestionAlreadyAddedException } from '../src/exam/exceptions/question-already-added.exception';
+import { DuplicateChoiceValueFoundException } from '../src/exam/exceptions/duplicate-choice-value-found.exception';
+import { AnswerKeyNotPartOfChoiceException } from '../src/exam/exceptions/answer-key-not-part-of-choice.exception';
 
 describe('Exam Module (e2e)', () => {
   let app: INestApplication;
@@ -20,6 +25,7 @@ describe('Exam Module (e2e)', () => {
   let examTestHelper: ExamTestHelperService;
   let authService: AuthService;
   let examService: ExamService;
+  let examQuestionService: ExamQuestionService;
   const baseUrl = '/exam';
 
   beforeAll(async () => {
@@ -33,6 +39,8 @@ describe('Exam Module (e2e)', () => {
     );
     authService = moduleFixture.get<AuthService>(AuthService);
     examService = moduleFixture.get<ExamService>(ExamService);
+    examQuestionService =
+      moduleFixture.get<ExamQuestionService>(ExamQuestionService);
     examTestHelper = moduleFixture.get<ExamTestHelperService>(
       ExamTestHelperService,
     );
@@ -45,6 +53,7 @@ describe('Exam Module (e2e)', () => {
   beforeEach(async () => {
     await userTestHelper.clearUsersData();
     await examTestHelper.clearExams();
+    await examTestHelper.clearExamQuestions();
   });
 
   afterAll(async () => {
@@ -303,6 +312,122 @@ describe('Exam Module (e2e)', () => {
 
       const exists = await examService.exists(exam._id, false);
       expect(exists).toBeNull();
+    });
+  });
+
+  describe('addExamQuestion', () => {
+    it('should reject with validation error', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+
+      const expectedMessage = [
+        'question must be a string',
+        'choices must be an array',
+        'explanation must be a string',
+        'correctAnswer must be a string',
+        'examId must be a string',
+      ];
+
+      const { body } = await request(app.getHttpServer())
+        .post(`${baseUrl}/question`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(body.message).toEqual(expectedMessage);
+    });
+
+    it('should reject with unauthenticated user', async () => {
+      await request(app.getHttpServer())
+        .post(`${baseUrl}/question`)
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+
+    it('should reject with non existing exam', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const examId = mongoose.Types.ObjectId().toHexString();
+      const addExamQuestionDto: AddExamQuestionDto =
+        examTestHelper.generateAddExamQuestionDto({ examId });
+
+      const { body } = await request(app.getHttpServer())
+        .post(`${baseUrl}/question`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(addExamQuestionDto)
+        .expect(HttpStatus.NOT_FOUND);
+
+      expect(body.exception).toEqual(ExamDoesNotExistException.name);
+    });
+
+    it('should reject with duplicate question', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const exam = await examTestHelper.createTestExam({
+        preparedBy: user._id,
+      });
+      const addExamQuestionDto: AddExamQuestionDto =
+        examTestHelper.generateAddExamQuestionDto({ examId: exam._id });
+      await examQuestionService.addQuestionToExam(addExamQuestionDto);
+
+      await request(app.getHttpServer())
+        .post(`${baseUrl}/question`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(addExamQuestionDto)
+        .expect(HttpStatus.BAD_REQUEST);
+      const questions = await examQuestionService.fetchAll(exam._id);
+      expect(questions).toHaveLength(1);
+    });
+
+    it('should reject with duplicate answer', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const exam = await examTestHelper.createTestExam({
+        preparedBy: user._id,
+      });
+      const addExamQuestionDto: AddExamQuestionDto =
+        examTestHelper.generateAddExamQuestionDto({
+          examId: exam._id,
+          choices: [
+            { key: 'A', choice: 'A' },
+            { key: 'B', choice: 'A' },
+          ],
+        });
+
+      const { body } = await request(app.getHttpServer())
+        .post(`${baseUrl}/question`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(addExamQuestionDto)
+        .expect(HttpStatus.BAD_REQUEST);
+
+      const questions = await examQuestionService.fetchAll(exam._id);
+      expect(questions).toHaveLength(0);
+      expect(body.exception).toEqual(DuplicateChoiceValueFoundException.name);
+    });
+
+    it('should reject with correct answer not found', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const exam = await examTestHelper.createTestExam({
+        preparedBy: user._id,
+      });
+      const addExamQuestionDto: AddExamQuestionDto =
+        examTestHelper.generateAddExamQuestionDto({
+          examId: exam._id,
+          correctAnswer: 'C',
+          choices: [
+            { key: 'A', choice: 'A' },
+            { key: 'B', choice: 'B' },
+          ],
+        });
+
+      const { body } = await request(app.getHttpServer())
+        .post(`${baseUrl}/question`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(addExamQuestionDto)
+        .expect(HttpStatus.BAD_REQUEST);
+
+      const questions = await examQuestionService.fetchAll(exam._id);
+      expect(questions).toHaveLength(0);
+      expect(body.exception).toEqual(AnswerKeyNotPartOfChoiceException.name);
     });
   });
 });

@@ -7,16 +7,22 @@ import { ExamService } from './exam.service';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { toJSON } from '../utils/utils';
 import { UserDocument } from '../user/schemas/user.schema';
+import { AddExamQuestionDto } from './dto/add-exam-question.dto';
+import { ExamQuestion, ExamQuestionDocument } from './schema/exam-question.schema';
 
 @Injectable()
 export class ExamTestHelperService {
   constructor(
     @InjectModel(Exam.name) private examModel: Model<ExamDocument>,
+    @InjectModel(ExamQuestion.name) private examQuestionModel: Model<ExamQuestionDocument>,
     private examService: ExamService,
   ) {}
 
   async clearExams() {
     return await this.examModel.deleteMany({});
+  }
+  async clearExamQuestions() {
+    return await this.examQuestionModel.deleteMany({});
   }
 
   generateCreateExamDto(override: Partial<CreateExamDto> = {}): CreateExamDto {
@@ -30,6 +36,18 @@ export class ExamTestHelperService {
     return { ..._default, ...override };
   }
 
+  generateAddExamQuestionDto(
+    override: Partial<AddExamQuestionDto> = {},
+  ): AddExamQuestionDto {
+    const _default: AddExamQuestionDto = {
+      question: faker.lorem.sentence(),
+      explanation: faker.lorem.sentence(),
+      choices: [{ choice: faker.lorem.word(), key: 'A' }],
+      correctAnswer: 'A',
+      examId: '',
+    };
+    return { ..._default, ...override };
+  }
   async createTestExam(
     override: Partial<CreateExamDto> = {},
   ): Promise<ExamDocument> {

@@ -37,8 +37,8 @@ export class ExamQuestionService {
   }
 
   async fetchAll(
-    paginationOption: PaginationOption = PaginationOption.DEFAULT,
     examId: string,
+    paginationOption: PaginationOption = PaginationOption.DEFAULT,
   ) {
     await this.examService.exists(examId);
     return (

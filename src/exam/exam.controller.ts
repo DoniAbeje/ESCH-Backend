@@ -84,7 +84,7 @@ export class ExamController {
     @Pagination() paginationOption: PaginationOption,
     @Param('examId') examId: string,
   ) {
-    return await this.examQuestionService.fetchAll(paginationOption, examId);
+    return await this.examQuestionService.fetchAll(examId, paginationOption);
   }
 
   @ApiPagination(
