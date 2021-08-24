@@ -40,6 +40,7 @@ describe('Exam Module (e2e)', () => {
 
   beforeEach(async () => {
     await userTestHelper.clearUsersData();
+    await examTestHelper.clearExams();
   });
 
   afterAll(async () => {
