@@ -180,7 +180,33 @@ describe('Exam Module (e2e)', () => {
       expect(body).toEqual(expectedResponse);
     });
 
-    // tags filter
-    // authors filter
+    it('should return exams filtered by tags', async () => {
+      const user = await userTestHelper.createTestUser();
+      const mathEasyExams = await examTestHelper.createTestExams(10, {
+        preparedBy: user._id,
+        tags: ['math', '11th', 'easy'],
+      });
+
+      const mathHardExams = await examTestHelper.createTestExams(10, {
+        preparedBy: user._id,
+        tags: ['math', '11th', 'hard'],
+      });
+
+      const physicsexams = await examTestHelper.createTestExams(10, {
+        preparedBy: user._id,
+        tags: ['physics', '11th'],
+      });
+
+      const { body } = await request(app.getHttpServer())
+        .get(`${baseUrl}?tags=math&tags=11th&limit=25`)
+        .expect(HttpStatus.OK);
+
+      const expectedResponse = examTestHelper.getResponse(
+        [...mathEasyExams, ...mathHardExams],
+        user,
+      );
+
+      expect(body).toEqual(expectedResponse);
+    });
   });
 });
