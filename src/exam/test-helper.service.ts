@@ -27,4 +27,11 @@ export class ExamTestHelperService {
     };
     return { ..._default, ...override };
   }
+
+  async createTestExam(
+    override: Partial<CreateExamDto> = {},
+  ): Promise<ExamDocument> {
+    const createExamDto: CreateExamDto = this.generateCreateExamDto(override);
+    return await this.examService.createExam(createExamDto);
+  }
 }
