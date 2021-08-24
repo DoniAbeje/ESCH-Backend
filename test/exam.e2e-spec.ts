@@ -132,6 +132,7 @@ describe('Exam Module (e2e)', () => {
         tags: ['new tag'],
         price: 10,
         samples: [sampleQuestion],
+        status: 1
       };
 
       await request(app.getHttpServer())
@@ -141,7 +142,7 @@ describe('Exam Module (e2e)', () => {
         .expect(HttpStatus.OK);
 
       const updatedExam = await examService.exists(exam._id);
-      expect(updatedExam).toMatchObject(expect.objectContaining(updateExamDto));
+      expect(toJSON(updatedExam)).toMatchObject(expect.objectContaining(updateExamDto));
     });
   });
 
