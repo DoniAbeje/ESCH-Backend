@@ -12,6 +12,7 @@ import { toJSON } from '../src/utils/utils';
 import * as mongoose from 'mongoose';
 import { ExamDoesNotExistException } from '../src/exam/exceptions/exam-doesnot-exist.exception';
 import { UpdateExamDto } from '../src/exam/dto/update-exam.dto';
+import { PaginationOption } from '../src/common/pagination-option';
 
 describe('Exam Module (e2e)', () => {
   let app: INestApplication;
@@ -142,5 +143,44 @@ describe('Exam Module (e2e)', () => {
       const updatedExam = await examService.exists(exam._id);
       expect(updatedExam).toMatchObject(expect.objectContaining(updateExamDto));
     });
+  });
+
+  describe('fetchAllExams', () => {
+    it('should return exams with default pagination', async () => {
+      const user = await userTestHelper.createTestUser();
+      const exams = await examTestHelper.createTestExams(
+        PaginationOption.DEFAULT_LIMIT * 2,
+        { preparedBy: user._id },
+      );
+
+      const { body } = await request(app.getHttpServer())
+        .get(baseUrl)
+        .expect(HttpStatus.OK);
+      const expectedResponse = examTestHelper.getResponse(
+        exams.filter((_, index) => index < PaginationOption.DEFAULT_LIMIT),
+        user,
+      );
+      expect(body).toEqual(expectedResponse);
+    });
+
+    it('should return exams with given limit and offset', async () => {
+      const user = await userTestHelper.createTestUser();
+      const exams = await examTestHelper.createTestExams(
+        PaginationOption.DEFAULT_LIMIT,
+        { preparedBy: user._id },
+      );
+
+      const { body } = await request(app.getHttpServer())
+        .get(`${baseUrl}?limit=5&offset=5`)
+        .expect(HttpStatus.OK);
+      const expectedResponse = examTestHelper.getResponse(
+        exams.filter((_, index) => index >= 5 && index < 10),
+        user,
+      );
+      expect(body).toEqual(expectedResponse);
+    });
+
+    // tags filter
+    // authors filter
   });
 });
