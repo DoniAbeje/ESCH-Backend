@@ -138,10 +138,10 @@ export class ExamQuestionService {
     }
   }
 
-  async exists(examQuestionId: string) {
+  async exists(examQuestionId: string, throwException = true) {
     const examQuestion = await this.examQuestionModel.findById(examQuestionId);
 
-    if (!examQuestion) {
+    if (!examQuestion && throwException) {
       throw new ExamQuestionDoesNotExistException();
     }
 
