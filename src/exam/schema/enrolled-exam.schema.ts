@@ -28,3 +28,5 @@ export class EnrolledExam {
 }
 
 export const EnrolledExamSchema = SchemaFactory.createForClass(EnrolledExam);
+
+EnrolledExamSchema.index({ examId: 1, userId: 1 }, { unique: true });

@@ -14,6 +14,7 @@ import { ApiPagination } from '../common/decorators/api-pagination.decorator';
 import { Pagination } from '../common/decorators/pagination.decorator';
 import { PaginationOption } from '../common/pagination-option';
 import { QueryArray } from '../common/decorators/query-array.decorator';
+import { EnrollForExamDto } from './dto/enroll-for-exam.dto';
 @ApiTags('Exam')
 @Controller('exam')
 export class ExamController {
@@ -109,5 +110,17 @@ export class ExamController {
   @DeleteAuth('question/:examQuestionId', 'Delete Exam Question')
   async deleteExamQuestion(@Param('examQuestionId') examQuestionId: string) {
     await this.examQuestionService.delete(examQuestionId);
+  }
+
+  @PostAuth('/enroll', 'Enroll for an exam')
+  async enrollForAnExam(
+    @Body() enrollForExamDto: EnrollForExamDto,
+    @User() user,
+  ) {
+    enrollForExamDto.userId = user.id;
+
+    const enrollment = await this.examService.enroll(enrollForExamDto);
+
+    return { _id: enrollment._id };
   }
 }

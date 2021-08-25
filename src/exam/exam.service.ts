@@ -62,9 +62,26 @@ export class ExamService {
   }
 
   async enroll(enrollForExamDto: EnrollForExamDto) {
-    await this.exists(enrollForExamDto.examId);
+    const exam = await this.exists(enrollForExamDto.examId);
+
+    if (exam.price > 0) {
+      await this.userHasBoughtExam(
+        enrollForExamDto.examId,
+        enrollForExamDto.userId,
+        true,
+      );
+    }
 
     return this.enrolledExamModel.create(enrollForExamDto);
+  }
+
+  async userHasBoughtExam(
+    examId: string,
+    userId: string,
+    throwException: boolean,
+  ) {
+    // check if the user has already paid for it
+    return true;
   }
 
   async exists(examId: string) {
