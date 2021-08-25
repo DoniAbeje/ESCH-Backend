@@ -14,10 +14,10 @@ class Answer {
 @Schema()
 export class EnrolledExam {
   @Prop({ required: true, ref: 'Exam' })
-  exam: string;
+  examId: string;
 
   @Prop({ required: true, ref: 'User' })
-  student: string;
+  userId: string;
 
   @Prop({ type: [Answer], default: [] })
   answers: Answer[];

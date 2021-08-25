@@ -7,10 +7,18 @@ import { ExamDoesNotExistException } from './exceptions/exam-doesnot-exist.excep
 import { UpdateExamDto } from './dto/update-exam.dto';
 import { PaginationOption } from '../common/pagination-option';
 import { ExamQueryBuilder } from './query/exam-query-builder';
+import {
+  EnrolledExam,
+  EnrolledExamDocument,
+} from './schema/enrolled-exam.schema';
 
 @Injectable()
 export class ExamService {
-  constructor(@InjectModel(Exam.name) public examModel: Model<ExamDocument>) {}
+  constructor(
+    @InjectModel(Exam.name) public examModel: Model<ExamDocument>,
+    @InjectModel(EnrolledExam.name)
+    public enrolledExamModel: Model<EnrolledExamDocument>,
+  ) {}
 
   async createExam(createExamDto: CreateExamDto) {
     return this.examModel.create(createExamDto);
@@ -50,6 +58,12 @@ export class ExamService {
   async delete(examId: string) {
     const exam = await this.exists(examId);
     return await exam.delete();
+  }
+
+  async enroll(examId, userId) {
+    await this.exists(examId);
+
+    return this.enrolledExamModel.create({ examId, userId });
   }
 
   async exists(examId: string) {
