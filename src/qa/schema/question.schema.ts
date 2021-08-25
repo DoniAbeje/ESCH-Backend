@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { Vote } from 'src/common/schemas/vote.schema';
+import { Vote } from '../../common/schemas/vote.schema';
 
 export type QuestionDocument = Question & Document;
 

@@ -1,4 +1,12 @@
-import { IsOptional, IsString, IsUrl, MinLength } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import {
+  IsOptional,
+  IsString,
+  IsUrl,
+  MinLength,
+  Matches,
+} from 'class-validator';
+import { UserRole } from '../schemas/user.schema';
 
 export class CreateUserDto {
   @IsString()
@@ -7,14 +15,23 @@ export class CreateUserDto {
   @IsString()
   readonly lastName: string;
 
-  @IsString()
+  @Matches(/^09\d{8}/, { message: 'phone must be in the format 09xxxxxxxx' })
   readonly phone: string;
 
-  @IsString()
-  @MinLength(5)
+  @MinLength(8)
   readonly password: string;
 
   @IsUrl()
   @IsOptional()
-  readonly profilePicture?: string
+  readonly profilePicture?: string;
+
+  /**
+   * 1 for Student
+   * 2 for Instructor
+   */
+  @ApiProperty({
+    enum: [UserRole.STUDENT.toString(), UserRole.INSTRUCTOR.toString()],
+  })
+  @IsOptional()
+  readonly role?: UserRole = UserRole.STUDENT;
 }

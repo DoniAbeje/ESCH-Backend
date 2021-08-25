@@ -4,7 +4,7 @@ import { Model } from 'mongoose';
 import { RaiseQuestionDto } from './dto/raise-question.dto';
 import { QuestionDoesNotExistException } from './exceptions/question-doesnot-exist.exception';
 import { Question, QuestionDocument } from './schema/question.schema';
-import { VoteService } from 'src/common/services/vote.service';
+import { VoteService } from '../common/services/vote.service';
 import { PaginationOption } from '../common/pagination-option';
 import { QuestionQueryBuilder } from './query/question-query-builder';
 
@@ -21,7 +21,7 @@ export class QuestionService extends VoteService {
   }
 
   async fetchAll(
-    paginationOption: PaginationOption = PaginationOption.getDefault(),
+    paginationOption: PaginationOption = PaginationOption.DEFAULT,
     tags: string[] = [],
   ) {
     return (
@@ -34,12 +34,17 @@ export class QuestionService extends VoteService {
   }
 
   async fetchOne(questionId: string) {
-    return (
-      await new QuestionQueryBuilder(this.questionModel)
-        .filterByIds([questionId])
-        .populateAskedBy()
-        .exec()
-    ).first();
+    await this.exists(questionId);
+
+    const result = await new QuestionQueryBuilder(this.questionModel)
+      .filterByIds([questionId])
+      .populateAskedBy()
+      .exec();
+
+    if (result.isEmpty()) {
+      throw new QuestionDoesNotExistException();
+    }
+    return result.first();
   }
 
   async exists(id: string, throwException = true) {

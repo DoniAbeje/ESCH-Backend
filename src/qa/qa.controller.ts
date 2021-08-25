@@ -1,9 +1,17 @@
-import { Body, Controller, Get, Param, ParseArrayPipe, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  ParseArrayPipe,
+  Query,
+} from '@nestjs/common';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
-import { PostAuth } from 'src/common/decorators/post-auth.decorator';
-import { User } from 'src/common/decorators/user.decorator';
+import { PostAuth } from '../common/decorators/post-auth.decorator';
+import { User } from '../common/decorators/user.decorator';
 import { ApiPagination } from '../common/decorators/api-pagination.decorator';
 import { Pagination } from '../common/decorators/pagination.decorator';
+import { QueryArray } from '../common/decorators/query-array.decorator';
 import { PaginationOption } from '../common/pagination-option';
 import { AnswerService } from './answer.service';
 import { AnswerQuestionDto } from './dto/answer-question.dto';
@@ -28,13 +36,12 @@ export class QaController {
     return { _id: question._id };
   }
 
-  @ApiTags('Fetch Questions')
-  @ApiPagination()
-  @ApiQuery({name: 'tags', type: [String], required: false})
-  @Get('/')
+  @ApiPagination('/', 'Fetch Questions')
+  @ApiQuery({ name: 'tags', type: [String], required: false })
   async fetchAllQuestions(
     @Pagination() paginationOption: PaginationOption,
-    @Query('tags', new ParseArrayPipe({ items: String, optional: true })) tags: string[] = [],
+    @QueryArray('tags')
+    tags: string[] = [],
   ) {
     return this.questionService.fetchAll(paginationOption, tags);
   }
@@ -57,9 +64,7 @@ export class QaController {
     return { _id: answer._id };
   }
 
-  @ApiTags('Fetch Answers for single question')
-  @ApiPagination()
-  @Get('/:questionId/answer')
+  @ApiPagination('/:questionId/answer', 'Fetch Answers for single question')
   async fetchAnswersForSingleQuestions(
     @Param('questionId') questionId: string,
     @Pagination() paginationOption: PaginationOption,
@@ -70,27 +75,53 @@ export class QaController {
     );
   }
 
-  @PostAuth('/:questionId/upvote', 'Upvote Question')
-  async upvote(
+  @PostAuth('/:questionId/upvote', 'Upvote question')
+  async upvoteQuestion(
     @Param('questionId') questionId: string,
     @User('id') userId: string,
   ) {
     await this.questionService.upvote(questionId, userId);
   }
 
-  @PostAuth('/:questionId/downvote', 'Downvote Question')
-  async downvote(
+  @PostAuth('/:questionId/downvote', 'Downvote question')
+  async downvoteQuestion(
     @Param('questionId') questionId: string,
     @User('id') userId: string,
   ) {
     await this.questionService.downvote(questionId, userId);
   }
 
-  @PostAuth('/:questionId/cancel-vote', 'Cancel vote')
-  async cancelVote(
+  @PostAuth('/:questionId/cancel-vote', 'Cancel question vote')
+  async cancelQuestionVote(
     @Param('questionId') questionId: string,
     @User('id') userId: string,
   ) {
     await this.questionService.cancelVote(questionId, userId);
+  }
+
+  
+  @PostAuth('/answer/:answerId/upvote', 'Upvote answer')
+  async upvoteAnswer(
+    @Param('answerId') answerId: string,
+    @User('id') userId: string,
+  ) {
+    await this.answerService.upvote(answerId, userId);
+  }
+
+    
+  @PostAuth('/answer/:answerId/downvote', 'Downvote answer')
+  async downAnswer(
+    @Param('answerId') answerId: string,
+    @User('id') userId: string,
+  ) {
+    await this.answerService.downvote(answerId, userId);
+  }
+
+  @PostAuth('/answer/:answerId/cancel-vote', 'Cancel answer vote')
+  async cancelAnswerVote(
+    @Param('answerId') answerId: string,
+    @User('id') userId: string,
+  ) {
+    await this.answerService.cancelVote(answerId, userId);
   }
 }

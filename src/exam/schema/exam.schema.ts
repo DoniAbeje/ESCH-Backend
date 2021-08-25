@@ -3,6 +3,10 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Schema as MongooseSchema } from 'mongoose';
 
 export type ExamDocument = Exam & Document;
+export enum ExamStatus {
+  DRAFT,
+  PUBLISHED,
+}
 
 @Schema({ _id: false })
 class Rating {
@@ -25,7 +29,7 @@ export class Exam {
   @Prop({ required: true })
   description: string;
 
-  @Prop({ default: 0 })
+  @Prop({ default: 0, min: 0 })
   price: number;
 
   @Prop({ type: [String], minlength: 1 })
@@ -39,6 +43,9 @@ export class Exam {
 
   @Prop({ type: [RatingSchema], default: [] })
   ratings: Rating[];
+
+  @Prop({ default: ExamStatus.DRAFT })
+  status: ExamStatus = ExamStatus.DRAFT;
 
   @Prop({ default: Date.now })
   createdAt: Date;
