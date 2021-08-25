@@ -84,6 +84,11 @@ export class ExamService {
     return true;
   }
 
+  async fetchEnrolledExams(userId) {
+    // populate exam properties
+    return this.enrolledExamModel.find({ userId });
+  }
+
   async exists(examId: string) {
     const exam = await this.examModel.findById(examId);
 

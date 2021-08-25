@@ -15,6 +15,7 @@ import { Pagination } from '../common/decorators/pagination.decorator';
 import { PaginationOption } from '../common/pagination-option';
 import { QueryArray } from '../common/decorators/query-array.decorator';
 import { EnrollForExamDto } from './dto/enroll-for-exam.dto';
+import { GetAuth } from '../common/decorators/get-auth.decorator';
 @ApiTags('Exam')
 @Controller('exam')
 export class ExamController {
@@ -50,6 +51,11 @@ export class ExamController {
     authors: string[] = [],
   ) {
     return this.examService.fetchAll(paginationOption, tags, authors);
+  }
+
+  @GetAuth('/enrolled', 'Fetch enrolled exam for a user')
+  async fetchEnrolledExams(@User() user) {
+    return this.examService.fetchEnrolledExams(user.id);
   }
 
   @ApiTags('Get single exam')
