@@ -3,7 +3,7 @@ import { Document } from 'mongoose';
 
 export type EnrolledExamDocument = EnrolledExam & Document;
 @Schema({ _id: false })
-class Answer {
+class ExamAnswer {
   @Prop({ required: true })
   question: string;
 
@@ -11,6 +11,7 @@ class Answer {
   answer: string;
 }
 
+const ExamAnswerSchema = SchemaFactory.createForClass(ExamAnswer);
 @Schema()
 export class EnrolledExam {
   @Prop({ required: true, ref: 'Exam' })
@@ -19,8 +20,8 @@ export class EnrolledExam {
   @Prop({ required: true, ref: 'User' })
   userId: string;
 
-  @Prop({ type: [Answer], default: [] })
-  answers: Answer[];
+  @Prop({ type: [ExamAnswerSchema], default: [] })
+  answers: ExamAnswer[];
 
   @Prop({ default: Date.now })
   createdAt: Date;
