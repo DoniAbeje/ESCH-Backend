@@ -5,7 +5,7 @@ import {
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { AddExamQuestionDto, Choice } from './dto/add-exam-question.dto';
+import { AddExamQuestionDto } from './dto/add-exam-question.dto';
 import { ExamService } from './exam.service';
 import { DuplicateChoiceKeyFoundException } from './exceptions/duplicate-choice-key-found.exception';
 import { DuplicateChoiceValueFoundException } from './exceptions/duplicate-choice-value-found.exception';

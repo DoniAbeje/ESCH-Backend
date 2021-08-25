@@ -1,12 +1,5 @@
 import { ApiHideProperty } from '@nestjs/swagger';
-import {
-  ArrayMinSize,
-  IsNumber,
-  IsOptional,
-  IsPositive,
-  IsString,
-  Min,
-} from 'class-validator';
+import { ArrayMinSize, IsOptional, IsString, Min } from 'class-validator';
 
 export class CreateExamDto {
   @IsString()

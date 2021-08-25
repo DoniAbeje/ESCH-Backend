@@ -13,7 +13,6 @@ export class ExamQueryBuilder {
   private idFilters: mongoose.Types.ObjectId[] = [];
   private shouldPopulatePreparedBy = false;
 
-
   constructor(private examModel: Model<ExamDocument>) {}
 
   paginate(paginationOption: PaginationOption) {
@@ -27,7 +26,7 @@ export class ExamQueryBuilder {
   }
 
   filterByAuthors(authors: string[]) {
-    this.authorFilters = authors.map((id) => mongoose.Types.ObjectId(id));;
+    this.authorFilters = authors.map((id) => mongoose.Types.ObjectId(id));
     return this;
   }
 
@@ -35,7 +34,6 @@ export class ExamQueryBuilder {
     this.idFilters = ids.map((id) => mongoose.Types.ObjectId(id));
     return this;
   }
-
 
   populatePreparedBy(shouldPopulatePreparedBy = true) {
     this.shouldPopulatePreparedBy = shouldPopulatePreparedBy;
