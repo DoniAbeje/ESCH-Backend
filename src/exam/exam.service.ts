@@ -11,6 +11,7 @@ import {
   EnrolledExam,
   EnrolledExamDocument,
 } from './schema/enrolled-exam.schema';
+import { EnrollForExamDto } from './dto/enroll-for-exam.dto';
 
 @Injectable()
 export class ExamService {
@@ -60,10 +61,10 @@ export class ExamService {
     return await exam.delete();
   }
 
-  async enroll(examId, userId) {
-    await this.exists(examId);
+  async enroll(enrollForExamDto: EnrollForExamDto) {
+    await this.exists(enrollForExamDto.examId);
 
-    return this.enrolledExamModel.create({ examId, userId });
+    return this.enrolledExamModel.create(enrollForExamDto);
   }
 
   async exists(examId: string) {
