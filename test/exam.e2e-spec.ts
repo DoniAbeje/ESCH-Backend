@@ -712,6 +712,13 @@ describe('Exam Module (e2e)', () => {
     });
 
 
+    it('should reject with unauthenticated user', async () => {
+      const id = mongoose.Types.ObjectId();
+      await request(app.getHttpServer())
+        .delete(`${baseUrl}/question/${id}`)
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+    
     it('should delete exam question successfully', async () => {
       const user = await userTestHelper.createTestUser();
       const token = await authService.signToken(user);
