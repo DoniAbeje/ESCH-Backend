@@ -18,6 +18,10 @@ import { ExamQuestionService } from '../src/exam/exam-question.service';
 import { QuestionAlreadyAddedException } from '../src/exam/exceptions/question-already-added.exception';
 import { DuplicateChoiceValueFoundException } from '../src/exam/exceptions/duplicate-choice-value-found.exception';
 import { AnswerKeyNotPartOfChoiceException } from '../src/exam/exceptions/answer-key-not-part-of-choice.exception';
+import { ExamQuestionDoesNotExistException } from '../src/exam/exceptions/examQuestion-doesnot-exist.exception';
+import { UpdateUserDto } from '../src/user/dto/update-user.dto';
+import { UpdateExamQuestionDto } from '../src/exam/dto/update-exam-question.dto';
+import { DuplicateChoiceKeyFoundException } from '../src/exam/exceptions/duplicate-choice-key-found.exception';
 
 describe('Exam Module (e2e)', () => {
   let app: INestApplication;
@@ -428,6 +432,272 @@ describe('Exam Module (e2e)', () => {
       const questions = await examQuestionService.fetchAll(exam._id);
       expect(questions).toHaveLength(0);
       expect(body.exception).toEqual(AnswerKeyNotPartOfChoiceException.name);
+    });
+  });
+
+  describe('updateExamQuestion', () => {
+    it('should reject with unauthenticated user', async () => {
+      const id = mongoose.Types.ObjectId();
+      await request(app.getHttpServer())
+        .put(`${baseUrl}/question/${id}`)
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+
+    it('should reject with non existing exam question', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const questionId = mongoose.Types.ObjectId().toHexString();
+
+      const { body } = await request(app.getHttpServer())
+        .put(`${baseUrl}/question/${questionId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HttpStatus.NOT_FOUND);
+
+      expect(body.exception).toEqual(ExamQuestionDoesNotExistException.name);
+    });
+
+    it('should reject with duplicate question', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const exam = await examTestHelper.createTestExam({
+        preparedBy: user._id,
+      });
+      const addExamQuestionDto: AddExamQuestionDto =
+        examTestHelper.generateAddExamQuestionDto({ examId: exam._id });
+      const question = await examQuestionService.addQuestionToExam(
+        addExamQuestionDto,
+      );
+      const updateExamDto: UpdateExamQuestionDto = {
+        question: addExamQuestionDto.question,
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .put(`${baseUrl}/question/${question._id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(updateExamDto)
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(body.exception).toEqual(QuestionAlreadyAddedException.name);
+    });
+
+    it('should reject with duplicate answer value', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const exam = await examTestHelper.createTestExam({
+        preparedBy: user._id,
+      });
+
+      const addExamQuestionDto: AddExamQuestionDto =
+        examTestHelper.generateAddExamQuestionDto({
+          examId: exam._id,
+          choices: [
+            { key: 'A', choice: 'A' },
+            { key: 'B', choice: 'B' },
+          ],
+        });
+
+      let question = await examQuestionService.addQuestionToExam(
+        addExamQuestionDto,
+      );
+
+      const updateExamQuestionDto: UpdateExamQuestionDto = {
+        choices: [
+          { key: 'A', choice: 'A' },
+          { key: 'B', choice: 'A' },
+        ],
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .put(`${baseUrl}/question/${question._id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(updateExamQuestionDto)
+        .expect(HttpStatus.BAD_REQUEST);
+
+      question = await examQuestionService.exists(question._id);
+      expect(toJSON(question).choices).toEqual(addExamQuestionDto.choices);
+      expect(body.exception).toEqual(DuplicateChoiceValueFoundException.name);
+    });
+
+    it('should reject with duplicate answer key', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const exam = await examTestHelper.createTestExam({
+        preparedBy: user._id,
+      });
+
+      const addExamQuestionDto: AddExamQuestionDto =
+        examTestHelper.generateAddExamQuestionDto({
+          examId: exam._id,
+          choices: [
+            { key: 'A', choice: 'A' },
+            { key: 'B', choice: 'B' },
+          ],
+        });
+
+      let question = await examQuestionService.addQuestionToExam(
+        addExamQuestionDto,
+      );
+
+      const updateExamQuestionDto: UpdateExamQuestionDto = {
+        choices: [
+          { key: 'A', choice: 'A' },
+          { key: 'A', choice: 'B' },
+        ],
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .put(`${baseUrl}/question/${question._id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(updateExamQuestionDto)
+        .expect(HttpStatus.BAD_REQUEST);
+
+      question = await examQuestionService.exists(question._id);
+      expect(toJSON(question).choices).toEqual(addExamQuestionDto.choices);
+      expect(body.exception).toEqual(DuplicateChoiceKeyFoundException.name);
+    });
+
+    it('should reject with correct answer not found when updating correctAnswer', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const exam = await examTestHelper.createTestExam({
+        preparedBy: user._id,
+      });
+
+      const addExamQuestionDto: AddExamQuestionDto =
+        examTestHelper.generateAddExamQuestionDto({
+          examId: exam._id,
+          choices: [
+            { key: 'A', choice: 'A' },
+            { key: 'B', choice: 'B' },
+          ],
+        });
+
+      let question = await examQuestionService.addQuestionToExam(
+        addExamQuestionDto,
+      );
+
+      const updateExamQuestionDto: UpdateExamQuestionDto = {
+        correctAnswer: 'C'
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .put(`${baseUrl}/question/${question._id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(updateExamQuestionDto)
+        .expect(HttpStatus.BAD_REQUEST);
+
+      question = await examQuestionService.exists(question._id);
+      expect(toJSON(question).choices).toEqual(addExamQuestionDto.choices);
+      expect(body.exception).toEqual(AnswerKeyNotPartOfChoiceException.name);
+    });
+
+    it('should reject with correct answer not found when updating choices', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const exam = await examTestHelper.createTestExam({
+        preparedBy: user._id,
+      });
+
+      const addExamQuestionDto: AddExamQuestionDto =
+        examTestHelper.generateAddExamQuestionDto({
+          examId: exam._id,
+          choices: [
+            { key: 'A', choice: 'A' },
+            { key: 'B', choice: 'B' },
+          ],
+        });
+
+      let question = await examQuestionService.addQuestionToExam(
+        addExamQuestionDto,
+      );
+
+      const updateExamQuestionDto: UpdateExamQuestionDto = {
+        choices: [
+          { key: 'C', choice: 'C' },
+        ],
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .put(`${baseUrl}/question/${question._id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(updateExamQuestionDto)
+        .expect(HttpStatus.BAD_REQUEST);
+
+      question = await examQuestionService.exists(question._id);
+      expect(toJSON(question).choices).toEqual(addExamQuestionDto.choices);
+      expect(body.exception).toEqual(AnswerKeyNotPartOfChoiceException.name);
+    });
+    it('should reject with correct answer not found when updating choices and correctAnswer', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const exam = await examTestHelper.createTestExam({
+        preparedBy: user._id,
+      });
+
+      const addExamQuestionDto: AddExamQuestionDto =
+        examTestHelper.generateAddExamQuestionDto({
+          examId: exam._id,
+          choices: [
+            { key: 'A', choice: 'A' },
+            { key: 'B', choice: 'B' },
+          ],
+        });
+
+      let question = await examQuestionService.addQuestionToExam(
+        addExamQuestionDto,
+      );
+
+      const updateExamQuestionDto: UpdateExamQuestionDto = {
+        correctAnswer: 'D',
+        choices: [
+          { key: 'C', choice: 'C' },
+        ],
+      };
+
+      const { body } = await request(app.getHttpServer())
+        .put(`${baseUrl}/question/${question._id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(updateExamQuestionDto)
+        .expect(HttpStatus.BAD_REQUEST);
+
+      question = await examQuestionService.exists(question._id);
+      expect(toJSON(question).choices).toEqual(addExamQuestionDto.choices);
+      expect(body.exception).toEqual(AnswerKeyNotPartOfChoiceException.name);
+    });
+
+    it('should update exam question successfully', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const exam = await examTestHelper.createTestExam({
+        preparedBy: user._id,
+      });
+
+      const addExamQuestionDto: AddExamQuestionDto =
+        examTestHelper.generateAddExamQuestionDto({
+          examId: exam._id,
+        });
+
+      const question = await examQuestionService.addQuestionToExam(
+        addExamQuestionDto,
+      );
+
+      const updateExamQuestionDto: UpdateExamQuestionDto = {
+        question: 'new question',
+        explanation: 'new explanation',
+        correctAnswer: 'D',
+        choices: [
+          { key: 'D', choice: 'D' },
+        ],
+      };
+
+      await request(app.getHttpServer())
+        .put(`${baseUrl}/question/${question._id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(updateExamQuestionDto)
+        .expect(HttpStatus.OK);
+
+      const updatedQuestion = await examQuestionService.exists(question._id);
+      expect(toJSON(updatedQuestion)).toMatchObject(expect.objectContaining(updateExamQuestionDto));
     });
   });
 });
