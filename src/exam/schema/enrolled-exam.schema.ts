@@ -1,5 +1,7 @@
-import { Prop, Schema } from '@nestjs/mongoose';
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
 
+export type EnrolledExamDocument = EnrolledExam & Document;
 @Schema({ _id: false })
 class Answer {
   @Prop({ required: true })
@@ -23,3 +25,5 @@ export class EnrolledExam {
   @Prop({ default: Date.now })
   createdAt: Date;
 }
+
+export const EnrolledExamSchema = SchemaFactory.createForClass(EnrolledExam);
