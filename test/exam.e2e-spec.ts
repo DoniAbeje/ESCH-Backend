@@ -577,7 +577,7 @@ describe('Exam Module (e2e)', () => {
       );
 
       const updateExamQuestionDto: UpdateExamQuestionDto = {
-        correctAnswer: 'C'
+        correctAnswer: 'C',
       };
 
       const { body } = await request(app.getHttpServer())
@@ -612,9 +612,7 @@ describe('Exam Module (e2e)', () => {
       );
 
       const updateExamQuestionDto: UpdateExamQuestionDto = {
-        choices: [
-          { key: 'C', choice: 'C' },
-        ],
+        choices: [{ key: 'C', choice: 'C' }],
       };
 
       const { body } = await request(app.getHttpServer())
@@ -649,9 +647,7 @@ describe('Exam Module (e2e)', () => {
 
       const updateExamQuestionDto: UpdateExamQuestionDto = {
         correctAnswer: 'D',
-        choices: [
-          { key: 'C', choice: 'C' },
-        ],
+        choices: [{ key: 'C', choice: 'C' }],
       };
 
       const { body } = await request(app.getHttpServer())
@@ -685,9 +681,7 @@ describe('Exam Module (e2e)', () => {
         question: 'new question',
         explanation: 'new explanation',
         correctAnswer: 'D',
-        choices: [
-          { key: 'D', choice: 'D' },
-        ],
+        choices: [{ key: 'D', choice: 'D' }],
       };
 
       await request(app.getHttpServer())
@@ -697,7 +691,48 @@ describe('Exam Module (e2e)', () => {
         .expect(HttpStatus.OK);
 
       const updatedQuestion = await examQuestionService.exists(question._id);
-      expect(toJSON(updatedQuestion)).toMatchObject(expect.objectContaining(updateExamQuestionDto));
+      expect(toJSON(updatedQuestion)).toMatchObject(
+        expect.objectContaining(updateExamQuestionDto),
+      );
+    });
+  });
+
+  describe('deleteExamQuestion', () => {
+    it('should reject with non existing exam question', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const questionId = mongoose.Types.ObjectId().toHexString();
+
+      const { body } = await request(app.getHttpServer())
+        .delete(`${baseUrl}/question/${questionId}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HttpStatus.NOT_FOUND);
+
+      expect(body.exception).toEqual(ExamQuestionDoesNotExistException.name);
+    });
+
+
+    it('should delete exam question successfully', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const exam = await examTestHelper.createTestExam({
+        preparedBy: user._id,
+      });
+
+      const addExamQuestionDto: AddExamQuestionDto =
+        examTestHelper.generateAddExamQuestionDto({
+          examId: exam._id,
+        });
+
+      let question = await examQuestionService.addQuestionToExam(
+        addExamQuestionDto,
+      );
+      await request(app.getHttpServer())
+        .delete(`${baseUrl}/question/${question._id}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HttpStatus.OK);
+      question = await examQuestionService.exists(question._id, false);
+      expect(question).toBeNull();
     });
   });
 });
