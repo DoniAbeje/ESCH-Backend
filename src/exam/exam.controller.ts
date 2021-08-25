@@ -46,6 +46,11 @@ export class ExamController {
     await this.examService.updateExam(examId, updateExamDto);
   }
 
+  @DeleteAuth('/:examId', 'Delete exam')
+  async deleteExam(@Param('examId') examId: string) {
+    await this.examService.delete(examId);
+  }
+
   @ApiPagination('/', 'Get all exams detail')
   @ApiQuery({ name: 'tags', type: [String], required: false })
   @ApiQuery({ name: 'authors', type: [String], required: false })
@@ -65,11 +70,6 @@ export class ExamController {
     return this.examService.fetchOne(examId);
   }
 
-  @DeleteAuth('/:examId', 'Delete exam')
-  async deleteExam(@Param('examId') examId: string) {
-    await this.examService.delete(examId);
-  }
-
   @PostAuth('/question', 'Add question to exam')
   async addExamQuestion(@Body() addExamQuestionDto: AddExamQuestionDto) {
     const examQuestion = await this.examQuestionService.addQuestionToExam(
@@ -77,6 +77,24 @@ export class ExamController {
     );
 
     return { _id: examQuestion._id };
+  }
+
+  @PutAuth('question/:examQuestionId', 'Update Exam Question')
+  async updateExamQuestion(
+    @Param('examQuestionId') examQuestionId: string,
+    @Body() updateExamQuestionDto: UpdateExamQuestionDto,
+  ) {
+    const examQuestion = await this.examQuestionService.updateExamQuestion(
+      examQuestionId,
+      updateExamQuestionDto,
+    );
+
+    return { _id: examQuestion._id };
+  }
+
+  @DeleteAuth('question/:examQuestionId', 'Delete Exam Question')
+  async deleteExamQuestion(@Param('examQuestionId') examQuestionId: string) {
+    await this.examQuestionService.delete(examQuestionId);
   }
 
   @ApiPagination('/:examId/question', 'Fetch Questions for single exam')
@@ -99,23 +117,5 @@ export class ExamController {
       paginationOption,
       examId,
     );
-  }
-
-  @PutAuth('question/:examQuestionId', 'Update Exam Question')
-  async updateExamQuestion(
-    @Param('examQuestionId') examQuestionId: string,
-    @Body() updateExamQuestionDto: UpdateExamQuestionDto,
-  ) {
-    const examQuestion = await this.examQuestionService.updateExamQuestion(
-      examQuestionId,
-      updateExamQuestionDto,
-    );
-
-    return { _id: examQuestion._id };
-  }
-
-  @DeleteAuth('question/:examQuestionId', 'Delete Exam Question')
-  async deleteExamQuestion(@Param('examQuestionId') examQuestionId: string) {
-    await this.examQuestionService.delete(examQuestionId);
   }
 }
