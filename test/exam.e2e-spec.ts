@@ -775,5 +775,28 @@ describe('Exam Module (e2e)', () => {
       );
       expect(body).toEqual(expectedResponse);
     });
+
+    it('should return exam questions successfully with default pagination', async () => {
+      const user = await userTestHelper.createTestUser();
+      const exam = await examTestHelper.createTestExam({
+        preparedBy: user._id,
+      });
+
+      const questions = await examTestHelper.addTestExamQuestions(
+        PaginationOption.DEFAULT_LIMIT ,
+        {
+          examId: exam._id,
+        },
+      );
+
+      const { body } = await request(app.getHttpServer())
+        .get(`${baseUrl}/${exam._id}/question?limit=5&offset=5`)
+        .expect(HttpStatus.OK);
+
+      const expectedResponse = examTestHelper.getExamQuestionResponse(
+        questions.filter((_, index) => index >= 5 && index < 10),
+      );
+      expect(body).toEqual(expectedResponse);
+    })
   });
 });
