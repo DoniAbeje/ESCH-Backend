@@ -799,4 +799,16 @@ describe('Exam Module (e2e)', () => {
       expect(body).toEqual(expectedResponse);
     })
   });
+
+  describe('fetchSampleQuestionsForSingleExam', () => {
+    it('should reject with non existing exam ', async () => {
+      const examId = mongoose.Types.ObjectId().toHexString();
+
+      const { body } = await request(app.getHttpServer())
+        .get(`${baseUrl}/${examId}/question/samples`)
+        .expect(HttpStatus.NOT_FOUND);
+
+      expect(body.exception).toEqual(ExamDoesNotExistException.name);
+    });
+  });
 });
