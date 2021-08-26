@@ -783,7 +783,7 @@ describe('Exam Module (e2e)', () => {
       });
 
       const questions = await examTestHelper.addTestExamQuestions(
-        PaginationOption.DEFAULT_LIMIT ,
+        PaginationOption.DEFAULT_LIMIT,
         {
           examId: exam._id,
         },
@@ -797,7 +797,7 @@ describe('Exam Module (e2e)', () => {
         questions.filter((_, index) => index >= 5 && index < 10),
       );
       expect(body).toEqual(expectedResponse);
-    })
+    });
   });
 
   describe('fetchSampleQuestionsForSingleExam', () => {
@@ -825,8 +825,8 @@ describe('Exam Module (e2e)', () => {
       );
 
       const updateExamDto: UpdateExamDto = {
-        samples: questions.map(q => q._id)
-      }
+        samples: questions.map((q) => q._id),
+      };
 
       await examService.updateExam(exam._id, updateExamDto);
 
@@ -838,7 +838,35 @@ describe('Exam Module (e2e)', () => {
         questions.filter((_, index) => index < PaginationOption.DEFAULT_LIMIT),
       );
       expect(body).toEqual(expectedResponse);
-    })
-    
+    });
+
+    it('should return sample exam questions with limit and offset', async () => {
+      const user = await userTestHelper.createTestUser();
+      const exam = await examTestHelper.createTestExam({
+        preparedBy: user._id,
+      });
+
+      const questions = await examTestHelper.addTestExamQuestions(
+        PaginationOption.DEFAULT_LIMIT,
+        {
+          examId: exam._id,
+        },
+      );
+
+      const updateExamDto: UpdateExamDto = {
+        samples: questions.map((q) => q._id),
+      };
+
+      await examService.updateExam(exam._id, updateExamDto);
+
+      const { body } = await request(app.getHttpServer())
+        .get(`${baseUrl}/${exam._id}/question/samples?limit=5&offset=5`)
+        .expect(HttpStatus.OK);
+
+      const expectedResponse = examTestHelper.getExamQuestionResponse(
+        questions.filter((_, index) => index >= 5 && index < 10),
+      );
+      expect(body).toEqual(expectedResponse);
+    });
   });
 });
