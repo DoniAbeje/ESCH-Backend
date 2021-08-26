@@ -711,14 +711,13 @@ describe('Exam Module (e2e)', () => {
       expect(body.exception).toEqual(ExamQuestionDoesNotExistException.name);
     });
 
-
     it('should reject with unauthenticated user', async () => {
       const id = mongoose.Types.ObjectId();
       await request(app.getHttpServer())
         .delete(`${baseUrl}/question/${id}`)
         .expect(HttpStatus.UNAUTHORIZED);
     });
-    
+
     it('should delete exam question successfully', async () => {
       const user = await userTestHelper.createTestUser();
       const token = await authService.signToken(user);
@@ -753,6 +752,28 @@ describe('Exam Module (e2e)', () => {
 
       expect(body.exception).toEqual(ExamDoesNotExistException.name);
     });
-    // pagination
-  })
+
+    it('should return exam questions successfully with default pagination', async () => {
+      const user = await userTestHelper.createTestUser();
+      const exam = await examTestHelper.createTestExam({
+        preparedBy: user._id,
+      });
+
+      const questions = await examTestHelper.addTestExamQuestions(
+        PaginationOption.DEFAULT_LIMIT * 2,
+        {
+          examId: exam._id,
+        },
+      );
+
+      const { body } = await request(app.getHttpServer())
+        .get(`${baseUrl}/${exam._id}/question`)
+        .expect(HttpStatus.OK);
+
+      const expectedResponse = examTestHelper.getExamQuestionResponse(
+        questions.filter((_, index) => index < PaginationOption.DEFAULT_LIMIT),
+      );
+      expect(body).toEqual(expectedResponse);
+    });
+  });
 });

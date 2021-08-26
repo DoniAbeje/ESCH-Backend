@@ -8,14 +8,20 @@ import { CreateExamDto } from './dto/create-exam.dto';
 import { toJSON } from '../utils/utils';
 import { UserDocument } from '../user/schemas/user.schema';
 import { AddExamQuestionDto } from './dto/add-exam-question.dto';
-import { ExamQuestion, ExamQuestionDocument } from './schema/exam-question.schema';
+import {
+  ExamQuestion,
+  ExamQuestionDocument,
+} from './schema/exam-question.schema';
+import { ExamQuestionService } from './exam-question.service';
 
 @Injectable()
 export class ExamTestHelperService {
   constructor(
     @InjectModel(Exam.name) private examModel: Model<ExamDocument>,
-    @InjectModel(ExamQuestion.name) private examQuestionModel: Model<ExamQuestionDocument>,
+    @InjectModel(ExamQuestion.name)
+    private examQuestionModel: Model<ExamQuestionDocument>,
     private examService: ExamService,
+    private examSQuestionervice: ExamQuestionService,
   ) {}
 
   async clearExams() {
@@ -55,6 +61,14 @@ export class ExamTestHelperService {
     return await this.examService.createExam(createExamDto);
   }
 
+  async addTestExamQuestion(
+    override: Partial<AddExamQuestionDto> = {},
+  ): Promise<ExamQuestionDocument> {
+    const addExamQuestionDto: AddExamQuestionDto =
+      this.generateAddExamQuestionDto(override);
+    return await this.examSQuestionervice.addQuestionToExam(addExamQuestionDto);
+  }
+
   async createTestExams(
     amount: number,
     createExamDto: Partial<CreateExamDto> = {},
@@ -64,6 +78,17 @@ export class ExamTestHelperService {
       exams.push(await this.createTestExam(createExamDto));
     }
     return exams;
+  }
+
+  async addTestExamQuestions(
+    amount: number,
+    addExamQuestionDto: Partial<AddExamQuestionDto> = {},
+  ): Promise<ExamQuestionDocument[]> {
+    const questions = [];
+    for (let index = 0; index < amount; index++) {
+      questions.push(await this.addTestExamQuestion(addExamQuestionDto));
+    }
+    return questions;
   }
 
   getResponse(exam: ExamDocument | ExamDocument[], user: UserDocument) {
@@ -85,5 +110,20 @@ export class ExamTestHelperService {
       profilePicture: user.profilePicture,
     };
     return { ...toJSON(examDocument), preparedBy };
+  }
+
+  getExamQuestionResponse(
+    examQuestion: ExamQuestionDocument | ExamQuestionDocument[],
+  ) {
+    if (Array.isArray(examQuestion)) {
+      return examQuestion.map((e) => this.getSingleExamQuestionResponse(e));
+    }
+    return this.getSingleExamQuestionResponse(examQuestion);
+  }
+
+  private getSingleExamQuestionResponse(
+    examQuestionDocument: ExamQuestionDocument,
+  ) {
+    return toJSON(examQuestionDocument);
   }
 }
