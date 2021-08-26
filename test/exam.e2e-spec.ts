@@ -810,5 +810,35 @@ describe('Exam Module (e2e)', () => {
 
       expect(body.exception).toEqual(ExamDoesNotExistException.name);
     });
+
+    it('should return sample exam questions with default pagination', async () => {
+      const user = await userTestHelper.createTestUser();
+      const exam = await examTestHelper.createTestExam({
+        preparedBy: user._id,
+      });
+
+      const questions = await examTestHelper.addTestExamQuestions(
+        PaginationOption.DEFAULT_LIMIT * 2,
+        {
+          examId: exam._id,
+        },
+      );
+
+      const updateExamDto: UpdateExamDto = {
+        samples: questions.map(q => q._id)
+      }
+
+      await examService.updateExam(exam._id, updateExamDto);
+
+      const { body } = await request(app.getHttpServer())
+        .get(`${baseUrl}/${exam._id}/question/samples`)
+        .expect(HttpStatus.OK);
+
+      const expectedResponse = examTestHelper.getExamQuestionResponse(
+        questions.filter((_, index) => index < PaginationOption.DEFAULT_LIMIT),
+      );
+      expect(body).toEqual(expectedResponse);
+    })
+    
   });
 });
