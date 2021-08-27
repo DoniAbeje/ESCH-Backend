@@ -7,28 +7,31 @@ import * as faker from 'faker';
 import { UserDocument, User } from './schemas/user.schema';
 
 @Injectable()
-export class UserTestHelperService  {
+export class UserTestHelperService {
   constructor(
-      @InjectModel(User.name) public userModel: Model<UserDocument>,
+    @InjectModel(User.name) public userModel: Model<UserDocument>,
     private userService: UserService,
   ) {}
 
-  generateCreateUserDto(override: Partial<CreateUserDto>= {}): CreateUserDto{
+  generateCreateUserDto(override: Partial<CreateUserDto> = {}): CreateUserDto {
     const _default: CreateUserDto = {
-        firstName: faker.name.firstName(),
-        lastName: faker.name.lastName(),
-        phone: '0987654321',
-        password: 'password',
-        profilePicture: 'https://www.gravatar.com/avatar/7d1caf9df777b3b2cf474ff743494335?s=64&d=identicon&r=PG'
-    }
-    return { ..._default, ...override}
+      firstName: faker.name.firstName(),
+      lastName: faker.name.lastName(),
+      phone: '0987654321',
+      password: 'password',
+      profilePicture:
+        'https://www.gravatar.com/avatar/7d1caf9df777b3b2cf474ff743494335?s=64&d=identicon&r=PG',
+    };
+    return { ..._default, ...override };
   }
 
-  async createTestUser(createUserDto: CreateUserDto = null) {
-      return await this.userService.createUser(createUserDto ||  this.generateCreateUserDto())
+  async createTestUser(createUserDto: Partial<CreateUserDto> = {}) {
+    return await this.userService.createUser(
+      this.generateCreateUserDto(createUserDto),
+    );
   }
 
   async clearUsersData() {
-      await this.userModel.deleteMany({});
+    await this.userModel.deleteMany({});
   }
 }
