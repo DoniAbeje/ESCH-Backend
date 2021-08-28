@@ -4,6 +4,7 @@ import { Model } from 'mongoose';
 import { PaginationOption } from '../common/pagination-option';
 import { EnrollForExamDto } from './dto/enroll-for-exam.dto';
 import { ExamService } from './exam.service';
+import { NotEnrolledException } from './exceptions/not-enrolled.exception';
 import { EnrolledExamQueryBuilder } from './query/enrolled-exam-query-builder';
 import {
   EnrolledExam,
@@ -52,5 +53,18 @@ export class ExamEnrollmentService {
         .populateExam()
         .exec()
     ).all();
+  }
+
+  async exists(examId, examinee, throwException = true) {
+    const enrolledExam = await this.enrolledExamModel.findOne({
+      examId,
+      examinee,
+    });
+
+    if (!enrolledExam && throwException) {
+      throw new NotEnrolledException();
+    }
+
+    return enrolledExam;
   }
 }
