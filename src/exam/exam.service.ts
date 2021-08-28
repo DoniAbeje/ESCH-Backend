@@ -10,6 +10,7 @@ import { ExamQueryBuilder } from './query/exam-query-builder';
 import { ExamQuestionService } from './exam-question.service';
 import { ExamEnrollmentService } from './exam-enrollment.service';
 import { QuestionDoesNotBelongToExamException } from './exceptions/question-doesnot-belong-to-exam.exception';
+import { AnswerExamQuestionDto } from './dto/answer-exam-question.dto';
 
 @Injectable()
 export class ExamService {
@@ -61,10 +62,16 @@ export class ExamService {
     return await exam.delete();
   }
 
-  async answerExamQuestion(examId, questionId, answer, userId) {
+  async answerExamQuestion(
+    answerExamQuestionDto: AnswerExamQuestionDto,
+    examId: string,
+    userId: string,
+  ) {
     await this.exists(examId);
 
-    const examQuestion = await this.examQuestionService.exists(questionId);
+    const examQuestion = await this.examQuestionService.exists(
+      answerExamQuestionDto.questionId,
+    );
 
     if (examQuestion.examId !== examId) {
       throw new QuestionDoesNotBelongToExamException();
@@ -75,8 +82,8 @@ export class ExamService {
     return this.examEnrollmentService.answerExamQuestion(
       examId,
       userId,
-      questionId,
-      answer,
+      answerExamQuestionDto.questionId,
+      answerExamQuestionDto.answer,
     );
   }
 
