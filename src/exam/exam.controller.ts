@@ -42,6 +42,11 @@ export class ExamController {
     await this.examService.updateExam(examId, updateExamDto);
   }
 
+  @DeleteAuth('/:examId', 'Delete exam')
+  async deleteExam(@Param('examId') examId: string) {
+    await this.examService.delete(examId);
+  }
+
   @ApiPagination('/', 'Get all exams detail')
   @ApiQuery({ name: 'tags', type: [String], required: false })
   @ApiQuery({ name: 'authors', type: [String], required: false })
@@ -66,11 +71,6 @@ export class ExamController {
     return this.examService.fetchOne(examId);
   }
 
-  @DeleteAuth('/:examId', 'Delete exam')
-  async deleteExam(@Param('examId') examId: string) {
-    await this.examService.delete(examId);
-  }
-
   @PostAuth('/question', 'Add question to exam')
   async addExamQuestion(@Body() addExamQuestionDto: AddExamQuestionDto) {
     const examQuestion = await this.examQuestionService.addQuestionToExam(
@@ -78,28 +78,6 @@ export class ExamController {
     );
 
     return { _id: examQuestion._id };
-  }
-
-  @ApiPagination('/:examId/question', 'Fetch Questions for single exam')
-  async fetchQuestionsForSingleExam(
-    @Pagination() paginationOption: PaginationOption,
-    @Param('examId') examId: string,
-  ) {
-    return await this.examQuestionService.fetchAll(paginationOption, examId);
-  }
-
-  @ApiPagination(
-    '/:examId/question/samples',
-    'Fetch sample questions for single exam',
-  )
-  async fetchSampleQuestionsForSingleExam(
-    @Pagination() paginationOption: PaginationOption,
-    @Param('examId') examId: string,
-  ) {
-    return await this.examQuestionService.fetchSamples(
-      paginationOption,
-      examId,
-    );
   }
 
   @PutAuth('question/:examQuestionId', 'Update Exam Question')
@@ -118,6 +96,28 @@ export class ExamController {
   @DeleteAuth('question/:examQuestionId', 'Delete Exam Question')
   async deleteExamQuestion(@Param('examQuestionId') examQuestionId: string) {
     await this.examQuestionService.delete(examQuestionId);
+  }
+
+  @ApiPagination('/:examId/question', 'Fetch Questions for single exam')
+  async fetchQuestionsForSingleExam(
+    @Pagination() paginationOption: PaginationOption,
+    @Param('examId') examId: string,
+  ) {
+    return await this.examQuestionService.fetchAll(examId, paginationOption);
+  }
+
+  @ApiPagination(
+    '/:examId/question/samples',
+    'Fetch sample questions for single exam',
+  )
+  async fetchSampleQuestionsForSingleExam(
+    @Pagination() paginationOption: PaginationOption,
+    @Param('examId') examId: string,
+  ) {
+    return await this.examQuestionService.fetchSamples(
+      paginationOption,
+      examId,
+    );
   }
 
   @PostAuth('/enroll', 'Enroll for an exam')

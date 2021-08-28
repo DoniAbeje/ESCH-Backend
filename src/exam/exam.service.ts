@@ -52,10 +52,10 @@ export class ExamService {
     return await exam.delete();
   }
 
-  async exists(examId: string) {
+  async exists(examId: string, throwException = true) {
     const exam = await this.examModel.findById(examId);
 
-    if (!exam) {
+    if (!exam && throwException) {
       throw new ExamDoesNotExistException();
     }
 

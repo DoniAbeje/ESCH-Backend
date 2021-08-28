@@ -37,8 +37,8 @@ export class ExamQuestionService {
   }
 
   async fetchAll(
-    paginationOption: PaginationOption = PaginationOption.DEFAULT,
     examId: string,
+    paginationOption: PaginationOption = PaginationOption.DEFAULT,
   ) {
     await this.examService.exists(examId);
     return (
@@ -138,10 +138,10 @@ export class ExamQuestionService {
     }
   }
 
-  async exists(examQuestionId: string) {
+  async exists(examQuestionId: string, throwException = true) {
     const examQuestion = await this.examQuestionModel.findById(examQuestionId);
 
-    if (!examQuestion) {
+    if (!examQuestion && throwException) {
       throw new ExamQuestionDoesNotExistException();
     }
 

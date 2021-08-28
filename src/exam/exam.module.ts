@@ -13,6 +13,7 @@ import {
   EnrolledExamSchema,
 } from './schema/enrolled-exam.schema';
 import { ExamEnrollmentService } from './exam-enrollment.service';
+import { ExamTestHelperService } from './test-helper.service';
 
 @Module({
   imports: [
@@ -22,7 +23,12 @@ import { ExamEnrollmentService } from './exam-enrollment.service';
       { name: EnrolledExam.name, schema: EnrolledExamSchema },
     ]),
   ],
-  providers: [ExamService, ExamQuestionService, ExamEnrollmentService],
+  providers: [
+    ExamService,
+    ExamQuestionService,
+    ExamEnrollmentService,
+    ExamTestHelperService,
+  ],
   controllers: [ExamController],
 })
 export class ExamModule {}

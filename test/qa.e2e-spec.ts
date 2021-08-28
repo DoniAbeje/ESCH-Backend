@@ -194,7 +194,7 @@ describe('QA Module (e2e)', () => {
       expect(body.exception).toEqual(QuestionDoesNotExistException.name);
     });
 
-    it('should reject return single question details', async () => {
+    it('should return single question details', async () => {
       const user = await userTestHelper.createTestUser();
       const question = await qaTestHelper.createTestQuestion({
         askedBy: user._id,

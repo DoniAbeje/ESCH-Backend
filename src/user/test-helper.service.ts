@@ -25,9 +25,9 @@ export class UserTestHelperService {
     return { ..._default, ...override };
   }
 
-  async createTestUser(createUserDto: CreateUserDto = null) {
+  async createTestUser(createUserDto: Partial<CreateUserDto> = {}) {
     return await this.userService.createUser(
-      createUserDto || this.generateCreateUserDto(),
+      this.generateCreateUserDto(createUserDto),
     );
   }
 
