@@ -12,6 +12,7 @@ import {
   EnrolledExam,
   EnrolledExamSchema,
 } from './schema/enrolled-exam.schema';
+import { ExamEnrollmentService } from './exam-enrollment.service';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import {
       { name: EnrolledExam.name, schema: EnrolledExamSchema },
     ]),
   ],
-  providers: [ExamService, ExamQuestionService],
+  providers: [ExamService, ExamQuestionService, ExamEnrollmentService],
   controllers: [ExamController],
 })
 export class ExamModule {}

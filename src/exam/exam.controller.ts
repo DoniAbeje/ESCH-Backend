@@ -16,12 +16,14 @@ import { PaginationOption } from '../common/pagination-option';
 import { QueryArray } from '../common/decorators/query-array.decorator';
 import { EnrollForExamDto } from './dto/enroll-for-exam.dto';
 import { GetAuth } from '../common/decorators/get-auth.decorator';
+import { ExamEnrollmentService } from './exam-enrollment.service';
 @ApiTags('Exam')
 @Controller('exam')
 export class ExamController {
   constructor(
     private examService: ExamService,
     private examQuestionService: ExamQuestionService,
+    private examEnrollmentService: ExamEnrollmentService,
   ) {}
 
   @PostAuth('/', 'Create Exam')
@@ -55,7 +57,7 @@ export class ExamController {
 
   @GetAuth('/enrolled', 'Fetch enrolled exam for a user')
   async fetchEnrolledExams(@User() user) {
-    return this.examService.fetchEnrolledExams(user.id);
+    return this.examEnrollmentService.fetchEnrolledExams(user.id);
   }
 
   @ApiTags('Get single exam')
@@ -125,7 +127,9 @@ export class ExamController {
   ) {
     enrollForExamDto.userId = user.id;
 
-    const enrollment = await this.examService.enroll(enrollForExamDto);
+    const enrollment = await this.examEnrollmentService.enroll(
+      enrollForExamDto,
+    );
 
     return { _id: enrollment._id };
   }
