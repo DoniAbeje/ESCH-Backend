@@ -17,6 +17,7 @@ import { QueryArray } from '../common/decorators/query-array.decorator';
 import { EnrollForExamDto } from './dto/enroll-for-exam.dto';
 import { GetAuth } from '../common/decorators/get-auth.decorator';
 import { ExamEnrollmentService } from './exam-enrollment.service';
+import { AnswerExamQuestionDto } from './dto/answer-exam-question.dto';
 @ApiTags('Exam')
 @Controller('exam')
 export class ExamController {
@@ -132,5 +133,19 @@ export class ExamController {
     );
 
     return { _id: enrollment._id };
+  }
+
+  @PostAuth('/:examId/answer', 'Answer Exam Question')
+  async answerExamQuestion(
+    @Body() answerExamQuestionDto: AnswerExamQuestionDto,
+    @Param('examId') examId: string,
+    @User() user,
+  ) {
+    const enrolledExam = await this.examService.answerExamQuestion(
+      answerExamQuestionDto,
+      examId,
+      user.id,
+    );
+    return { _id: enrolledExam._id };
   }
 }

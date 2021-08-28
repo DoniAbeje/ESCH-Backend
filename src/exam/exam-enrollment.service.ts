@@ -56,16 +56,17 @@ export class ExamEnrollmentService {
   }
 
   async answerExamQuestion(examId, examinee, questionId, answer) {
-    const enrolledExam = await this.enrolledExamModel.findOne({
+    const enrolledExam = await this.exists(examId, examinee);
+    const enrolledExamWithQuestion = await this.enrolledExamModel.findOne({
       examId,
       examinee,
-      answers: { $elemMatch: { questionId } },
+      'answers.question': questionId,
     });
 
-    if (enrolledExam) {
+    if (enrolledExamWithQuestion) {
       await this.enrolledExamModel.updateOne(
         { _id: enrolledExam._id, 'answers.question': questionId },
-        { $set: { 'answers.answer': answer } },
+        { $set: { 'answers.$.answer': answer } },
       );
     } else {
       await this.enrolledExamModel.updateOne(

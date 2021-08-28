@@ -73,11 +73,14 @@ export class ExamService {
       answerExamQuestionDto.questionId,
     );
 
-    if (examQuestion.examId !== examId) {
+    if (examQuestion.examId != examId) {
       throw new QuestionDoesNotBelongToExamException();
     }
 
-    await this.examEnrollmentService.exists(examId, userId);
+    this.examQuestionService.checkForCorrectAnswer(
+      examQuestion,
+      answerExamQuestionDto.answer,
+    );
 
     return this.examEnrollmentService.answerExamQuestion(
       examId,
