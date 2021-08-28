@@ -1,8 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
+import { PaginationOption } from '../common/pagination-option';
 import { EnrollForExamDto } from './dto/enroll-for-exam.dto';
 import { ExamService } from './exam.service';
+import { EnrolledExamQueryBuilder } from './query/enrolled-exam-query-builder';
 import {
   EnrolledExam,
   EnrolledExamDocument,
@@ -39,8 +41,16 @@ export class ExamEnrollmentService {
     return true;
   }
 
-  async fetchEnrolledExams(examinee) {
-    // populate exam properties
-    return this.enrolledExamModel.find({ examinee });
+  async fetchEnrolledExams(
+    examinee,
+    paginationOption: PaginationOption = PaginationOption.DEFAULT,
+  ) {
+    return (
+      await new EnrolledExamQueryBuilder(this.enrolledExamModel)
+        .paginate(paginationOption)
+        .filterByExaminees([examinee])
+        .populateExam()
+        .exec()
+    ).all();
   }
 }

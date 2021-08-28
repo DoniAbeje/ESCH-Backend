@@ -7,9 +7,10 @@ export class EnrolledExamQueryBuilder {
   private isBuilt = false;
   private aggregations: any[] = [];
   private paginationOption: PaginationOption;
-  private examineeFilters: mongoose.Types.ObjectId[] = [];
+  private examineeFilters: string[] = [];
   private idFilters: mongoose.Types.ObjectId[] = [];
   private shouldPopulateExaminee = false;
+  private shouldPopulateExam = false;
 
   constructor(
     private enrolledExamModel: mongoose.Model<EnrolledExamDocument>,
@@ -21,7 +22,7 @@ export class EnrolledExamQueryBuilder {
   }
 
   filterByExaminees(examinee: string[]) {
-    this.examineeFilters = examinee.map((id) => mongoose.Types.ObjectId(id));
+    this.examineeFilters = examinee;
     return this;
   }
 
@@ -30,8 +31,13 @@ export class EnrolledExamQueryBuilder {
     return this;
   }
 
-  populatePreparedBy(shouldPopulateExaminee = true) {
+  populateExaminee(shouldPopulateExaminee = true) {
     this.shouldPopulateExaminee = shouldPopulateExaminee;
+    return this;
+  }
+
+  populateExam(shouldPopulateExam = true) {
+    this.shouldPopulateExam = shouldPopulateExam;
     return this;
   }
 
@@ -89,6 +95,12 @@ export class EnrolledExamQueryBuilder {
       enrolledExams = await this.enrolledExamModel.populate(enrolledExams, {
         path: 'examinee',
         select: ['_id', 'firstName', 'lastName', 'profilePicture'],
+      });
+    }
+    if (this.shouldPopulateExam) {
+      enrolledExams = await this.enrolledExamModel.populate(enrolledExams, {
+        path: 'examId',
+        select: ['_id', 'title', 'description', 'price', 'tags'],
       });
     }
     return enrolledExams;
