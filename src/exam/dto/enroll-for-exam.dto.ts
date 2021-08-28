@@ -6,5 +6,5 @@ export class EnrollForExamDto {
   readonly examId: string;
 
   @ApiHideProperty()
-  userId: string;
+  examinee: string;
 }

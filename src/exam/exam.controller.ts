@@ -125,7 +125,7 @@ export class ExamController {
     @Body() enrollForExamDto: EnrollForExamDto,
     @User() user,
   ) {
-    enrollForExamDto.userId = user.id;
+    enrollForExamDto.examinee = user.id;
 
     const enrollment = await this.examEnrollmentService.enroll(
       enrollForExamDto,

@@ -22,7 +22,7 @@ export class ExamEnrollmentService {
     if (exam.price > 0) {
       await this.userHasBoughtExam(
         enrollForExamDto.examId,
-        enrollForExamDto.userId,
+        enrollForExamDto.examinee,
         true,
       );
     }
@@ -32,15 +32,15 @@ export class ExamEnrollmentService {
 
   async userHasBoughtExam(
     examId: string,
-    userId: string,
+    examinee: string,
     throwException: boolean,
   ) {
     // check if the user has already paid for it
     return true;
   }
 
-  async fetchEnrolledExams(userId) {
+  async fetchEnrolledExams(examinee) {
     // populate exam properties
-    return this.enrolledExamModel.find({ userId });
+    return this.enrolledExamModel.find({ examinee });
   }
 }

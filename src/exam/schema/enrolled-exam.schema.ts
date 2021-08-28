@@ -18,7 +18,7 @@ export class EnrolledExam {
   examId: string;
 
   @Prop({ required: true, ref: 'User' })
-  userId: string;
+  examinee: string;
 
   @Prop({ type: [ExamAnswerSchema], default: [] })
   answers: ExamAnswer[];
