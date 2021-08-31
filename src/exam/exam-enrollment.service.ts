@@ -43,7 +43,7 @@ export class ExamEnrollmentService {
   }
 
   async fetchEnrolledExams(
-    examinee,
+    examinee: string,
     paginationOption: PaginationOption = PaginationOption.DEFAULT,
   ) {
     return (
@@ -55,7 +55,12 @@ export class ExamEnrollmentService {
     ).all();
   }
 
-  async answerExamQuestion(examId, examinee, questionId, answer) {
+  async answerExamQuestion(
+    examId: string,
+    examinee: string,
+    questionId: string,
+    answer: string,
+  ) {
     const enrolledExam = await this.exists(examId, examinee);
     const enrolledExamWithQuestion = await this.enrolledExamModel.findOne({
       examId,
@@ -78,7 +83,7 @@ export class ExamEnrollmentService {
     return enrolledExam;
   }
 
-  async exists(examId, examinee, throwException = true) {
+  async exists(examId: string, examinee: string, throwException = true) {
     const enrolledExam = await this.enrolledExamModel.findOne({
       examId,
       examinee,
