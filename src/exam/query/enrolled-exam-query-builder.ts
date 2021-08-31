@@ -1,7 +1,7 @@
-import { PaginationOption } from 'src/common/pagination-option';
+import { PaginationOption } from '../../common/pagination-option';
 import * as mongoose from 'mongoose';
 import { EnrolledExamDocument } from '../schema/enrolled-exam.schema';
-import { ExecResult } from 'src/qa/query/exec-result';
+import { ExecResult } from '../../qa/query/exec-result';
 
 export class EnrolledExamQueryBuilder {
   private isBuilt = false;
