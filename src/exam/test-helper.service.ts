@@ -13,6 +13,12 @@ import {
   ExamQuestionDocument,
 } from './schema/exam-question.schema';
 import { ExamQuestionService } from './exam-question.service';
+import { EnrollForExamDto } from './dto/enroll-for-exam.dto';
+import {
+  EnrolledExam,
+  EnrolledExamDocument,
+} from './schema/enrolled-exam.schema';
+import { ExamEnrollmentService } from './exam-enrollment.service';
 
 @Injectable()
 export class ExamTestHelperService {
@@ -20,8 +26,11 @@ export class ExamTestHelperService {
     @InjectModel(Exam.name) private examModel: Model<ExamDocument>,
     @InjectModel(ExamQuestion.name)
     private examQuestionModel: Model<ExamQuestionDocument>,
+    @InjectModel(EnrolledExam.name)
+    private enrolledExamModel: Model<EnrolledExamDocument>,
     private examService: ExamService,
     private examSQuestionervice: ExamQuestionService,
+    private examEnrollmentService: ExamEnrollmentService,
   ) {}
 
   async clearExams() {
@@ -29,6 +38,10 @@ export class ExamTestHelperService {
   }
   async clearExamQuestions() {
     return await this.examQuestionModel.deleteMany({});
+  }
+
+  async clearEnrolledExams() {
+    return await this.enrolledExamModel.deleteMany({});
   }
 
   generateCreateExamDto(override: Partial<CreateExamDto> = {}): CreateExamDto {
@@ -78,6 +91,28 @@ export class ExamTestHelperService {
       exams.push(await this.createTestExam(createExamDto));
     }
     return exams;
+  }
+
+  async createTestEnrolledExam(
+    examId,
+    examinee,
+  ): Promise<EnrolledExamDocument> {
+    const enrollForExamDto: EnrollForExamDto = { examId, examinee };
+    return this.examEnrollmentService.enroll(enrollForExamDto);
+  }
+
+  async createTestEnrolledExams(
+    amount: number,
+    userId: string,
+  ): Promise<EnrolledExamDocument[]> {
+    const enrolledExams = [];
+    const exams = await this.createTestExams(amount);
+
+    for (const exam of exams) {
+      enrolledExams.push(await this.createTestEnrolledExam(exam._id, userId));
+    }
+
+    return enrolledExams;
   }
 
   async addTestExamQuestions(
