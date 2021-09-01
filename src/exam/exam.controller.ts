@@ -62,8 +62,14 @@ export class ExamController {
   }
 
   @GetAuth('/enrolled', 'Fetch enrolled exam for a user')
-  async fetchEnrolledExams(@User() user) {
-    return this.examEnrollmentService.fetchEnrolledExams(user.id);
+  async fetchEnrolledExams(
+    @Pagination() paginationOption: PaginationOption,
+    @User() user,
+  ) {
+    return this.examEnrollmentService.fetchEnrolledExams(
+      user.id,
+      paginationOption,
+    );
   }
 
   @ApiTags('Get single exam')

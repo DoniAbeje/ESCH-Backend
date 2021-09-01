@@ -64,6 +64,7 @@ describe('Exam Module (e2e)', () => {
     await userTestHelper.clearUsersData();
     await examTestHelper.clearExams();
     await examTestHelper.clearExamQuestions();
+    await examTestHelper.clearEnrolledExams();
   });
 
   afterAll(async () => {
@@ -935,6 +936,49 @@ describe('Exam Module (e2e)', () => {
       expect(toJSON(enrolledExam)).toMatchObject(
         expect.objectContaining(enrollForExamDto),
       );
+    });
+  });
+
+  describe('fetchEnrolledExams', () => {
+    it('should reject with unauthenticated user', async () => {
+      await request(app.getHttpServer())
+        .get(`${baseUrl}/enrolled`)
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+
+    it('should return enrolled exams with default pagination', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      await examTestHelper.createTestEnrolledExams(
+        PaginationOption.DEFAULT_LIMIT * 2,
+        user._id,
+      );
+
+      const { body } = await request(app.getHttpServer())
+        .get(`${baseUrl}/enrolled`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HttpStatus.OK);
+
+      expect(body.length).toEqual(PaginationOption.DEFAULT_LIMIT);
+    });
+
+    it('should return enrolled exams with given limit and offset', async () => {
+      const limit = 5;
+      const offset = 5;
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const enrolledExams = await examTestHelper.createTestEnrolledExams(
+        PaginationOption.DEFAULT_LIMIT * 2,
+        user._id,
+      );
+
+      const { body } = await request(app.getHttpServer())
+        .get(`${baseUrl}/enrolled?limit=${limit}&offset=${offset}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HttpStatus.OK);
+
+      expect(body.length).toEqual(limit);
+      expect(body[0]._id).toEqual(enrolledExams[offset]._id.toString());
     });
   });
 });

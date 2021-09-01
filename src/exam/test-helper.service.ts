@@ -106,7 +106,7 @@ export class ExamTestHelperService {
     userId: string,
   ): Promise<EnrolledExamDocument[]> {
     const enrolledExams = [];
-    const exams = await this.createTestExams(amount);
+    const exams = await this.createTestExams(amount, { preparedBy: userId });
 
     for (const exam of exams) {
       enrolledExams.push(await this.createTestEnrolledExam(exam._id, userId));
