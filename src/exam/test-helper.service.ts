@@ -19,6 +19,7 @@ import {
   EnrolledExamDocument,
 } from './schema/enrolled-exam.schema';
 import { ExamEnrollmentService } from './exam-enrollment.service';
+import { AnswerExamQuestionDto } from './dto/answer-exam-question.dto';
 
 @Injectable()
 export class ExamTestHelperService {
@@ -67,6 +68,17 @@ export class ExamTestHelperService {
     };
     return { ..._default, ...override };
   }
+
+  generateAnswerExamQuestionDto(
+    override: Partial<AnswerExamQuestionDto> = {},
+  ): AnswerExamQuestionDto {
+    const _default: AnswerExamQuestionDto = {
+      questionId: '',
+      answer: 'A',
+    };
+    return { ..._default, ...override };
+  }
+
   async createTestExam(
     override: Partial<CreateExamDto> = {},
   ): Promise<ExamDocument> {

@@ -141,7 +141,7 @@ export class ExamController {
     return { _id: enrollment._id };
   }
 
-  @PostAuth('/:examId/answer', 'Answer Exam Question')
+  @PutAuth('/:examId/answer', 'Answer Exam Question')
   async answerExamQuestion(
     @Body() answerExamQuestionDto: AnswerExamQuestionDto,
     @Param('examId') examId: string,
