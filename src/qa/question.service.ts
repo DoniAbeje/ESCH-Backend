@@ -23,22 +23,25 @@ export class QuestionService extends VoteService {
   async fetchAll(
     paginationOption: PaginationOption = PaginationOption.DEFAULT,
     tags: string[] = [],
+    loggedInUserId = null,
   ) {
     return (
       await new QuestionQueryBuilder(this.questionModel)
         .filterByTags(tags)
         .paginate(paginationOption)
         .populateAskedBy()
+        .populateUserVoteFlag(loggedInUserId)
         .exec()
     ).all();
   }
 
-  async fetchOne(questionId: string) {
+  async fetchOne(questionId: string, loggedInUserId = null) {
     await this.exists(questionId);
 
     const result = await new QuestionQueryBuilder(this.questionModel)
       .filterByIds([questionId])
       .populateAskedBy()
+      .populateUserVoteFlag(loggedInUserId)
       .exec();
 
     if (result.isEmpty()) {

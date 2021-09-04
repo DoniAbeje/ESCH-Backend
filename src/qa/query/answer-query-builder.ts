@@ -11,13 +11,19 @@ export class AnswerQueryBuilder {
   private idFilters: mongoose.Types.ObjectId[] = [];
   private questionIdFilters: string[] = [];
   private shouldPopulateAnsweredBy = false;
-  private projections = {
+
+  private voteFlagPopulation = {
+    shouldPopulate: false,
+    userId: null,
+  };
+
+  private projections: any = {
     answer: 1,
     question: 1,
     answeredBy: 1,
     createdAt: 1,
-    upvotes: { $size: '$upvotes' },
-    downvotes: { $size: '$downvotes' },
+    upvotes: 1,
+    downvotes: 1,
   };
 
   constructor(private answerModel: Model<AnswerDocument>) {}
@@ -34,6 +40,13 @@ export class AnswerQueryBuilder {
 
   filterByQuestionIds(ids: string[]) {
     this.questionIdFilters = ids
+    return this;
+  }
+
+  populateUserVoteFlag(userId: string, shouldPopulate = true) {
+    this.voteFlagPopulation.shouldPopulate = shouldPopulate;
+    this.voteFlagPopulation.userId = userId;
+    
     return this;
   }
 
@@ -62,7 +75,7 @@ export class AnswerQueryBuilder {
     }
     // projection
     this.aggregations.push({
-      $project: this.projections,
+      $project: this.preProcessProjection(),
     });
     this.isBuilt = true;
     return this.aggregations;
@@ -77,6 +90,30 @@ export class AnswerQueryBuilder {
     answered = await this.processPopulate(answered);
 
     return new ExecResult(answered);
+  }
+
+  private preProcessProjection() {
+    let tempProjections = this.projections;
+    const { shouldPopulate, userId } = this.voteFlagPopulation;
+
+    if (shouldPopulate) {
+      tempProjections = {
+        ...tempProjections,
+        upvoted: {
+          $in: [userId, '$upvotes'],
+        },
+        downvoted: {
+          $in: [userId, '$downvotes'],
+        },
+      };
+    }
+
+    tempProjections = {
+      ...tempProjections,
+      upvotes: { $size: '$upvotes' },
+      downvotes: { $size: '$downvotes' },
+    };
+    return tempProjections;
   }
 
   private processFilter(): AnswerMatchQuery {

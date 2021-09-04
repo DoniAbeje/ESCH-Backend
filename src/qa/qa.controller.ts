@@ -17,6 +17,7 @@ import { AnswerService } from './answer.service';
 import { AnswerQuestionDto } from './dto/answer-question.dto';
 import { RaiseQuestionDto } from './dto/raise-question.dto';
 import { QuestionService } from './question.service';
+import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 
 @ApiTags('Question and Answer')
 @Controller('question')
@@ -42,14 +43,18 @@ export class QaController {
     @Pagination() paginationOption: PaginationOption,
     @QueryArray('tags')
     tags: string[] = [],
+    @User('id') userId,
   ) {
-    return this.questionService.fetchAll(paginationOption, tags);
+    return this.questionService.fetchAll(paginationOption, tags, userId);
   }
 
   @ApiTags('Fetch Single Question')
   @Get('/:questionId')
-  async fetchSingleQuestions(@Param('questionId') questionId: string) {
-    return this.questionService.fetchOne(questionId);
+  async fetchSingleQuestions(
+    @Param('questionId') questionId: string,
+    @User('id') userId,
+  ) {
+    return this.questionService.fetchOne(questionId, userId);
   }
 
   @PostAuth('/:questionId/answer', 'Answer Question')
@@ -68,10 +73,12 @@ export class QaController {
   async fetchAnswersForSingleQuestions(
     @Param('questionId') questionId: string,
     @Pagination() paginationOption: PaginationOption,
+    @User('id') userId,
   ) {
     return await this.answerService.findByQuestionId(
       questionId,
       paginationOption,
+      userId,
     );
   }
 
@@ -99,7 +106,6 @@ export class QaController {
     await this.questionService.cancelVote(questionId, userId);
   }
 
-  
   @PostAuth('/answer/:answerId/upvote', 'Upvote answer')
   async upvoteAnswer(
     @Param('answerId') answerId: string,
@@ -108,7 +114,6 @@ export class QaController {
     await this.answerService.upvote(answerId, userId);
   }
 
-    
   @PostAuth('/answer/:answerId/downvote', 'Downvote answer')
   async downAnswer(
     @Param('answerId') answerId: string,
