@@ -11,8 +11,8 @@ export class ExamQueryBuilder {
   private tagFilters: string[] = [];
   private authorFilters: mongoose.Types.ObjectId[] = [];
   private idFilters: mongoose.Types.ObjectId[] = [];
+  private searchFilter: string = '';
   private shouldPopulatePreparedBy = false;
-
 
   constructor(private examModel: Model<ExamDocument>) {}
 
@@ -27,7 +27,7 @@ export class ExamQueryBuilder {
   }
 
   filterByAuthors(authors: string[]) {
-    this.authorFilters = authors.map((id) => mongoose.Types.ObjectId(id));;
+    this.authorFilters = authors.map((id) => mongoose.Types.ObjectId(id));
     return this;
   }
 
@@ -36,6 +36,10 @@ export class ExamQueryBuilder {
     return this;
   }
 
+  search(keywords: string) {
+    this.searchFilter = keywords;
+    return this;
+  }
 
   populatePreparedBy(shouldPopulatePreparedBy = true) {
     this.shouldPopulatePreparedBy = shouldPopulatePreparedBy;
@@ -44,12 +48,20 @@ export class ExamQueryBuilder {
 
   build() {
     const match: ExamMatchQuery = this.processFilter();
+    const sort = this.processSorting();
 
     if (match != {}) {
       this.aggregations.push({
         $match: match,
       });
     }
+
+    if (sort) {
+      this.aggregations.push({
+        $sort: sort,
+      });
+    }
+    
     // limit
     if (this.paginationOption) {
       this.aggregations.push({
@@ -87,6 +99,10 @@ export class ExamQueryBuilder {
       match.tags = { $all: this.tagFilters };
     }
 
+    if (this.hasSearchFilter()) {
+      match.$text = { $search: this.searchFilter };
+    }
+
     if (this.authorFilters.length) {
       match.preparedBy = { $in: this.authorFilters };
     }
@@ -102,10 +118,22 @@ export class ExamQueryBuilder {
     }
     return answers;
   }
+
+  private processSorting() {
+    if (this.hasSearchFilter()) {
+      return { score: { $meta: 'textScore' } };
+    }
+    return null;
+  }
+
+  private hasSearchFilter() {
+    return this.searchFilter != '';
+  }
 }
 
 class ExamMatchQuery {
   _id?: any;
   tags?: any;
   preparedBy?: any;
+  $text?: any;
 }

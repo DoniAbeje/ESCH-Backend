@@ -20,3 +20,4 @@ export class Question extends Vote {
 }
 
 export const QuestionSchema = SchemaFactory.createForClass(Question);
+QuestionSchema.index({ question: 'text', tags: 'text' });
