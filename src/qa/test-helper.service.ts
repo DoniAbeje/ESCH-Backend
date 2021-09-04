@@ -90,19 +90,25 @@ export class QaTestHelperService {
   getQuestionResponse(
     question: QuestionDocument | QuestionDocument[],
     user: UserDocument,
+    loggedInUserId: string = null,
   ) {
     if (Array.isArray(question)) {
-      return question.map((q) => this.getSingleQuestionResponse(q, user));
+      return question.map((q) =>
+        this.getSingleQuestionResponse(q, user, loggedInUserId),
+      );
     }
-    return this.getSingleQuestionResponse(question, user);
+    return this.getSingleQuestionResponse(question, user, loggedInUserId);
   }
 
   getAnswerResponse(
     answer: AnswerDocument | AnswerDocument[],
     user: UserDocument,
+    loggedInUserId: string = null,
   ) {
     if (Array.isArray(answer)) {
-      return answer.map((a) => this.getSingleAnswerResponse(a, user));
+      return answer.map((a) =>
+        this.getSingleAnswerResponse(a, user, loggedInUserId),
+      );
     }
     return this.getSingleAnswerResponse(answer, user);
   }
@@ -110,6 +116,7 @@ export class QaTestHelperService {
   private getSingleQuestionResponse(
     questionDocument: QuestionDocument,
     userDocument: UserDocument,
+    loggedInUserId: string = null,
   ) {
     const _question: LeanDocument<QuestionDocument> = toJSON(questionDocument);
     const user: LeanDocument<UserDocument> = toJSON(userDocument);
@@ -122,14 +129,26 @@ export class QaTestHelperService {
     };
     const upvotes = _question.upvotes.length;
     const downvotes = _question.downvotes.length;
+    const { upvoted, downvoted } = this.getVoteFlags(_question, loggedInUserId);
 
     const { _id, question, createdAt, tags } = _question;
-    return { _id, question, createdAt, tags, askedBy, upvotes, downvotes };
+    return {
+      _id,
+      question,
+      createdAt,
+      tags,
+      askedBy,
+      upvotes,
+      downvotes,
+      upvoted,
+      downvoted,
+    };
   }
 
   private getSingleAnswerResponse(
     answerDocument: AnswerDocument,
     userDocument: UserDocument,
+    loggedInUserId: string = null,
   ) {
     const userJson: LeanDocument<UserDocument> = toJSON(userDocument);
     const answerJson: LeanDocument<AnswerDocument> = toJSON(answerDocument);
@@ -142,8 +161,36 @@ export class QaTestHelperService {
     };
     const upvotes = answerJson.upvotes.length;
     const downvotes = answerJson.downvotes.length;
+    const { upvoted, downvoted } = this.getVoteFlags(
+      answerJson,
+      loggedInUserId,
+    );
 
     const { _id, answer, question, createdAt } = answerJson;
-    return { _id, answer, question, createdAt, answeredBy, upvotes, downvotes };
+    return {
+      _id,
+      answer,
+      question,
+      createdAt,
+      answeredBy,
+      upvotes,
+      downvotes,
+      upvoted,
+      downvoted,
+    };
+  }
+
+  private getVoteFlags(
+    document: { upvotes; downvotes },
+    loggedInUserId: string = null,
+  ) {
+    const upvoted = loggedInUserId
+      ? document.upvotes.includes(loggedInUserId)
+      : false;
+
+    const downvoted = loggedInUserId
+      ? document.downvotes.includes(loggedInUserId)
+      : false;
+    return { upvoted, downvoted };
   }
 }
