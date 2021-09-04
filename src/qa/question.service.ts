@@ -50,6 +50,16 @@ export class QuestionService extends VoteService {
     return result.first();
   }
 
+  async search(paginationOption: PaginationOption, keywords: string) {
+    return (
+      await new QuestionQueryBuilder(this.questionModel)
+        .search(keywords)
+        .paginate(paginationOption)
+        .populateAskedBy()
+        .exec()
+    ).all();
+  }
+
   async exists(id: string, throwException = true) {
     const question = await this.questionModel.findById(id);
     if (!question && throwException) {

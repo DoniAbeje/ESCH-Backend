@@ -10,6 +10,7 @@ export class QuestionQueryBuilder {
   private paginationOption: PaginationOption;
   private tagFilters: string[] = [];
   private idFilters: mongoose.Types.ObjectId[] = [];
+  private searchFilter: string = '';
   private shouldPopulateAskedBy = false;
 
   private voteFlagPopulation = {
@@ -43,6 +44,11 @@ export class QuestionQueryBuilder {
     return this;
   }
 
+  search(keywords: string) {
+    this.searchFilter = keywords;
+    return this;
+  }
+
   populateAskedBy(shouldPopulateAskedBy = true) {
     this.shouldPopulateAskedBy = shouldPopulateAskedBy;
     return this;
@@ -57,10 +63,17 @@ export class QuestionQueryBuilder {
 
   build() {
     const match: QuestionMatchQuery = this.processFilter();
+    const sort = this.processSorting();
 
     if (match != {}) {
       this.aggregations.push({
         $match: match,
+      });
+    }
+
+    if (sort) {
+      this.aggregations.push({
+        $sort: sort,
       });
     }
     // limit
@@ -119,6 +132,10 @@ export class QuestionQueryBuilder {
   private processFilter(): QuestionMatchQuery {
     const match: QuestionMatchQuery = {};
 
+    if (this.hasSearchFilter()) {
+      match.$text = { $search: this.searchFilter };
+    }
+
     if (this.idFilters.length) {
       match._id = { $in: this.idFilters };
     }
@@ -138,9 +155,21 @@ export class QuestionQueryBuilder {
     }
     return questions;
   }
+
+  private processSorting() {
+    if (this.hasSearchFilter()) {
+      return { score: { $meta: 'textScore' } };
+    }
+    return null;
+  }
+
+  private hasSearchFilter() {
+    return this.searchFilter != '';
+  }
 }
 
 class QuestionMatchQuery {
   _id?: any;
   tags?: any;
+  $text?: any;
 }

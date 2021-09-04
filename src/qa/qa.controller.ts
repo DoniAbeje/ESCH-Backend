@@ -48,6 +48,16 @@ export class QaController {
     return this.questionService.fetchAll(paginationOption, tags, userId);
   }
 
+  @ApiPagination('/search', 'Search Questions')
+  @ApiQuery({ name: 'keywords', type: String, required: false })
+  async searchQuestions(
+    @Pagination() paginationOption: PaginationOption,
+    @Query('keywords')
+    keywords: string = '',
+  ) {
+    return this.questionService.search(paginationOption, keywords);
+  }
+
   @ApiTags('Fetch Single Question')
   @Get('/:questionId')
   async fetchSingleQuestions(
