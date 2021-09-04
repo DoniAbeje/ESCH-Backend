@@ -52,6 +52,16 @@ export class ExamService {
     return await exam.delete();
   }
 
+  async search(paginationOption: PaginationOption, keywords: string) {
+    return (
+      await new ExamQueryBuilder(this.examModel)
+        .search(keywords)
+        .paginate(paginationOption)
+        .populatePreparedBy()
+        .exec()
+    ).all();
+  }
+
   async exists(examId: string, throwException = true) {
     const exam = await this.examModel.findById(examId);
 

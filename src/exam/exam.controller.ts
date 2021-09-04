@@ -64,6 +64,16 @@ export class ExamController {
     return this.examService.fetchAll(paginationOption, tags, authors);
   }
 
+  @ApiPagination('/search', 'Search Exams')
+  @ApiQuery({ name: 'keywords', type: String, required: false })
+  async searchQuestions(
+    @Pagination() paginationOption: PaginationOption,
+    @Query('keywords')
+    keywords: string = '',
+  ) {
+    return this.examService.search(paginationOption, keywords);
+  }
+
   @ApiTags('Get single exam')
   @Get('/:examId')
   async fetchSingleExam(@Param('examId') examId: string) {

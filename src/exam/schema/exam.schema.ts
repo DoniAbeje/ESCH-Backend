@@ -52,3 +52,4 @@ export class Exam {
 }
 
 export const ExamSchema = SchemaFactory.createForClass(Exam);
+ExamSchema.index({ title: 'text', description: 'text', tags: 'text' });
