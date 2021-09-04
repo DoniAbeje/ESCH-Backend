@@ -21,6 +21,7 @@ export class AnswerService extends VoteService{
   async findByQuestionId(
     questionId: string,
     paginationOption: PaginationOption = PaginationOption.DEFAULT,
+    loggedInUserId = null,
   ) {
     await this.questionService.exists(questionId);
     return (
@@ -28,6 +29,7 @@ export class AnswerService extends VoteService{
         .paginate(paginationOption)
         .filterByQuestionIds([questionId])
         .populateAnsweredBy()
+        .populateUserVoteFlag(loggedInUserId)
         .exec()
     ).all();
   }

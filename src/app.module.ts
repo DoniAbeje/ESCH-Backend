@@ -7,6 +7,8 @@ import { UserModule } from './user/user.module';
 import { QaModule } from './qa/qa.module';
 import { CommonModule } from './common/common.module';
 import { ExamModule } from './exam/exam.module';
+import { APP_GUARD } from '@nestjs/core';
+import { OptionalJwtAuthGuard } from './auth/guards/optional-jwt-auth.guard';
 @Module({
   imports: [
     QaModule,
@@ -26,6 +28,9 @@ import { ExamModule } from './exam/exam.module';
     ExamModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    { provide: APP_GUARD, useClass: OptionalJwtAuthGuard },
+  ],
 })
 export class AppModule {}
