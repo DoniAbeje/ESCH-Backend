@@ -50,6 +50,7 @@ export class UserService {
     if (result.isEmpty()) {
       throw new UserDoesNotExistException();
     }
+    return result.first();
   }
 
   async exists(id: string, throwException = true) {
