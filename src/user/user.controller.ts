@@ -53,8 +53,7 @@ export class UserController {
   @ApiTags('Get single user detail')
   @Get('/:id')
   async fetchSingleUser(@Param('id') userId: string) {
-    const user = await this.userService.exists(userId);
-    return this.filterUserInfo(user);
+    return await this.userService.fetchOne(userId);
   }
 
   filterUserInfo(user: UserDocument) {
