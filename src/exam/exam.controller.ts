@@ -75,11 +75,16 @@ export class ExamController {
   }
 
   @GetAuth('/orders', 'Fetch orders')
-  async fetchOrders(
-    @Pagination() paginationOption: PaginationOption,
-    @User() user,
-  ) {
+  async fetchOrders(@Pagination() paginationOption: PaginationOption) {
     return this.examSaleService.fetchAll(paginationOption);
+  }
+
+  @GetAuth('/my-orders', 'Fetch orders')
+  async fetchLoggedInUsersOrders(
+    @Pagination() paginationOption: PaginationOption,
+    @User('id') userId,
+  ) {
+    return this.examSaleService.fetchAll(paginationOption, [userId]);
   }
 
   @ApiTags('Get single exam')
