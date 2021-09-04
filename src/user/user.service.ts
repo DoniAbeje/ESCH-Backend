@@ -7,6 +7,8 @@ import { PhoneTakenException } from './exceptions/phone-taken.exception';
 import * as bcrypt from 'bcrypt';
 import { UserDoesNotExistException } from './exceptions/user-doesnot-exist.exception';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { PaginationOption } from '../common/pagination-option';
+import { UserQuestionQueryBuilder } from './query/user-query-builder';
 
 @Injectable()
 export class UserService {
@@ -28,6 +30,26 @@ export class UserService {
     user.set(updateUserDto);
     await user.save();
     return true;
+  }
+
+  async fetchAll(
+    paginationOption: PaginationOption = PaginationOption.DEFAULT,
+  ) {
+    return (
+      await new UserQuestionQueryBuilder(this.userModel)
+        .paginate(paginationOption)
+        .exec()
+    ).all();
+  }
+
+  async fetchOne(userId: string) {
+    const result = await new UserQuestionQueryBuilder(this.userModel)
+      .filterByIds([userId])
+      .exec();
+
+    if (result.isEmpty()) {
+      throw new UserDoesNotExistException();
+    }
   }
 
   async exists(id: string, throwException = true) {
