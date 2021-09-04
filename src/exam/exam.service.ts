@@ -11,31 +11,16 @@ import { ExamQuestionService } from './exam-question.service';
 import { ExamEnrollmentService } from './exam-enrollment.service';
 import { QuestionDoesNotBelongToExamException } from './exceptions/question-doesnot-belong-to-exam.exception';
 import { AnswerExamQuestionDto } from './dto/answer-exam-question.dto';
-import { ExamSale, ExamSaleDocument } from './schema/exam-sale.schema';
-import * as medapay from 'medapay';
-import { ConfigService } from '@nestjs/config';
-import MedaPay from 'medapay/lib/medapay';
-import { UserService } from '../user/user.service';
-const IS_SANDBOX = true;
 
 @Injectable()
 export class ExamService {
-  private MedaPay: MedaPay;
   constructor(
     @InjectModel(Exam.name) public examModel: Model<ExamDocument>,
-    @InjectModel(ExamSale.name) public examSaleModel: Model<ExamSaleDocument>,
     @Inject(forwardRef(() => ExamQuestionService))
     private examQuestionService: ExamQuestionService,
     @Inject(forwardRef(() => ExamEnrollmentService))
     private examEnrollmentService: ExamEnrollmentService,
-    private userService: UserService,
-    configService: ConfigService,
-  ) {
-    this.MedaPay = medapay.init(
-      { bearerToken: configService.get<string>('ESCH_MEDAPAY_BEARER_TOKEN') },
-      IS_SANDBOX,
-    );
-  }
+  ) {}
 
   async createExam(createExamDto: CreateExamDto) {
     return this.examModel.create(createExamDto);
@@ -103,44 +88,6 @@ export class ExamService {
       answerExamQuestionDto.questionId,
       answerExamQuestionDto.answer,
     );
-  }
-
-  async buy(examId, userId) {
-    const exam = await this.exists(examId);
-    const user = await this.userService.exists(userId);
-
-    const examSale = await this.examSaleModel.create({
-      exam: exam._id,
-      buyer: userId,
-      price: exam.price,
-    });
-
-    // create a bill medaPay
-    const SAMPLE_BILL = {
-      paymentDetails: {
-        orderId: examSale._id,
-        description: exam.description,
-        amount: examSale.price,
-        customerName: `${user.firstName} ${user.lastName}`,
-        customerPhoneNumber: user.phone,
-      },
-      redirectUrls: {
-        returnUrl: '',
-        cancelUrl: '',
-        callbackUrl: '',
-      },
-    };
-
-    const createBillResponse = await this.MedaPay.create(SAMPLE_BILL);
-    console.log(createBillResponse.billReferenceNumber);
-
-    examSale.set({
-      billReferenceNumber: createBillResponse.billReferenceNumber,
-    });
-
-    await examSale.save();
-
-    return examSale;
   }
 
   async exists(examId: string, throwException = true) {
