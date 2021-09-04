@@ -50,12 +50,17 @@ export class QuestionService extends VoteService {
     return result.first();
   }
 
-  async search(paginationOption: PaginationOption, keywords: string) {
+  async search(
+    paginationOption: PaginationOption,
+    keywords: string,
+    loggedInUserId: string = null,
+  ) {
     return (
       await new QuestionQueryBuilder(this.questionModel)
         .search(keywords)
         .paginate(paginationOption)
         .populateAskedBy()
+        .populateUserVoteFlag(loggedInUserId)
         .exec()
     ).all();
   }

@@ -54,8 +54,9 @@ export class QaController {
     @Pagination() paginationOption: PaginationOption,
     @Query('keywords')
     keywords: string = '',
+    @User('id') userId,
   ) {
-    return this.questionService.search(paginationOption, keywords);
+    return this.questionService.search(paginationOption, keywords, userId);
   }
 
   @ApiTags('Fetch Single Question')
