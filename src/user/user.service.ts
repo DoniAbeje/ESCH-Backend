@@ -23,20 +23,6 @@ export class UserService {
     return await this.userModel.create(createUserDto);
   }
 
-  async hashPassword(password: string): Promise<string> {
-    return await bcrypt.hash(password, 10);
-  }
-
-  async existsByPhone(phone: string, throwException = true) {
-    const user = await this.userModel.findOne({ phone });
-    if (!user && throwException) {
-      throw new UserDoesNotExistException(
-        `no user with phone '${phone}' exists`,
-      );
-    }
-    return user;
-  }
-
   async updateUser(id: string, updateUserDto: UpdateUserDto): Promise<boolean> {
     const user = await this.exists(id);
     user.set(updateUserDto);
@@ -48,6 +34,20 @@ export class UserService {
     const user = await this.userModel.findById(id);
     if (!user && throwException) {
       throw new UserDoesNotExistException(`no user with id '${id}' exists`);
+    }
+    return user;
+  }
+
+  async hashPassword(password: string): Promise<string> {
+    return await bcrypt.hash(password, 10);
+  }
+
+  async existsByPhone(phone: string, throwException = true) {
+    const user = await this.userModel.findOne({ phone });
+    if (!user && throwException) {
+      throw new UserDoesNotExistException(
+        `no user with phone '${phone}' exists`,
+      );
     }
     return user;
   }
