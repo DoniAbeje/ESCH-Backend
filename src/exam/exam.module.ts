@@ -14,6 +14,9 @@ import {
 } from './schema/enrolled-exam.schema';
 import { ExamEnrollmentService } from './exam-enrollment.service';
 import { ExamTestHelperService } from './test-helper.service';
+import { ExamSaleService } from './exam-sale.service';
+import { ExamSale, ExamSaleSchema } from './schema/exam-sale.schema';
+import { UserModule } from 'src/user/user.module';
 
 @Module({
   imports: [
@@ -21,12 +24,15 @@ import { ExamTestHelperService } from './test-helper.service';
       { name: Exam.name, schema: ExamSchema },
       { name: ExamQuestion.name, schema: ExamQuestionSchema },
       { name: EnrolledExam.name, schema: EnrolledExamSchema },
+      { name: ExamSale.name, schema: ExamSaleSchema },
     ]),
+    UserModule,
   ],
   providers: [
     ExamService,
     ExamQuestionService,
     ExamEnrollmentService,
+    ExamSaleService,
     ExamTestHelperService,
   ],
   controllers: [ExamController],

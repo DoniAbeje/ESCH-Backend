@@ -11,6 +11,10 @@ import {
 import * as medapay from 'medapay';
 import MedaPay from 'medapay/lib/medapay';
 import { ExamService } from './exam.service';
+import { UserDocument } from 'src/user/schemas/user.schema';
+import { ExamDocument } from './schema/exam.schema';
+import { AlreadyBoughtExamException } from './exceptions/already-bought-exam.exception';
+import { PaymentInProcessException } from './exceptions/payment-in-process.exception';
 const IS_SANDBOX = true;
 
 @Injectable()
@@ -32,26 +36,43 @@ export class ExamSaleService {
     const exam = await this.examService.exists(examId);
     const user = await this.userService.exists(userId);
 
-    let examSale = await this.exists(examId, userId, false);
+    let examSale = await this.exists(examId, userId);
 
-    if (!examSale) {
-      examSale = await this.examSaleModel.create({
-        exam: exam._id,
-        buyer: userId,
-        price: exam.price,
-      });
-    } else {
+    if (examSale) {
       if (examSale.status == ExamSaleStatus.COMPLETE) {
-        // throw
-      }
-
-      if (examSale.status == ExamSaleStatus.PENDING) {
-        // throw
+        throw new AlreadyBoughtExamException();
+      } else if (examSale.status == ExamSaleStatus.PENDING) {
+        throw new PaymentInProcessException();
       }
     }
 
+    examSale = await this.examSaleModel.create({
+      exam: exam._id,
+      buyer: userId,
+      price: exam.price,
+    });
+
     // create a bill medaPay
-    const SAMPLE_BILL = {
+    // const SAMPLE_BILL = this.createBill(user, exam, examSale);
+
+    // const createBillResponse = await this.MedaPay.create(SAMPLE_BILL);
+    // console.log(createBillResponse.billReferenceNumber);
+
+    // examSale.set({
+    //   billReferenceNumber: createBillResponse.billReferenceNumber,
+    // });
+
+    // await examSale.save();
+
+    return examSale;
+  }
+
+  private createBill(
+    user: UserDocument,
+    exam: ExamDocument,
+    examSale: ExamSaleDocument,
+  ) {
+    return {
       paymentDetails: {
         orderId: examSale._id,
         description: exam.description,
@@ -60,34 +81,18 @@ export class ExamSaleService {
         customerPhoneNumber: user.phone,
       },
       redirectUrls: {
-        returnUrl: '',
-        cancelUrl: '',
-        callbackUrl: '',
+        returnUrl: `https://esch.com/exam/${examSale._id}/return`,
+        cancelUrl: `https://esch.com/exam/${examSale._id}/cancel`,
+        callbackUrl: `https://esch.com/exam/${examSale._id}/callback`,
       },
     };
-
-    const createBillResponse = await this.MedaPay.create(SAMPLE_BILL);
-    console.log(createBillResponse.billReferenceNumber);
-
-    examSale.set({
-      billReferenceNumber: createBillResponse.billReferenceNumber,
-      status: ExamSaleStatus.PENDING,
-    });
-
-    await examSale.save();
-
-    return examSale;
   }
 
-  async exists(exam: string, buyer: string, throwException = true) {
+  async exists(exam: string, buyer: string) {
     const examSale = await this.examSaleModel.findOne({
       exam,
       buyer,
     });
-
-    if (!examSale && throwException) {
-      //throw exception
-    }
 
     return examSale;
   }

@@ -18,6 +18,7 @@ import { EnrollForExamDto } from './dto/enroll-for-exam.dto';
 import { GetAuth } from '../common/decorators/get-auth.decorator';
 import { ExamEnrollmentService } from './exam-enrollment.service';
 import { AnswerExamQuestionDto } from './dto/answer-exam-question.dto';
+import { ExamSaleService } from './exam-sale.service';
 @ApiTags('Exam')
 @Controller('exam')
 export class ExamController {
@@ -25,6 +26,7 @@ export class ExamController {
     private examService: ExamService,
     private examQuestionService: ExamQuestionService,
     private examEnrollmentService: ExamEnrollmentService,
+    private examSaleService: ExamSaleService,
   ) {}
 
   @PostAuth('/', 'Create Exam')
@@ -153,5 +155,12 @@ export class ExamController {
       user.id,
     );
     return { _id: enrolledExam._id };
+  }
+
+  @PostAuth('/:examId/buy', 'Buy an exam')
+  async buyExam(@Param('examId') examId: string, @User() user) {
+    const examSale = await this.examSaleService.buy(examId, user.id);
+
+    return { _id: examSale._id };
   }
 }
