@@ -6,6 +6,7 @@ export type ExamSaleDocument = ExamSale & Document;
 export enum ExamSaleStatus {
   PENDING,
   COMPLETE,
+  CANCELED,
 }
 
 @Schema()
@@ -21,6 +22,9 @@ export class ExamSale {
 
   @Prop({ default: ExamSaleStatus.PENDING })
   status: ExamSaleStatus;
+
+  @Prop()
+  billReferenceNumber: string;
 
   @Prop({ default: Date.now })
   createdAt: Date;
