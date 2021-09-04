@@ -15,6 +15,7 @@ export class UserQuestionQueryBuilder {
     lastName: 1,
     phone: 1,
     profilePicture: 1,
+    role: 1,
   };
 
   constructor(private userModel: Model<UserDocument>) {}
@@ -47,7 +48,7 @@ export class UserQuestionQueryBuilder {
         $limit: this.paginationOption.limit,
       });
     }
-    
+
     // projection
     this.aggregations.push({
       $project: this.projections,
