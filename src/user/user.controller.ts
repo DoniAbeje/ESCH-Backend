@@ -10,6 +10,9 @@ import { User } from '../common/decorators/user.decorator';
 import { LoginDto } from './dto/login.dto';
 import { PutAuth } from '../common/decorators/put-auth.decorator';
 import { GetAuth } from '../common/decorators/get-auth.decorator';
+import { ApiPagination } from '../common/decorators/api-pagination.decorator';
+import { Pagination } from '../common/decorators/pagination.decorator';
+import { PaginationOption } from '../common/pagination-option';
 
 @ApiTags('Users')
 @Controller('users')
@@ -42,11 +45,15 @@ export class UserController {
     await this.userService.updateUser(userId, updateUserDto);
   }
 
+  @ApiPagination('/', 'Fetch all users')
+  async fetchAllUsers(@Pagination() paginationOption: PaginationOption) {
+    return await this.userService.fetchAll(paginationOption);
+  }
+
   @ApiTags('Get single user detail')
   @Get('/:id')
   async fetchSingleUser(@Param('id') userId: string) {
-    const user = await this.userService.exists(userId);
-    return this.filterUserInfo(user);
+    return await this.userService.fetchOne(userId);
   }
 
   filterUserInfo(user: UserDocument) {
