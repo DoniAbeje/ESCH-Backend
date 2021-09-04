@@ -15,6 +15,8 @@ import { UserDocument } from 'src/user/schemas/user.schema';
 import { ExamDocument } from './schema/exam.schema';
 import { AlreadyBoughtExamException } from './exceptions/already-bought-exam.exception';
 import { PaymentInProcessException } from './exceptions/payment-in-process.exception';
+import { PaginationOption } from '../common/pagination-option';
+import { ExamSaleQueryBuilder } from './query/exam-sale-query-builder';
 const IS_SANDBOX = true;
 
 @Injectable()
@@ -65,6 +67,20 @@ export class ExamSaleService {
     // await examSale.save();
 
     return examSale;
+  }
+
+  async fetchAll(
+    paginationOption: PaginationOption = PaginationOption.DEFAULT,
+    buyers: string[] = [],
+  ) {
+    return (
+      await new ExamSaleQueryBuilder(this.examSaleModel)
+        .paginate(paginationOption)
+        .filterByBuyers(buyers)
+        .populateExam()
+        .populateBuyer()
+        .exec()
+    ).all();
   }
 
   private createBill(

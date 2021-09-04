@@ -9,6 +9,7 @@ export class ExamSaleQueryBuilder {
   private paginationOption: PaginationOption;
   private buyerFilters: string[] = [];
   private shouldPopulateExam = false;
+  private shouldPopulateBuyer = false;
 
   constructor(private examSaleModel: mongoose.Model<ExamSaleDocument>) {}
 
@@ -24,6 +25,11 @@ export class ExamSaleQueryBuilder {
 
   populateExam(shouldPopulateExam = true) {
     this.shouldPopulateExam = shouldPopulateExam;
+    return this;
+  }
+
+  populateBuyer(shouldPopulateBuyer = true) {
+    this.shouldPopulateBuyer = shouldPopulateBuyer;
     return this;
   }
 
@@ -75,6 +81,12 @@ export class ExamSaleQueryBuilder {
       examSales = await this.examSaleModel.populate(examSales, {
         path: 'exam',
         select: ['_id', 'title', 'description', 'price', 'tags'],
+      });
+    }
+    if (this.shouldPopulateBuyer) {
+      examSales = await this.examSaleModel.populate(examSales, {
+        path: 'buyer',
+        select: ['_id', 'firstName', 'lastName', 'profilePicture'],
       });
     }
     return examSales;
