@@ -28,6 +28,7 @@ export class ExamService extends RateService {
     paginationOption: PaginationOption = PaginationOption.DEFAULT,
     tags: string[] = [],
     authors: string[] = [],
+    loggedInUserId: string = null,
   ) {
     return (
       await new ExamQueryBuilder(this.examModel)
@@ -35,14 +36,16 @@ export class ExamService extends RateService {
         .filterByTags(tags)
         .filterByAuthors(authors)
         .populatePreparedBy()
+        .populateUserRating(loggedInUserId)
         .exec()
     ).all();
   }
 
-  async fetchOne(examId: string) {
+  async fetchOne(examId: string, loggedInUserId: string = null) {
     const result = await new ExamQueryBuilder(this.examModel)
       .filterByIds([examId])
       .populatePreparedBy()
+      .populateUserRating(loggedInUserId)
       .exec();
     if (result.isEmpty()) {
       throw new ExamDoesNotExistException();

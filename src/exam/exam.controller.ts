@@ -62,8 +62,14 @@ export class ExamController {
     tags: string[] = [],
     @QueryArray('authors')
     authors: string[] = [],
+    @User('id') loggedInUserId,
   ) {
-    return this.examService.fetchAll(paginationOption, tags, authors);
+    return this.examService.fetchAll(
+      paginationOption,
+      tags,
+      authors,
+      loggedInUserId,
+    );
   }
 
   @ApiPagination('/search', 'Search Exams')
@@ -78,8 +84,11 @@ export class ExamController {
 
   @ApiTags('Get single exam')
   @Get('/:examId')
-  async fetchSingleExam(@Param('examId') examId: string) {
-    return this.examService.fetchOne(examId);
+  async fetchSingleExam(
+    @Param('examId') examId: string,
+    @User('id') loggedInUserId,
+  ) {
+    return this.examService.fetchOne(examId, loggedInUserId);
   }
 
   @PostAuth('/question', 'Add question to exam')
@@ -145,5 +154,4 @@ export class ExamController {
     cancelRateDto.userId = userId;
     await this.examService.cancelRate(cancelRateDto);
   }
-
 }
