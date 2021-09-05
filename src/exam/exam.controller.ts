@@ -87,6 +87,11 @@ export class ExamController {
     return this.examSaleService.fetchAll(paginationOption, [userId]);
   }
 
+  @GetAuth('/reports', 'Fetch users exam reports')
+  async fetchUsersExamReport(@User('id') userId) {
+    return this.examService.fetchUserExamReport(userId);
+  }
+
   @ApiTags('Get single exam')
   @Get('/:examId')
   async fetchSingleExam(@Param('examId') examId: string) {

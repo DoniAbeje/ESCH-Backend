@@ -80,7 +80,7 @@ export class ExamEnrollmentService {
       });
 
       if (wasCorrectAnswer) {
-        await enrolledExam.update({ $inc: { correctAnswerCount: -1 } });
+        await enrolledExam.updateOne({ $inc: { correctAnswerCount: -1 } });
       }
     } else {
       await this.enrolledExamModel.updateOne(

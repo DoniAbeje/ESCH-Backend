@@ -11,6 +11,7 @@ import { ExamQuestionService } from './exam-question.service';
 import { ExamEnrollmentService } from './exam-enrollment.service';
 import { QuestionDoesNotBelongToExamException } from './exceptions/question-doesnot-belong-to-exam.exception';
 import { AnswerExamQuestionDto } from './dto/answer-exam-question.dto';
+import { ExamReportDto } from './dto/exam-report.dto';
 
 @Injectable()
 export class ExamService {
@@ -55,6 +56,30 @@ export class ExamService {
       throw new ExamDoesNotExistException();
     }
     return result.first();
+  }
+
+  async fetchUserExamReport(examinee) {
+    let examTakenCount = 0;
+    const examReports = [];
+
+    const enrolledExams = await this.examEnrollmentService.fetchEnrolledExams(
+      examinee,
+      null,
+    );
+
+    for (const enrolledExam of enrolledExams) {
+      const examReport: ExamReportDto = {};
+
+      examReport.noOfAnsweredQuestion = enrolledExam.answers.length;
+      examReport.noOfQuestion =
+        await this.examQuestionService.countQuestionsInExam(enrolledExam.exam);
+      examReport.noOfCorrectAnswers = enrolledExam.correctAnswerCount;
+
+      examReports.push(examReport);
+      examTakenCount++;
+    }
+
+    return { totalNoOfExamsTaken: examTakenCount, examReports };
   }
 
   async delete(examId: string) {
