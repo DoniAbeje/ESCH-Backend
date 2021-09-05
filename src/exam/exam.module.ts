@@ -16,7 +16,7 @@ import { ExamEnrollmentService } from './exam-enrollment.service';
 import { ExamTestHelperService } from './test-helper.service';
 import { ExamSaleService } from './exam-sale.service';
 import { ExamSale, ExamSaleSchema } from './schema/exam-sale.schema';
-import { UserModule } from 'src/user/user.module';
+import { UserModule } from '../user/user.module';
 
 @Module({
   imports: [

@@ -105,11 +105,8 @@ export class ExamTestHelperService {
     return exams;
   }
 
-  async createTestEnrolledExam(
-    examId,
-    examinee,
-  ): Promise<EnrolledExamDocument> {
-    const enrollForExamDto: EnrollForExamDto = { examId, examinee };
+  async createTestEnrolledExam(exam, examinee): Promise<EnrolledExamDocument> {
+    const enrollForExamDto: EnrollForExamDto = { exam, examinee };
     return this.examEnrollmentService.enroll(enrollForExamDto);
   }
 

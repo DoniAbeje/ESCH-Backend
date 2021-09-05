@@ -20,11 +20,11 @@ export class ExamEnrollmentService {
   ) {}
 
   async enroll(enrollForExamDto: EnrollForExamDto) {
-    const exam = await this.examService.exists(enrollForExamDto.examId);
+    const exam = await this.examService.exists(enrollForExamDto.exam);
 
     if (exam.price > 0) {
       await this.userHasBoughtExam(
-        enrollForExamDto.examId,
+        enrollForExamDto.exam,
         enrollForExamDto.examinee,
         true,
       );
@@ -34,7 +34,7 @@ export class ExamEnrollmentService {
   }
 
   async userHasBoughtExam(
-    examId: string,
+    exam: string,
     examinee: string,
     throwException: boolean,
   ) {
@@ -56,14 +56,14 @@ export class ExamEnrollmentService {
   }
 
   async answerExamQuestion(
-    examId: string,
+    exam: string,
     examinee: string,
     questionId: string,
     answer: string,
   ) {
-    const enrolledExam = await this.exists(examId, examinee);
+    const enrolledExam = await this.exists(exam, examinee);
     const enrolledExamWithQuestion = await this.enrolledExamModel.findOne({
-      examId,
+      exam,
       examinee,
       'answers.question': questionId,
     });
@@ -83,9 +83,9 @@ export class ExamEnrollmentService {
     return enrolledExam;
   }
 
-  async exists(examId: string, examinee: string, throwException = true) {
+  async exists(exam: string, examinee: string, throwException = true) {
     const enrolledExam = await this.enrolledExamModel.findOne({
-      examId,
+      exam,
       examinee,
     });
 

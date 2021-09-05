@@ -3,7 +3,7 @@ import { IsString } from 'class-validator';
 
 export class EnrollForExamDto {
   @IsString()
-  readonly examId: string;
+  readonly exam: string;
 
   @ApiHideProperty()
   examinee: string;

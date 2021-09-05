@@ -63,6 +63,7 @@ describe('Exam Module (e2e)', () => {
   });
 
   beforeEach(async () => {
+    console.log('cleare');
     await userTestHelper.clearUsersData();
     await examTestHelper.clearExams();
     await examTestHelper.clearExamQuestions();
@@ -884,7 +885,7 @@ describe('Exam Module (e2e)', () => {
       const user = await userTestHelper.createTestUser();
       const token = await authService.signToken(user);
 
-      const expectedMessage = ['examId must be a string'];
+      const expectedMessage = ['exam must be a string'];
 
       const { body } = await request(app.getHttpServer())
         .post(`${baseUrl}/enroll`)
@@ -901,14 +902,14 @@ describe('Exam Module (e2e)', () => {
     });
 
     it('should reject with non existing exam', async () => {
-      const examId = mongoose.Types.ObjectId();
+      const exam = mongoose.Types.ObjectId();
       const user = await userTestHelper.createTestUser();
       const token = await authService.signToken(user);
 
       const { body } = await request(app.getHttpServer())
         .post(`${baseUrl}/enroll`)
         .set('Authorization', `Bearer ${token}`)
-        .send({ examId })
+        .send({ exam })
         .expect(HttpStatus.NOT_FOUND);
 
       expect(body.exception).toEqual(ExamDoesNotExistException.name);
@@ -921,7 +922,7 @@ describe('Exam Module (e2e)', () => {
         preparedBy: user._id,
       });
       const enrollForExamDto: EnrollForExamDto = {
-        examId: exam._id.toString(),
+        exam: exam._id.toString(),
         examinee: user._id.toString(),
       };
 
@@ -998,7 +999,7 @@ describe('Exam Module (e2e)', () => {
       ];
 
       const { body } = await request(app.getHttpServer())
-        .put(`${baseUrl}/${enrolledExam[0].examId}/answer`)
+        .put(`${baseUrl}/${enrolledExam[0].exam}/answer`)
         .set('Authorization', `Bearer ${token}`)
         .expect(HttpStatus.BAD_REQUEST);
 

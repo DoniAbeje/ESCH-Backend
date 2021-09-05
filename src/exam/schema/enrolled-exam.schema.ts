@@ -15,7 +15,7 @@ const ExamAnswerSchema = SchemaFactory.createForClass(ExamAnswer);
 @Schema()
 export class EnrolledExam {
   @Prop({ required: true, ref: 'Exam' })
-  examId: string;
+  exam: string;
 
   @Prop({ required: true, ref: 'User' })
   examinee: string;
@@ -29,4 +29,4 @@ export class EnrolledExam {
 
 export const EnrolledExamSchema = SchemaFactory.createForClass(EnrolledExam);
 
-EnrolledExamSchema.index({ examId: 1, userId: 1 }, { unique: true });
+EnrolledExamSchema.index({ exam: 1, examinee: 1 }, { unique: true });
