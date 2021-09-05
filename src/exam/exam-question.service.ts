@@ -156,4 +156,8 @@ export class ExamQuestionService {
     const question = await this.exists(examQuestionId);
     return await question.delete();
   }
+
+  async countQuestionsInExam(examId) {
+    return this.examQuestionModel.countDocuments({ examId });
+  }
 }

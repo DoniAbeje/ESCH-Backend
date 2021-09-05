@@ -87,6 +87,7 @@ export class ExamService {
       userId,
       answerExamQuestionDto.questionId,
       answerExamQuestionDto.answer,
+      examQuestion.correctAnswer,
     );
   }
 

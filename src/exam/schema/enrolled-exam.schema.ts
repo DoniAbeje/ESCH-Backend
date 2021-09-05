@@ -23,6 +23,9 @@ export class EnrolledExam {
   @Prop({ type: [ExamAnswerSchema], default: [] })
   answers: ExamAnswer[];
 
+  @Prop({ default: 0 })
+  correctAnswerCount: number;
+
   @Prop({ default: Date.now })
   createdAt: Date;
 }

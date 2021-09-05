@@ -60,6 +60,7 @@ export class ExamEnrollmentService {
     examinee: string,
     questionId: string,
     answer: string,
+    correctAnswer: string,
   ) {
     const enrolledExam = await this.exists(exam, examinee);
     const enrolledExamWithQuestion = await this.enrolledExamModel.findOne({
@@ -73,11 +74,23 @@ export class ExamEnrollmentService {
         { _id: enrolledExam._id, 'answers.question': questionId },
         { $set: { 'answers.$.answer': answer } },
       );
+
+      const wasCorrectAnswer = enrolledExamWithQuestion.answers.some((ans) => {
+        return ans.question == questionId && ans.answer == correctAnswer;
+      });
+
+      if (wasCorrectAnswer) {
+        await enrolledExam.update({ $inc: { correctAnswerCount: -1 } });
+      }
     } else {
       await this.enrolledExamModel.updateOne(
         { _id: enrolledExam._id },
         { $push: { answers: { question: questionId, answer: answer } } },
       );
+    }
+
+    if (answer == correctAnswer) {
+      await enrolledExam.updateOne({ $inc: { correctAnswerCount: 1 } });
     }
 
     return enrolledExam;

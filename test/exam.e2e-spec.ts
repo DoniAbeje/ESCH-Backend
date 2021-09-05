@@ -63,7 +63,6 @@ describe('Exam Module (e2e)', () => {
   });
 
   beforeEach(async () => {
-    console.log('cleare');
     await userTestHelper.clearUsersData();
     await examTestHelper.clearExams();
     await examTestHelper.clearExamQuestions();
