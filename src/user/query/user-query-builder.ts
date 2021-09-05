@@ -83,28 +83,11 @@ export class UserQuestionQueryBuilder {
     let tempProjections = this.projections;
 
     if (this.userRatingPopulation.shouldPopulate) {
-      const userRatingProjction = {
-        userRating: {
-          $ifNull: [
-            {
-              $first: {
-                $filter: {
-                  input: '$ratings',
-                  as: 'r',
-                  cond: {
-                    $eq: ['$$r.userId', this.userRatingPopulation.userId],
-                  },
-                },
-              },
-            },
-            null,
-          ],
-        },
-      };
-      tempProjections = { ...tempProjections, ...userRatingProjction };
+      tempProjections = this.getUserRatingProjection(tempProjections);
     }
-    return tempProjections
+    return tempProjections;
   }
+
   private processFilter(): UserMatchQuery {
     const match: UserMatchQuery = {};
 
@@ -113,6 +96,29 @@ export class UserQuestionQueryBuilder {
     }
 
     return match;
+  }
+
+  private getUserRatingProjection(tempProjections) {
+    const userRatingProjction = {
+      userRating: {
+        $ifNull: [
+          {
+            $first: {
+              $filter: {
+                input: '$ratings',
+                as: 'r',
+                cond: {
+                  $eq: ['$$r.userId', this.userRatingPopulation.userId],
+                },
+              },
+            },
+          },
+          null,
+        ],
+      },
+    };
+    tempProjections = { ...tempProjections, ...userRatingProjction };
+    return tempProjections;
   }
 }
 
