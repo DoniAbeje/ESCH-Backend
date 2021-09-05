@@ -22,6 +22,8 @@ import { ApiPagination } from '../common/decorators/api-pagination.decorator';
 import { Pagination } from '../common/decorators/pagination.decorator';
 import { PaginationOption } from '../common/pagination-option';
 import { QueryArray } from '../common/decorators/query-array.decorator';
+import { RateDto } from '../common/dto/rate.dto';
+import { CancelRateDto } from '../common/dto/cancel-rate.dto';
 @ApiTags('Exam')
 @Controller('exam')
 export class ExamController {
@@ -128,4 +130,20 @@ export class ExamController {
       examId,
     );
   }
+
+  @PostAuth('/rate', 'Rate exam')
+  async rateExam(@Body() rateDto: RateDto, @User('id') userId) {
+    rateDto.userId = userId;
+    await this.examService.rate(rateDto);
+  }
+
+  @PostAuth('/cancel-rate', 'Cancel exam rating')
+  async cancelExamRating(
+    @Body() cancelRateDto: CancelRateDto,
+    @User('id') userId,
+  ) {
+    cancelRateDto.userId = userId;
+    await this.examService.cancelRate(cancelRateDto);
+  }
+
 }

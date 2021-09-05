@@ -7,10 +7,13 @@ import { ExamDoesNotExistException } from './exceptions/exam-doesnot-exist.excep
 import { UpdateExamDto } from './dto/update-exam.dto';
 import { PaginationOption } from '../common/pagination-option';
 import { ExamQueryBuilder } from './query/exam-query-builder';
+import { RateService } from '../common/services/rate.service';
 
 @Injectable()
-export class ExamService {
-  constructor(@InjectModel(Exam.name) public examModel: Model<ExamDocument>) {}
+export class ExamService extends RateService {
+  constructor(@InjectModel(Exam.name) public examModel: Model<ExamDocument>) {
+    super(examModel);
+  }
 
   async createExam(createExamDto: CreateExamDto) {
     return this.examModel.create(createExamDto);
@@ -24,7 +27,7 @@ export class ExamService {
   async fetchAll(
     paginationOption: PaginationOption = PaginationOption.DEFAULT,
     tags: string[] = [],
-    authors: string[] = []
+    authors: string[] = [],
   ) {
     return (
       await new ExamQueryBuilder(this.examModel)
