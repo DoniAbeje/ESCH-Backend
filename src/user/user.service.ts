@@ -9,10 +9,13 @@ import { UserDoesNotExistException } from './exceptions/user-doesnot-exist.excep
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PaginationOption } from '../common/pagination-option';
 import { UserQuestionQueryBuilder } from './query/user-query-builder';
+import { RateService } from '../common/services/rate.service';
 
 @Injectable()
-export class UserService {
-  constructor(@InjectModel(User.name) public userModel: Model<UserDocument>) {}
+export class UserService extends RateService {
+  constructor(@InjectModel(User.name) public userModel: Model<UserDocument>) {
+    super(userModel);
+  }
 
   async createUser(createUserDto: CreateUserDto) {
     const phoneTaken = await this.existsByPhone(createUserDto.phone, false);
