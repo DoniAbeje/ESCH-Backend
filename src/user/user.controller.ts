@@ -49,26 +49,35 @@ export class UserController {
   }
 
   @ApiPagination('/', 'Fetch all users')
-  async fetchAllUsers(@Pagination() paginationOption: PaginationOption) {
-    return await this.userService.fetchAll(paginationOption);
+  async fetchAllUsers(
+    @Pagination() paginationOption: PaginationOption,
+    @User('id') loggedInUserId,
+  ) {
+    return await this.userService.fetchAll(paginationOption, loggedInUserId);
   }
 
   @ApiTags('Get single user detail')
   @Get('/:id')
-  async fetchSingleUser(@Param('id') userId: string) {
-    return await this.userService.fetchOne(userId);
+  async fetchSingleUser(
+    @Param('id') userId: string,
+    @User('id') loggedInUserId,
+  ) {
+    return await this.userService.fetchOne(userId, loggedInUserId);
   }
 
   @PostAuth('/rate', 'Rate instructor')
-  async rateUser(@Body() rateDto: RateDto, @User('id') userId){
-    rateDto.userId = userId
-    await this.userService.rate(rateDto)
+  async rateUser(@Body() rateDto: RateDto, @User('id') userId) {
+    rateDto.userId = userId;
+    await this.userService.rate(rateDto);
   }
 
   @PostAuth('/cancel-rate', 'Cancel instructor rating')
-  async cancelUserRating(@Body() cancelRateDto: CancelRateDto, @User('id') userId){
-    cancelRateDto.userId = userId
-    await this.userService.cancelRate(cancelRateDto)
+  async cancelUserRating(
+    @Body() cancelRateDto: CancelRateDto,
+    @User('id') userId,
+  ) {
+    cancelRateDto.userId = userId;
+    await this.userService.cancelRate(cancelRateDto);
   }
 
   filterUserInfo(user: UserDocument) {

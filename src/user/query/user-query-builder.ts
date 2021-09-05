@@ -10,12 +10,19 @@ export class UserQuestionQueryBuilder {
   private paginationOption: PaginationOption;
   private idFilters: mongoose.Types.ObjectId[] = [];
 
+  private userRatingPopulation = {
+    shouldPopulate: false,
+    userId: null,
+  };
+
   private projections = {
     firstName: 1,
     lastName: 1,
     phone: 1,
     profilePicture: 1,
     role: 1,
+    ratingCount: { $size: '$ratings' },
+    avgRating: { $ifNull: [{ $avg: '$ratings.rating' }, 0] },
   };
 
   constructor(private userModel: Model<UserDocument>) {}
@@ -27,6 +34,12 @@ export class UserQuestionQueryBuilder {
 
   filterByIds(ids: string[]) {
     this.idFilters = ids.map((id) => mongoose.Types.ObjectId(id));
+    return this;
+  }
+
+  populateUserRating(userId: string, shouldPopulate = true) {
+    this.userRatingPopulation.shouldPopulate = shouldPopulate;
+    this.userRatingPopulation.userId = userId;
     return this;
   }
 
@@ -51,7 +64,7 @@ export class UserQuestionQueryBuilder {
 
     // projection
     this.aggregations.push({
-      $project: this.projections,
+      $project: this.preProcessProjection(),
     });
     this.isBuilt = true;
     return this.aggregations;
@@ -66,6 +79,32 @@ export class UserQuestionQueryBuilder {
     return new ExecResult(users);
   }
 
+  private preProcessProjection() {
+    let tempProjections = this.projections;
+
+    if (this.userRatingPopulation.shouldPopulate) {
+      const userRatingProjction = {
+        userRating: {
+          $ifNull: [
+            {
+              $first: {
+                $filter: {
+                  input: '$ratings',
+                  as: 'r',
+                  cond: {
+                    $eq: ['$$r.userId', this.userRatingPopulation.userId],
+                  },
+                },
+              },
+            },
+            null,
+          ],
+        },
+      };
+      tempProjections = { ...tempProjections, ...userRatingProjction };
+    }
+    return tempProjections
+  }
   private processFilter(): UserMatchQuery {
     const match: UserMatchQuery = {};
 

@@ -37,17 +37,20 @@ export class UserService extends RateService {
 
   async fetchAll(
     paginationOption: PaginationOption = PaginationOption.DEFAULT,
+    loggedInUserId: string = null,
   ) {
     return (
       await new UserQuestionQueryBuilder(this.userModel)
         .paginate(paginationOption)
+        .populateUserRating(loggedInUserId)
         .exec()
     ).all();
   }
 
-  async fetchOne(userId: string) {
+  async fetchOne(userId: string, loggedInUserId: string = null) {
     const result = await new UserQuestionQueryBuilder(this.userModel)
       .filterByIds([userId])
+      .populateUserRating(loggedInUserId)
       .exec();
 
     if (result.isEmpty()) {
