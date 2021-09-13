@@ -4,6 +4,8 @@ import { Model } from 'mongoose';
 import { PaginationOption } from '../common/pagination-option';
 import { EnrollForExamDto } from './dto/enroll-for-exam.dto';
 import { ExamService } from './exam.service';
+import { AlreadyEnrolledException } from './exceptions/already-enrolled.exception';
+import { ExamShouldBeBoughtException } from './exceptions/ExamShouldeBeBought.exception';
 import { NotEnrolledException } from './exceptions/not-enrolled.exception';
 import { EnrolledExamQueryBuilder } from './query/enrolled-exam-query-builder';
 import {
@@ -21,13 +23,14 @@ export class ExamEnrollmentService {
 
   async enroll(enrollForExamDto: EnrollForExamDto) {
     const exam = await this.examService.exists(enrollForExamDto.exam);
+    const enrolled = await this.exists(enrollForExamDto.exam, enrollForExamDto.examinee, false);
 
-    if (exam.price > 0) {
-      await this.userHasBoughtExam(
-        enrollForExamDto.exam,
-        enrollForExamDto.examinee,
-        true,
-      );
+    if (enrolled) {
+      throw new AlreadyEnrolledException();
+    }
+
+    if(exam.price > 0){
+      throw new ExamShouldBeBoughtException();
     }
 
     return this.enrolledExamModel.create(enrollForExamDto);
