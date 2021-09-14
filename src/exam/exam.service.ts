@@ -91,15 +91,12 @@ export class ExamService {
     answerExamQuestionDto: AnswerExamQuestionDto,
     userId: string,
   ) {
-    await this.exists(answerExamQuestionDto.examId);
 
     const examQuestion = await this.examQuestionService.exists(
       answerExamQuestionDto.questionId,
     );
 
-    if (examQuestion.examId != answerExamQuestionDto.examId) {
-      throw new QuestionDoesNotBelongToExamException();
-    }
+    await this.exists(examQuestion.examId);
 
     this.examQuestionService.checkForCorrectAnswer(
       examQuestion,
@@ -107,7 +104,7 @@ export class ExamService {
     );
 
     return this.examEnrollmentService.answerExamQuestion(
-      answerExamQuestionDto.examId,
+      examQuestion.examId,
       userId,
       answerExamQuestionDto.questionId,
       answerExamQuestionDto.answer,
