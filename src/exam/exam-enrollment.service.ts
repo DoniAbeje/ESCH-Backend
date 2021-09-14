@@ -27,7 +27,7 @@ export class ExamEnrollmentService {
     private examQuestionService: ExamQuestionService,
   ) {}
 
-  async enroll(enrollForExamDto: EnrollForExamDto) {
+  async enroll(enrollForExamDto: EnrollForExamDto, checkPrice=true) {
     const exam = await this.examService.exists(enrollForExamDto.exam);
     const enrolled = await this.exists(
       enrollForExamDto.exam,
@@ -39,7 +39,7 @@ export class ExamEnrollmentService {
       throw new AlreadyEnrolledException();
     }
 
-    if (exam.price > 0) {
+    if (checkPrice && exam.price > 0) {
       throw new ExamShouldBeBoughtException();
     }
 

@@ -8,7 +8,6 @@ import {
   ExamSaleDocument,
   ExamSaleStatus,
 } from './schema/exam-sale.schema';
-import MedaPay from 'medapay/lib/medapay';
 import { ExamService } from './exam.service';
 import { UserDocument } from 'src/user/schemas/user.schema';
 import { ExamDocument } from './schema/exam.schema';
@@ -19,15 +18,17 @@ import { ExamSaleQueryBuilder } from './query/exam-sale-query-builder';
 import axios from 'axios';
 import { OrderNotCreatedException } from './exceptions/order-not-created.exception';
 import { FreeExamException } from './exceptions/free-exam.exception';
+import { ExamEnrollmentService } from './exam-enrollment.service';
+import { EnrollForExamDto } from './dto/enroll-for-exam.dto';
 
 @Injectable()
 export class ExamSaleService {
-  private MedaPay: MedaPay;
   constructor(
     @InjectModel(ExamSale.name) public examSaleModel: Model<ExamSaleDocument>,
     private examService: ExamService,
     private userService: UserService,
     private configService: ConfigService,
+    private enrollmentService: ExamEnrollmentService,
   ) {}
 
   async buy(examId: string, userId: string) {
@@ -85,6 +86,19 @@ export class ExamSaleService {
     ).all();
   }
 
+  async onPaymentStatusChenged(examSaleId, status: ExamSaleStatus) {
+    const examSale = await this.examSaleModel.findById(examSaleId);
+    if (examSale && status == ExamSaleStatus.COMPLETE) {
+      const enrollmentDto: EnrollForExamDto = {
+        exam: examSale.exam,
+        examinee: examSale.buyer,
+      };
+      await this.enrollmentService.enroll(enrollmentDto, false);
+      examSale.set('status', ExamSaleStatus.COMPLETE);
+      await examSale.save();
+    }
+  }
+
   private getBillPayload(
     user: UserDocument,
     exam: ExamDocument,
@@ -101,15 +115,15 @@ export class ExamSaleService {
       redirectUrls: {
         returnUrl:
           this.configService.get<string>('ESCH_MEDA_PAY_RETURN_URL') +
-          '?order_id=' +
+          '?exam_sale_id=' +
           examSale._id,
         cancelUrl:
           this.configService.get<string>('ESCH_MEDA_PAY_RETURN_URL') +
-          '?order_id=' +
+          '?exam_sale_id=' +
           examSale._id,
         callbackUrl:
           this.configService.get<string>('ESCH_MEDA_PAY_RETURN_URL') +
-          '?order_id=' +
+          '?exam_sale_id=' +
           examSale._id,
       },
     };
