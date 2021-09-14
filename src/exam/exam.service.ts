@@ -58,30 +58,6 @@ export class ExamService {
     return result.first();
   }
 
-  async fetchUserExamReport(examinee) {
-    let examTakenCount = 0;
-    const examReports = [];
-
-    const enrolledExams = await this.examEnrollmentService.fetchEnrolledExams(
-      examinee,
-      null,
-    );
-
-    for (const enrolledExam of enrolledExams) {
-      const examReport: ExamReportDto = {};
-
-      examReport.noOfAnsweredQuestion = enrolledExam.answers.length;
-      examReport.noOfQuestion =
-        await this.examQuestionService.countQuestionsInExam(enrolledExam.exam);
-      examReport.noOfCorrectAnswers = enrolledExam.correctAnswerCount;
-
-      examReports.push(examReport);
-      examTakenCount++;
-    }
-
-    return { totalNoOfExamsTaken: examTakenCount, examReports };
-  }
-
   async delete(examId: string) {
     const exam = await this.exists(examId);
     return await exam.delete();

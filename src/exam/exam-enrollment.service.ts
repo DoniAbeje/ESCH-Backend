@@ -15,6 +15,7 @@ import {
   EnrolledExam,
   EnrolledExamDocument,
 } from './schema/enrolled-exam.schema';
+import { ExamReportDto } from './dto/exam-report.dto';
 
 @Injectable()
 export class ExamEnrollmentService {
@@ -92,6 +93,36 @@ export class ExamEnrollmentService {
     }
 
     return enrollment;
+  }
+
+  async fetchUserExamReport(examinee) {
+    const examReports = [];
+
+    const enrolledExams = (
+      await new EnrolledExamQueryBuilder(this.enrolledExamModel)
+        .filterByExaminees([examinee])
+        .populateExam()
+        .exec()
+    ).all();
+
+    for (const enrolledExam of enrolledExams) {
+      const examReport: any = {};
+
+      examReport.exam = enrolledExam.exam;
+      examReport.answersCount = enrolledExam.answers.length;
+      examReport.questionsCount =
+        await this.examQuestionService.countQuestionsInExam(enrolledExam.exam);
+      examReport.correctAnswersCount = enrolledExam.answers.reduce(
+        (prev, answer) => {
+          answer.isCorrect ? prev++ : prev;
+        },
+        0,
+      );
+
+      examReports.push(examReport);
+    }
+
+    return { enrollmentsCount: enrolledExams.length, examReports };
   }
 
   private async addAnswer(

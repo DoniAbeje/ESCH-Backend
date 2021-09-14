@@ -89,7 +89,7 @@ export class ExamController {
 
   @GetAuth('/reports', 'Fetch users exam reports')
   async fetchUsersExamReport(@User('id') userId) {
-    return this.examService.fetchUserExamReport(userId);
+    return this.examEnrollmentService.fetchUserExamReport(userId);
   }
 
   @ApiTags('Get single exam')
