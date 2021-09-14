@@ -5,5 +5,8 @@ export class AnswerExamQuestionDto {
   readonly questionId: string;
 
   @IsString()
+  readonly examId: string;
+
+  @IsString()
   readonly answer: string;
 }

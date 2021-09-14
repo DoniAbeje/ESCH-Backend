@@ -161,15 +161,13 @@ export class ExamController {
     return { _id: enrollment._id };
   }
 
-  @PutAuth('/:examId/answer', 'Answer Exam Question')
+  @PutAuth('/question/answer', 'Answer Exam Question')
   async answerExamQuestion(
     @Body() answerExamQuestionDto: AnswerExamQuestionDto,
-    @Param('examId') examId: string,
     @User() user,
   ) {
     const enrolledExam = await this.examService.answerExamQuestion(
       answerExamQuestionDto,
-      examId,
       user.id,
     );
     return { _id: enrolledExam._id };

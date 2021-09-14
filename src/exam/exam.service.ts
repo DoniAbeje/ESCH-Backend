@@ -89,16 +89,15 @@ export class ExamService {
 
   async answerExamQuestion(
     answerExamQuestionDto: AnswerExamQuestionDto,
-    examId: string,
     userId: string,
   ) {
-    await this.exists(examId);
+    await this.exists(answerExamQuestionDto.examId);
 
     const examQuestion = await this.examQuestionService.exists(
       answerExamQuestionDto.questionId,
     );
 
-    if (examQuestion.examId != examId) {
+    if (examQuestion.examId != answerExamQuestionDto.examId) {
       throw new QuestionDoesNotBelongToExamException();
     }
 
@@ -108,7 +107,7 @@ export class ExamService {
     );
 
     return this.examEnrollmentService.answerExamQuestion(
-      examId,
+      answerExamQuestionDto.examId,
       userId,
       answerExamQuestionDto.questionId,
       answerExamQuestionDto.answer,
