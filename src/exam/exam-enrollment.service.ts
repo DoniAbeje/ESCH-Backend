@@ -36,14 +36,6 @@ export class ExamEnrollmentService {
     return this.enrolledExamModel.create(enrollForExamDto);
   }
 
-  async userHasBoughtExam(
-    exam: string,
-    examinee: string,
-    throwException: boolean,
-  ) {
-    // check if the user has already paid for it
-    return true;
-  }
 
   async fetchEnrolledExams(
     examinee: string,
