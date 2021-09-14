@@ -1220,11 +1220,9 @@ describe('Exam Module (e2e)', () => {
           answer: 'A',
         });
 
-      await examEnrollmentService.answerExamQuestion(
-        exam._id,
+      await examEnrollmentService.submitAnswer(
+        { answer: 'D', questionId: question._id },
         user._id,
-        question._id,
-        'D',
       );
 
       await request(app.getHttpServer())

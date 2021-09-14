@@ -27,7 +27,7 @@ export class ExamQuestionService {
   async addQuestionToExam(addExamQuestionDto: AddExamQuestionDto) {
     await this.examService.exists(addExamQuestionDto.examId);
     this.checkForDuplicateAnswer(addExamQuestionDto);
-    this.checkForCorrectAnswer(addExamQuestionDto);
+    this.checkForAnswerKeyPartOfChoice(addExamQuestionDto);
     await this.checkForDuplicateQuestion(
       addExamQuestionDto.examId,
       addExamQuestionDto.question,
@@ -71,12 +71,12 @@ export class ExamQuestionService {
 
     if (updateExamQuestionDto.choices) {
       this.checkForDuplicateAnswer(updateExamQuestionDto);
-      this.checkForCorrectAnswer(
+      this.checkForAnswerKeyPartOfChoice(
         updateExamQuestionDto,
         updateExamQuestionDto.correctAnswer || examQuestion.correctAnswer,
       );
     } else if (updateExamQuestionDto.correctAnswer) {
-      this.checkForCorrectAnswer(
+      this.checkForAnswerKeyPartOfChoice(
         examQuestion,
         updateExamQuestionDto.correctAnswer,
       );
@@ -94,7 +94,7 @@ export class ExamQuestionService {
     return examQuestion;
   }
 
-  checkForCorrectAnswer(
+  checkForAnswerKeyPartOfChoice(
     {
       choices,
       correctAnswer,

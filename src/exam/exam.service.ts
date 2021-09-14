@@ -87,31 +87,6 @@ export class ExamService {
     return await exam.delete();
   }
 
-  async answerExamQuestion(
-    answerExamQuestionDto: AnswerExamQuestionDto,
-    userId: string,
-  ) {
-
-    const examQuestion = await this.examQuestionService.exists(
-      answerExamQuestionDto.questionId,
-    );
-
-    await this.exists(examQuestion.examId);
-
-    this.examQuestionService.checkForCorrectAnswer(
-      examQuestion,
-      answerExamQuestionDto.answer,
-    );
-
-    return this.examEnrollmentService.answerExamQuestion(
-      examQuestion.examId,
-      userId,
-      answerExamQuestionDto.questionId,
-      answerExamQuestionDto.answer,
-      examQuestion.correctAnswer,
-    );
-  }
-
   async exists(examId: string, throwException = true) {
     const exam = await this.examModel.findById(examId);
 

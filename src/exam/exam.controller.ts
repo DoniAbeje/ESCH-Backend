@@ -107,6 +107,17 @@ export class ExamController {
     return { _id: examQuestion._id };
   }
 
+  @PutAuth('/question/answer', 'Answer Exam Question')
+  async answerExamQuestion(
+    @Body() answerExamQuestionDto: AnswerExamQuestionDto,
+    @User('id') userId,
+  ) {
+    const enrolledExam = await this.examEnrollmentService.submitAnswer(
+      answerExamQuestionDto, userId
+    );
+    return { _id: enrolledExam._id };
+  }
+  
   @PutAuth('question/:examQuestionId', 'Update Exam Question')
   async updateExamQuestion(
     @Param('examQuestionId') examQuestionId: string,
@@ -159,18 +170,6 @@ export class ExamController {
     );
 
     return { _id: enrollment._id };
-  }
-
-  @PutAuth('/question/answer', 'Answer Exam Question')
-  async answerExamQuestion(
-    @Body() answerExamQuestionDto: AnswerExamQuestionDto,
-    @User() user,
-  ) {
-    const enrolledExam = await this.examService.answerExamQuestion(
-      answerExamQuestionDto,
-      user.id,
-    );
-    return { _id: enrolledExam._id };
   }
 
   @PostAuth('/:examId/buy', 'Buy an exam')
