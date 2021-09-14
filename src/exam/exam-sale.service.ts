@@ -8,7 +8,6 @@ import {
   ExamSaleDocument,
   ExamSaleStatus,
 } from './schema/exam-sale.schema';
-import * as medapay from 'medapay';
 import MedaPay from 'medapay/lib/medapay';
 import { ExamService } from './exam.service';
 import { UserDocument } from 'src/user/schemas/user.schema';
@@ -17,7 +16,9 @@ import { AlreadyBoughtExamException } from './exceptions/already-bought-exam.exc
 import { PaymentInProcessException } from './exceptions/payment-in-process.exception';
 import { PaginationOption } from '../common/pagination-option';
 import { ExamSaleQueryBuilder } from './query/exam-sale-query-builder';
-const IS_SANDBOX = true;
+import axios from 'axios';
+import { OrderNotCreatedException } from './exceptions/order-not-created.exception';
+import { FreeExamException } from './exceptions/free-exam.exception';
 
 @Injectable()
 export class ExamSaleService {
@@ -26,17 +27,16 @@ export class ExamSaleService {
     @InjectModel(ExamSale.name) public examSaleModel: Model<ExamSaleDocument>,
     private examService: ExamService,
     private userService: UserService,
-    configService: ConfigService,
-  ) {
-    this.MedaPay = medapay.init(
-      { bearerToken: configService.get<string>('ESCH_MEDAPAY_BEARER_TOKEN') },
-      IS_SANDBOX,
-    );
-  }
+    private configService: ConfigService,
+  ) {}
 
   async buy(examId: string, userId: string) {
     const exam = await this.examService.exists(examId);
     const user = await this.userService.exists(userId);
+
+    if (exam.price == 0) {
+      throw new FreeExamException();
+    }
 
     let examSale = await this.exists(examId, userId);
 
@@ -54,19 +54,21 @@ export class ExamSaleService {
       price: exam.price,
     });
 
-    // create a bill medaPay
-    // const SAMPLE_BILL = this.createBill(user, exam, examSale);
+    try {
+      const payload = this.getBillPayload(user, exam, examSale);
+      const { data } = await this.createMedaOrder(payload);
+      examSale.set({
+        billReferenceNumber: data.billReferenceNumber,
+      });
 
-    // const createBillResponse = await this.MedaPay.create(SAMPLE_BILL);
-    // console.log(createBillResponse.billReferenceNumber);
+      await examSale.save();
+      return { redirectUrl: data.link.href, orderId: examSale._id };
+    } catch (e) {
+      console.log(e);
 
-    // examSale.set({
-    //   billReferenceNumber: createBillResponse.billReferenceNumber,
-    // });
-
-    // await examSale.save();
-
-    return examSale;
+      await this.examSaleModel.deleteOne({ _id: examSale._id });
+      throw new OrderNotCreatedException();
+    }
   }
 
   async fetchAll(
@@ -83,7 +85,7 @@ export class ExamSaleService {
     ).all();
   }
 
-  private createBill(
+  private getBillPayload(
     user: UserDocument,
     exam: ExamDocument,
     examSale: ExamSaleDocument,
@@ -97,11 +99,34 @@ export class ExamSaleService {
         customerPhoneNumber: user.phone,
       },
       redirectUrls: {
-        returnUrl: `https://esch.com/exam/${examSale._id}/return`,
-        cancelUrl: `https://esch.com/exam/${examSale._id}/cancel`,
-        callbackUrl: `https://esch.com/exam/${examSale._id}/callback`,
+        returnUrl:
+          this.configService.get<string>('ESCH_MEDA_PAY_RETURN_URL') +
+          '?order_id=' +
+          examSale._id,
+        cancelUrl:
+          this.configService.get<string>('ESCH_MEDA_PAY_RETURN_URL') +
+          '?order_id=' +
+          examSale._id,
+        callbackUrl:
+          this.configService.get<string>('ESCH_MEDA_PAY_RETURN_URL') +
+          '?order_id=' +
+          examSale._id,
       },
     };
+  }
+
+  private async createMedaOrder(payload) {
+    return await axios.post(
+      this.configService.get<string>('ESCH_MEDAPAY_CREATE_ORDER_URL'),
+      payload,
+      {
+        headers: {
+          Authorization:
+            'Bearer ' +
+            this.configService.get<string>('ESCH_MEDAPAY_BEARER_TOKEN'),
+        },
+      },
+    );
   }
 
   async exists(exam: string, buyer: string) {

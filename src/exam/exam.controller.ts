@@ -174,8 +174,8 @@ export class ExamController {
 
   @PostAuth('/:examId/buy', 'Buy an exam')
   async buyExam(@Param('examId') examId: string, @User() user) {
-    const examSale = await this.examSaleService.buy(examId, user.id);
+    const result = await this.examSaleService.buy(examId, user.id);
 
-    return { _id: examSale._id };
+    return result;
   }
 }
