@@ -86,7 +86,7 @@ export class ExamSaleService {
     ).all();
   }
 
-  async onPaymentStatusChenged(examSaleId, status: ExamSaleStatus) {
+  async onPaymentStatusChanged(examSaleId, status: ExamSaleStatus) {
     const examSale = await this.examSaleModel.findById(examSaleId);
     if (examSale && status == ExamSaleStatus.COMPLETE) {
       const enrollmentDto: EnrollForExamDto = {

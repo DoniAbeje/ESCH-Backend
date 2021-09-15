@@ -97,7 +97,7 @@ export class ExamController {
   @Get('/payment/callback')
   async confirmPayment(@Query('exam_sale_id') examSaleId) {
     const status = ExamSaleStatus.COMPLETE;
-    return this.examSaleService.onPaymentStatusChenged(examSaleId, status);
+    return this.examSaleService.onPaymentStatusChanged(examSaleId, status);
   }
 
   @ApiTags('Get single exam')
