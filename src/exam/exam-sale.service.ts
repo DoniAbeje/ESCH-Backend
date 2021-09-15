@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -8,35 +8,36 @@ import {
   ExamSaleDocument,
   ExamSaleStatus,
 } from './schema/exam-sale.schema';
-import * as medapay from 'medapay';
-import MedaPay from 'medapay/lib/medapay';
 import { ExamService } from './exam.service';
-import { UserDocument } from 'src/user/schemas/user.schema';
-import { ExamDocument } from './schema/exam.schema';
+
 import { AlreadyBoughtExamException } from './exceptions/already-bought-exam.exception';
 import { PaymentInProcessException } from './exceptions/payment-in-process.exception';
 import { PaginationOption } from '../common/pagination-option';
 import { ExamSaleQueryBuilder } from './query/exam-sale-query-builder';
-const IS_SANDBOX = true;
+import { OrderNotCreatedException } from './exceptions/order-not-created.exception';
+import { FreeExamException } from './exceptions/free-exam.exception';
+import { ExamEnrollmentService } from './exam-enrollment.service';
+import { EnrollForExamDto } from './dto/enroll-for-exam.dto';
+import { IPaymentGateway } from './IPaymentGateway.service';
 
 @Injectable()
 export class ExamSaleService {
-  private MedaPay: MedaPay;
   constructor(
     @InjectModel(ExamSale.name) public examSaleModel: Model<ExamSaleDocument>,
     private examService: ExamService,
     private userService: UserService,
-    configService: ConfigService,
-  ) {
-    this.MedaPay = medapay.init(
-      { bearerToken: configService.get<string>('ESCH_MEDAPAY_BEARER_TOKEN') },
-      IS_SANDBOX,
-    );
-  }
+    private enrollmentService: ExamEnrollmentService,
+    @Inject('IPaymentGateway')
+    private paymentGateway: IPaymentGateway,
+  ) {}
 
   async buy(examId: string, userId: string) {
     const exam = await this.examService.exists(examId);
     const user = await this.userService.exists(userId);
+
+    if (exam.price == 0) {
+      throw new FreeExamException();
+    }
 
     let examSale = await this.exists(examId, userId);
 
@@ -54,19 +55,24 @@ export class ExamSaleService {
       price: exam.price,
     });
 
-    // create a bill medaPay
-    // const SAMPLE_BILL = this.createBill(user, exam, examSale);
+    try {
+      const billCreated = await this.paymentGateway.createBill(
+        user,
+        exam,
+        examSale,
+      );
+      examSale.set({
+        billReferenceNumber: billCreated.reference,
+      });
 
-    // const createBillResponse = await this.MedaPay.create(SAMPLE_BILL);
-    // console.log(createBillResponse.billReferenceNumber);
+      await examSale.save();
+      return { redirectUrl: billCreated.redirectUrl, orderId: examSale._id };
+    } catch (e) {
+      console.log(e);
 
-    // examSale.set({
-    //   billReferenceNumber: createBillResponse.billReferenceNumber,
-    // });
-
-    // await examSale.save();
-
-    return examSale;
+      await this.examSaleModel.deleteOne({ _id: examSale._id });
+      throw new OrderNotCreatedException();
+    }
   }
 
   async fetchAll(
@@ -83,25 +89,17 @@ export class ExamSaleService {
     ).all();
   }
 
-  private createBill(
-    user: UserDocument,
-    exam: ExamDocument,
-    examSale: ExamSaleDocument,
-  ) {
-    return {
-      paymentDetails: {
-        orderId: examSale._id,
-        description: exam.description,
-        amount: examSale.price,
-        customerName: `${user.firstName} ${user.lastName}`,
-        customerPhoneNumber: user.phone,
-      },
-      redirectUrls: {
-        returnUrl: `https://esch.com/exam/${examSale._id}/return`,
-        cancelUrl: `https://esch.com/exam/${examSale._id}/cancel`,
-        callbackUrl: `https://esch.com/exam/${examSale._id}/callback`,
-      },
-    };
+  async onPaymentStatusChanged(examSaleId, status: ExamSaleStatus) {
+    const examSale = await this.examSaleModel.findById(examSaleId);
+    if (examSale && status == ExamSaleStatus.COMPLETE) {
+      const enrollmentDto: EnrollForExamDto = {
+        exam: examSale.exam,
+        examinee: examSale.buyer,
+      };
+      await this.enrollmentService.enroll(enrollmentDto, false);
+      examSale.set('status', ExamSaleStatus.COMPLETE);
+      await examSale.save();
+    }
   }
 
   async exists(exam: string, buyer: string) {

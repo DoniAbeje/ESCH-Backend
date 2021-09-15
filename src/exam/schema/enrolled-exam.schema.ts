@@ -9,6 +9,9 @@ class ExamAnswer {
 
   @Prop({ required: true })
   answer: string;
+
+  @Prop({ required: true})
+  isCorrect: boolean;
 }
 
 const ExamAnswerSchema = SchemaFactory.createForClass(ExamAnswer);

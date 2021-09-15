@@ -99,7 +99,7 @@ export class EnrolledExamQueryBuilder {
     }
     if (this.shouldPopulateExam) {
       enrolledExams = await this.enrolledExamModel.populate(enrolledExams, {
-        path: 'examId',
+        path: 'exam',
         select: ['_id', 'title', 'description', 'price', 'tags'],
       });
     }

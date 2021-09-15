@@ -58,62 +58,9 @@ export class ExamService {
     return result.first();
   }
 
-  async fetchUserExamReport(examinee) {
-    let examTakenCount = 0;
-    const examReports = [];
-
-    const enrolledExams = await this.examEnrollmentService.fetchEnrolledExams(
-      examinee,
-      null,
-    );
-
-    for (const enrolledExam of enrolledExams) {
-      const examReport: ExamReportDto = {};
-
-      examReport.noOfAnsweredQuestion = enrolledExam.answers.length;
-      examReport.noOfQuestion =
-        await this.examQuestionService.countQuestionsInExam(enrolledExam.exam);
-      examReport.noOfCorrectAnswers = enrolledExam.correctAnswerCount;
-
-      examReports.push(examReport);
-      examTakenCount++;
-    }
-
-    return { totalNoOfExamsTaken: examTakenCount, examReports };
-  }
-
   async delete(examId: string) {
     const exam = await this.exists(examId);
     return await exam.delete();
-  }
-
-  async answerExamQuestion(
-    answerExamQuestionDto: AnswerExamQuestionDto,
-    examId: string,
-    userId: string,
-  ) {
-    await this.exists(examId);
-
-    const examQuestion = await this.examQuestionService.exists(
-      answerExamQuestionDto.questionId,
-    );
-
-    if (examQuestion.examId != examId) {
-      throw new QuestionDoesNotBelongToExamException();
-    }
-
-    this.examQuestionService.checkForCorrectAnswer(
-      examQuestion,
-      answerExamQuestionDto.answer,
-    );
-
-    return this.examEnrollmentService.answerExamQuestion(
-      examId,
-      userId,
-      answerExamQuestionDto.questionId,
-      answerExamQuestionDto.answer,
-      examQuestion.correctAnswer,
-    );
   }
 
   async exists(examId: string, throwException = true) {

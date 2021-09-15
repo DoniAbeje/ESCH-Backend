@@ -1,6 +1,6 @@
 import { ExamQuestionService } from './exam-question.service';
 import { ExamService } from './exam.service';
-import { Body, Controller, Get, Param } from '@nestjs/common';
+import { Body, Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { User } from '../common/decorators/user.decorator';
@@ -19,6 +19,7 @@ import { GetAuth } from '../common/decorators/get-auth.decorator';
 import { ExamEnrollmentService } from './exam-enrollment.service';
 import { AnswerExamQuestionDto } from './dto/answer-exam-question.dto';
 import { ExamSaleService } from './exam-sale.service';
+import { ExamSaleStatus } from './schema/exam-sale.schema';
 @ApiTags('Exam')
 @Controller('exam')
 export class ExamController {
@@ -89,7 +90,14 @@ export class ExamController {
 
   @GetAuth('/reports', 'Fetch users exam reports')
   async fetchUsersExamReport(@User('id') userId) {
-    return this.examService.fetchUserExamReport(userId);
+    return this.examEnrollmentService.fetchUserExamReport(userId);
+  }
+
+  @ApiTags('Payment confirmation callback')
+  @Get('/payment/callback')
+  async confirmPayment(@Query('exam_sale_id') examSaleId) {
+    const status = ExamSaleStatus.COMPLETE;
+    return this.examSaleService.onPaymentStatusChanged(examSaleId, status);
   }
 
   @ApiTags('Get single exam')
@@ -105,6 +113,18 @@ export class ExamController {
     );
 
     return { _id: examQuestion._id };
+  }
+
+  @PutAuth('/question/answer', 'Answer Exam Question')
+  async answerExamQuestion(
+    @Body() answerExamQuestionDto: AnswerExamQuestionDto,
+    @User('id') userId,
+  ) {
+    const enrolledExam = await this.examEnrollmentService.submitAnswer(
+      answerExamQuestionDto,
+      userId,
+    );
+    return { _id: enrolledExam._id };
   }
 
   @PutAuth('question/:examQuestionId', 'Update Exam Question')
@@ -161,24 +181,10 @@ export class ExamController {
     return { _id: enrollment._id };
   }
 
-  @PutAuth('/:examId/answer', 'Answer Exam Question')
-  async answerExamQuestion(
-    @Body() answerExamQuestionDto: AnswerExamQuestionDto,
-    @Param('examId') examId: string,
-    @User() user,
-  ) {
-    const enrolledExam = await this.examService.answerExamQuestion(
-      answerExamQuestionDto,
-      examId,
-      user.id,
-    );
-    return { _id: enrolledExam._id };
-  }
-
   @PostAuth('/:examId/buy', 'Buy an exam')
   async buyExam(@Param('examId') examId: string, @User() user) {
-    const examSale = await this.examSaleService.buy(examId, user.id);
+    const result = await this.examSaleService.buy(examId, user.id);
 
-    return { _id: examSale._id };
+    return result;
   }
 }
