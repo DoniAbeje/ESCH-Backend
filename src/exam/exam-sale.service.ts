@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -9,17 +9,16 @@ import {
   ExamSaleStatus,
 } from './schema/exam-sale.schema';
 import { ExamService } from './exam.service';
-import { UserDocument } from 'src/user/schemas/user.schema';
-import { ExamDocument } from './schema/exam.schema';
+
 import { AlreadyBoughtExamException } from './exceptions/already-bought-exam.exception';
 import { PaymentInProcessException } from './exceptions/payment-in-process.exception';
 import { PaginationOption } from '../common/pagination-option';
 import { ExamSaleQueryBuilder } from './query/exam-sale-query-builder';
-import axios from 'axios';
 import { OrderNotCreatedException } from './exceptions/order-not-created.exception';
 import { FreeExamException } from './exceptions/free-exam.exception';
 import { ExamEnrollmentService } from './exam-enrollment.service';
 import { EnrollForExamDto } from './dto/enroll-for-exam.dto';
+import { IPaymentGateway } from './IPaymentGateway.service';
 
 @Injectable()
 export class ExamSaleService {
@@ -27,8 +26,9 @@ export class ExamSaleService {
     @InjectModel(ExamSale.name) public examSaleModel: Model<ExamSaleDocument>,
     private examService: ExamService,
     private userService: UserService,
-    private configService: ConfigService,
     private enrollmentService: ExamEnrollmentService,
+    @Inject('IPaymentGateway')
+    private paymentGateway: IPaymentGateway,
   ) {}
 
   async buy(examId: string, userId: string) {
@@ -56,14 +56,17 @@ export class ExamSaleService {
     });
 
     try {
-      const payload = this.getBillPayload(user, exam, examSale);
-      const { data } = await this.createMedaOrder(payload);
+      const billCreated = await this.paymentGateway.createBill(
+        user,
+        exam,
+        examSale,
+      );
       examSale.set({
-        billReferenceNumber: data.billReferenceNumber,
+        billReferenceNumber: billCreated.reference,
       });
 
       await examSale.save();
-      return { redirectUrl: data.link.href, orderId: examSale._id };
+      return { redirectUrl: billCreated.redirectUrl, orderId: examSale._id };
     } catch (e) {
       console.log(e);
 
@@ -97,50 +100,6 @@ export class ExamSaleService {
       examSale.set('status', ExamSaleStatus.COMPLETE);
       await examSale.save();
     }
-  }
-
-  private getBillPayload(
-    user: UserDocument,
-    exam: ExamDocument,
-    examSale: ExamSaleDocument,
-  ) {
-    return {
-      paymentDetails: {
-        orderId: examSale._id,
-        description: exam.description,
-        amount: examSale.price,
-        customerName: `${user.firstName} ${user.lastName}`,
-        customerPhoneNumber: user.phone,
-      },
-      redirectUrls: {
-        returnUrl:
-          this.configService.get<string>('ESCH_MEDA_PAY_RETURN_URL') +
-          '?exam_sale_id=' +
-          examSale._id,
-        cancelUrl:
-          this.configService.get<string>('ESCH_MEDA_PAY_RETURN_URL') +
-          '?exam_sale_id=' +
-          examSale._id,
-        callbackUrl:
-          this.configService.get<string>('ESCH_MEDA_PAY_RETURN_URL') +
-          '?exam_sale_id=' +
-          examSale._id,
-      },
-    };
-  }
-
-  private async createMedaOrder(payload) {
-    return await axios.post(
-      this.configService.get<string>('ESCH_MEDAPAY_CREATE_ORDER_URL'),
-      payload,
-      {
-        headers: {
-          Authorization:
-            'Bearer ' +
-            this.configService.get<string>('ESCH_MEDAPAY_BEARER_TOKEN'),
-        },
-      },
-    );
   }
 
   async exists(exam: string, buyer: string) {
