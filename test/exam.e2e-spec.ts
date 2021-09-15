@@ -998,7 +998,7 @@ describe('Exam Module (e2e)', () => {
       ];
 
       const { body } = await request(app.getHttpServer())
-        .put(`${baseUrl}/${enrolledExam[0].exam}/answer`)
+        .put(`${baseUrl}/question/answer`)
         .set('Authorization', `Bearer ${token}`)
         .expect(HttpStatus.BAD_REQUEST);
 
@@ -1008,7 +1008,7 @@ describe('Exam Module (e2e)', () => {
     it('should reject with unauthenticated user', async () => {
       const examId = mongoose.Types.ObjectId().toHexString();
       await request(app.getHttpServer())
-        .put(`${baseUrl}/${examId}/answer`)
+        .put(`${baseUrl}/question/answer`)
         .expect(HttpStatus.UNAUTHORIZED);
     });
 
@@ -1028,7 +1028,7 @@ describe('Exam Module (e2e)', () => {
       );
 
       await examTestHelper.createTestEnrolledExam(exam._id, user._id);
-      const examId = mongoose.Types.ObjectId().toHexString();
+      await examTestHelper.clearExams();
 
       const answerExamQuestionDto =
         await examTestHelper.generateAnswerExamQuestionDto({
@@ -1036,7 +1036,7 @@ describe('Exam Module (e2e)', () => {
         });
 
       const { body } = await request(app.getHttpServer())
-        .put(`${baseUrl}/${examId}/answer`)
+        .put(`${baseUrl}/question/answer`)
         .set('Authorization', `Bearer ${token}`)
         .send(answerExamQuestionDto)
         .expect(HttpStatus.NOT_FOUND);
@@ -1057,47 +1057,12 @@ describe('Exam Module (e2e)', () => {
         });
 
       const { body } = await request(app.getHttpServer())
-        .put(`${baseUrl}/${exam._id}/answer`)
+        .put(`${baseUrl}/question/answer`)
         .set('Authorization', `Bearer ${token}`)
         .send(answerExamQuestionDto)
         .expect(HttpStatus.NOT_FOUND);
 
       expect(body.exception).toEqual(ExamQuestionDoesNotExistException.name);
-    });
-
-    it('should reject with question not part of exam', async () => {
-      const user = await userTestHelper.createTestUser();
-      const token = await authService.signToken(user);
-      const exam1 = await examTestHelper.createTestExam({
-        preparedBy: user._id,
-      });
-      const exam2 = await examTestHelper.createTestExam({
-        preparedBy: user._id,
-      });
-
-      const addExamQuestionDto: AddExamQuestionDto =
-        examTestHelper.generateAddExamQuestionDto({
-          examId: exam2._id,
-        });
-
-      const question = await examQuestionService.addQuestionToExam(
-        addExamQuestionDto,
-      );
-
-      await examTestHelper.createTestEnrolledExam(exam1._id, user._id);
-
-      const answerExamQuestionDto =
-        await examTestHelper.generateAnswerExamQuestionDto({
-          questionId: question._id,
-        });
-
-      const { body } = await request(app.getHttpServer())
-        .put(`${baseUrl}/${exam1._id}/answer`)
-        .set('Authorization', `Bearer ${token}`)
-        .send(answerExamQuestionDto)
-        .expect(HttpStatus.BAD_REQUEST);
-
-      expect(body.exception).toEqual(QuestionDoesNotBelongToExamException.name);
     });
 
     it('should reject with correct answer not found', async () => {
@@ -1124,7 +1089,7 @@ describe('Exam Module (e2e)', () => {
         });
 
       const { body } = await request(app.getHttpServer())
-        .put(`${baseUrl}/${exam._id}/answer`)
+        .put(`${baseUrl}/question/answer`)
         .set('Authorization', `Bearer ${token}`)
         .send(answerExamQuestionDto)
         .expect(HttpStatus.BAD_REQUEST);
@@ -1153,7 +1118,7 @@ describe('Exam Module (e2e)', () => {
         });
 
       const { body } = await request(app.getHttpServer())
-        .put(`${baseUrl}/${exam._id}/answer`)
+        .put(`${baseUrl}/question/answer`)
         .set('Authorization', `Bearer ${token}`)
         .send(answerExamQuestionDto)
         .expect(HttpStatus.NOT_FOUND);
@@ -1184,7 +1149,7 @@ describe('Exam Module (e2e)', () => {
         });
 
       const { body } = await request(app.getHttpServer())
-        .put(`${baseUrl}/${exam._id}/answer`)
+        .put(`${baseUrl}/question/answer`)
         .set('Authorization', `Bearer ${token}`)
         .send(answerExamQuestionDto)
         .expect(HttpStatus.OK);
@@ -1205,7 +1170,7 @@ describe('Exam Module (e2e)', () => {
       });
       const addExamQuestionDto: AddExamQuestionDto =
         examTestHelper.generateAddExamQuestionDto({
-          examId: exam._id,
+          examId: exam._id, choices: [{choice: 'A', key: 'A'}, { choice: 'B', key: 'B'}]
         });
 
       const question = await examQuestionService.addQuestionToExam(
@@ -1221,12 +1186,12 @@ describe('Exam Module (e2e)', () => {
         });
 
       await examEnrollmentService.submitAnswer(
-        { answer: 'D', questionId: question._id },
+        { answer: 'B', questionId: question._id },
         user._id,
       );
 
       await request(app.getHttpServer())
-        .put(`${baseUrl}/${exam._id}/answer`)
+        .put(`${baseUrl}/question/answer`)
         .set('Authorization', `Bearer ${token}`)
         .send(answerExamQuestionDto)
         .expect(HttpStatus.OK);
