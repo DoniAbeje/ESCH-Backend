@@ -22,6 +22,10 @@ import { ExamQuestionDoesNotExistException } from '../src/exam/exceptions/examQu
 import { UpdateUserDto } from '../src/user/dto/update-user.dto';
 import { UpdateExamQuestionDto } from '../src/exam/dto/update-exam-question.dto';
 import { DuplicateChoiceKeyFoundException } from '../src/exam/exceptions/duplicate-choice-key-found.exception';
+import { EnrollForExamDto } from '../src/exam/dto/enroll-for-exam.dto';
+import { ExamEnrollmentService } from '../src/exam/exam-enrollment.service';
+import { QuestionDoesNotBelongToExamException } from '../src/exam/exceptions/question-doesnot-belong-to-exam.exception';
+import { NotEnrolledException } from '../src/exam/exceptions/not-enrolled.exception';
 
 describe('Exam Module (e2e)', () => {
   let app: INestApplication;
@@ -30,6 +34,7 @@ describe('Exam Module (e2e)', () => {
   let authService: AuthService;
   let examService: ExamService;
   let examQuestionService: ExamQuestionService;
+  let examEnrollmentService: ExamEnrollmentService;
   const baseUrl = '/exam';
 
   beforeAll(async () => {
@@ -48,6 +53,9 @@ describe('Exam Module (e2e)', () => {
     examTestHelper = moduleFixture.get<ExamTestHelperService>(
       ExamTestHelperService,
     );
+    examEnrollmentService = moduleFixture.get<ExamEnrollmentService>(
+      ExamEnrollmentService,
+    );
 
     configApp(app);
 
@@ -58,6 +66,7 @@ describe('Exam Module (e2e)', () => {
     await userTestHelper.clearUsersData();
     await examTestHelper.clearExams();
     await examTestHelper.clearExamQuestions();
+    await examTestHelper.clearEnrolledExams();
   });
 
   afterAll(async () => {
@@ -867,6 +876,332 @@ describe('Exam Module (e2e)', () => {
         questions.filter((_, index) => index >= 5 && index < 10),
       );
       expect(body).toEqual(expectedResponse);
+    });
+  });
+
+  describe('enrollForExam', () => {
+    it('should reject with validation error', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+
+      const expectedMessage = ['exam must be a string'];
+
+      const { body } = await request(app.getHttpServer())
+        .post(`${baseUrl}/enroll`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(body.message).toEqual(expectedMessage);
+    });
+
+    it('should reject with unauthenticated user', async () => {
+      await request(app.getHttpServer())
+        .post(`${baseUrl}/enroll`)
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+
+    it('should reject with non existing exam', async () => {
+      const exam = mongoose.Types.ObjectId();
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+
+      const { body } = await request(app.getHttpServer())
+        .post(`${baseUrl}/enroll`)
+        .set('Authorization', `Bearer ${token}`)
+        .send({ exam })
+        .expect(HttpStatus.NOT_FOUND);
+
+      expect(body.exception).toEqual(ExamDoesNotExistException.name);
+    });
+
+    it('should enroll for an exam successfully', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const exam = await examTestHelper.createTestExam({
+        preparedBy: user._id,
+      });
+      const enrollForExamDto: EnrollForExamDto = {
+        exam: exam._id.toString(),
+        examinee: user._id.toString(),
+      };
+
+      await request(app.getHttpServer())
+        .post(`${baseUrl}/enroll`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(enrollForExamDto)
+        .expect(HttpStatus.CREATED);
+
+      const enrolledExam = await examEnrollmentService.exists(
+        exam._id,
+        user._id,
+      );
+      expect(toJSON(enrolledExam)).toMatchObject(
+        expect.objectContaining(enrollForExamDto),
+      );
+    });
+  });
+
+  describe('fetchEnrolledExams', () => {
+    it('should reject with unauthenticated user', async () => {
+      await request(app.getHttpServer())
+        .get(`${baseUrl}/enrolled`)
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+
+    it('should return enrolled exams with default pagination', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      await examTestHelper.createTestEnrolledExams(
+        PaginationOption.DEFAULT_LIMIT * 2,
+        user._id,
+      );
+
+      const { body } = await request(app.getHttpServer())
+        .get(`${baseUrl}/enrolled`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HttpStatus.OK);
+
+      expect(body.length).toEqual(PaginationOption.DEFAULT_LIMIT);
+    });
+
+    it('should return enrolled exams with given limit and offset', async () => {
+      const limit = 5;
+      const offset = 5;
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const enrolledExams = await examTestHelper.createTestEnrolledExams(
+        PaginationOption.DEFAULT_LIMIT * 2,
+        user._id,
+      );
+
+      const { body } = await request(app.getHttpServer())
+        .get(`${baseUrl}/enrolled?limit=${limit}&offset=${offset}`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HttpStatus.OK);
+
+      expect(body.length).toEqual(limit);
+      expect(body[0]._id).toEqual(enrolledExams[offset]._id.toString());
+    });
+  });
+
+  describe('addExamAnswer', () => {
+    it('should reject with validation error', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const enrolledExam = await examTestHelper.createTestEnrolledExams(
+        1,
+        user._id,
+      );
+      const expectedMessage = [
+        'questionId must be a string',
+        'answer must be a string',
+      ];
+
+      const { body } = await request(app.getHttpServer())
+        .put(`${baseUrl}/question/answer`)
+        .set('Authorization', `Bearer ${token}`)
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(body.message).toEqual(expectedMessage);
+    });
+
+    it('should reject with unauthenticated user', async () => {
+      const examId = mongoose.Types.ObjectId().toHexString();
+      await request(app.getHttpServer())
+        .put(`${baseUrl}/question/answer`)
+        .expect(HttpStatus.UNAUTHORIZED);
+    });
+
+    it('should reject with non existing exam', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const exam = await examTestHelper.createTestExam({
+        preparedBy: user._id,
+      });
+      const addExamQuestionDto: AddExamQuestionDto =
+        examTestHelper.generateAddExamQuestionDto({
+          examId: exam._id,
+        });
+
+      const question = await examQuestionService.addQuestionToExam(
+        addExamQuestionDto,
+      );
+
+      await examTestHelper.createTestEnrolledExam(exam._id, user._id);
+      await examTestHelper.clearExams();
+
+      const answerExamQuestionDto =
+        await examTestHelper.generateAnswerExamQuestionDto({
+          questionId: question._id,
+        });
+
+      const { body } = await request(app.getHttpServer())
+        .put(`${baseUrl}/question/answer`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(answerExamQuestionDto)
+        .expect(HttpStatus.NOT_FOUND);
+
+      expect(body.exception).toEqual(ExamDoesNotExistException.name);
+    });
+
+    it('should reject with non existing question', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const exam = await examTestHelper.createTestExam({
+        preparedBy: user._id,
+      });
+
+      const answerExamQuestionDto =
+        await examTestHelper.generateAnswerExamQuestionDto({
+          questionId: mongoose.Types.ObjectId().toHexString(),
+        });
+
+      const { body } = await request(app.getHttpServer())
+        .put(`${baseUrl}/question/answer`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(answerExamQuestionDto)
+        .expect(HttpStatus.NOT_FOUND);
+
+      expect(body.exception).toEqual(ExamQuestionDoesNotExistException.name);
+    });
+
+    it('should reject with correct answer not found', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const exam = await examTestHelper.createTestExam({
+        preparedBy: user._id,
+      });
+      const addExamQuestionDto: AddExamQuestionDto =
+        examTestHelper.generateAddExamQuestionDto({
+          examId: exam._id,
+        });
+
+      const question = await examQuestionService.addQuestionToExam(
+        addExamQuestionDto,
+      );
+
+      await examTestHelper.createTestEnrolledExam(exam._id, user._id);
+
+      const answerExamQuestionDto =
+        await examTestHelper.generateAnswerExamQuestionDto({
+          questionId: question._id,
+          answer: 'J',
+        });
+
+      const { body } = await request(app.getHttpServer())
+        .put(`${baseUrl}/question/answer`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(answerExamQuestionDto)
+        .expect(HttpStatus.BAD_REQUEST);
+
+      expect(body.exception).toEqual(AnswerKeyNotPartOfChoiceException.name);
+    });
+
+    it('should reject for not user enrolled for exam', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const exam = await examTestHelper.createTestExam({
+        preparedBy: user._id,
+      });
+      const addExamQuestionDto: AddExamQuestionDto =
+        examTestHelper.generateAddExamQuestionDto({
+          examId: exam._id,
+        });
+
+      const question = await examQuestionService.addQuestionToExam(
+        addExamQuestionDto,
+      );
+
+      const answerExamQuestionDto =
+        await examTestHelper.generateAnswerExamQuestionDto({
+          questionId: question._id,
+        });
+
+      const { body } = await request(app.getHttpServer())
+        .put(`${baseUrl}/question/answer`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(answerExamQuestionDto)
+        .expect(HttpStatus.NOT_FOUND);
+
+      expect(body.exception).toEqual(NotEnrolledException.name);
+    });
+
+    it('should answer exam question', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const exam = await examTestHelper.createTestExam({
+        preparedBy: user._id,
+      });
+      const addExamQuestionDto: AddExamQuestionDto =
+        examTestHelper.generateAddExamQuestionDto({
+          examId: exam._id,
+        });
+
+      const question = await examQuestionService.addQuestionToExam(
+        addExamQuestionDto,
+      );
+
+      await examTestHelper.createTestEnrolledExam(exam._id, user._id);
+
+      const answerExamQuestionDto =
+        await examTestHelper.generateAnswerExamQuestionDto({
+          questionId: question._id,
+        });
+
+      const { body } = await request(app.getHttpServer())
+        .put(`${baseUrl}/question/answer`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(answerExamQuestionDto)
+        .expect(HttpStatus.OK);
+
+      const enrolledExam = await examEnrollmentService.exists(
+        exam._id,
+        user._id,
+        false,
+      );
+      expect(body._id).toEqual(enrolledExam._id.toHexString());
+    });
+
+    it('should answer exam question for already answered question', async () => {
+      const user = await userTestHelper.createTestUser();
+      const token = await authService.signToken(user);
+      const exam = await examTestHelper.createTestExam({
+        preparedBy: user._id,
+      });
+      const addExamQuestionDto: AddExamQuestionDto =
+        examTestHelper.generateAddExamQuestionDto({
+          examId: exam._id, choices: [{choice: 'A', key: 'A'}, { choice: 'B', key: 'B'}]
+        });
+
+      const question = await examQuestionService.addQuestionToExam(
+        addExamQuestionDto,
+      );
+
+      await examTestHelper.createTestEnrolledExam(exam._id, user._id);
+
+      const answerExamQuestionDto =
+        await examTestHelper.generateAnswerExamQuestionDto({
+          questionId: question._id,
+          answer: 'A',
+        });
+
+      await examEnrollmentService.submitAnswer(
+        { answer: 'B', questionId: question._id },
+        user._id,
+      );
+
+      await request(app.getHttpServer())
+        .put(`${baseUrl}/question/answer`)
+        .set('Authorization', `Bearer ${token}`)
+        .send(answerExamQuestionDto)
+        .expect(HttpStatus.OK);
+
+      const enrolledExam = await examEnrollmentService.exists(
+        exam._id,
+        user._id,
+        false,
+      );
+      expect(enrolledExam.answers[0].answer).toEqual('A');
     });
   });
 });

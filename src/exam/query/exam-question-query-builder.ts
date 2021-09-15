@@ -11,14 +11,12 @@ export class ExamQuestionQueryBuilder {
   private idFilters: mongoose.Types.ObjectId[] = [];
   private examFilters: mongoose.Types.ObjectId[] = [];
 
-
   constructor(private examQuestionModel: Model<ExamQuestionDocument>) {}
 
   paginate(paginationOption: PaginationOption) {
     this.paginationOption = paginationOption;
     return this;
   }
-
 
   filterByIds(ids: string[]) {
     this.idFilters = ids.map((id) => mongoose.Types.ObjectId(id));
@@ -58,7 +56,9 @@ export class ExamQuestionQueryBuilder {
       this.build();
     }
 
-    const examQuestions = await this.examQuestionModel.aggregate(this.aggregations);
+    const examQuestions = await this.examQuestionModel.aggregate(
+      this.aggregations,
+    );
     return new ExecResult(examQuestions);
   }
 

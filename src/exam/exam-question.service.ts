@@ -2,10 +2,10 @@ import {
   ExamQuestion,
   ExamQuestionDocument,
 } from './schema/exam-question.schema';
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { AddExamQuestionDto, Choice } from './dto/add-exam-question.dto';
+import { AddExamQuestionDto } from './dto/add-exam-question.dto';
 import { ExamService } from './exam.service';
 import { DuplicateChoiceKeyFoundException } from './exceptions/duplicate-choice-key-found.exception';
 import { DuplicateChoiceValueFoundException } from './exceptions/duplicate-choice-value-found.exception';
@@ -21,13 +21,13 @@ export class ExamQuestionService {
   constructor(
     @InjectModel(ExamQuestion.name)
     public examQuestionModel: Model<ExamQuestionDocument>,
-    private examService: ExamService,
+    @Inject(forwardRef(() => ExamService)) private examService: ExamService,
   ) {}
 
   async addQuestionToExam(addExamQuestionDto: AddExamQuestionDto) {
     await this.examService.exists(addExamQuestionDto.examId);
     this.checkForDuplicateAnswer(addExamQuestionDto);
-    this.checkForCorrectAnswer(addExamQuestionDto);
+    this.checkForAnswerKeyPartOfChoice(addExamQuestionDto);
     await this.checkForDuplicateQuestion(
       addExamQuestionDto.examId,
       addExamQuestionDto.question,
@@ -71,12 +71,12 @@ export class ExamQuestionService {
 
     if (updateExamQuestionDto.choices) {
       this.checkForDuplicateAnswer(updateExamQuestionDto);
-      this.checkForCorrectAnswer(
+      this.checkForAnswerKeyPartOfChoice(
         updateExamQuestionDto,
         updateExamQuestionDto.correctAnswer || examQuestion.correctAnswer,
       );
     } else if (updateExamQuestionDto.correctAnswer) {
-      this.checkForCorrectAnswer(
+      this.checkForAnswerKeyPartOfChoice(
         examQuestion,
         updateExamQuestionDto.correctAnswer,
       );
@@ -94,7 +94,7 @@ export class ExamQuestionService {
     return examQuestion;
   }
 
-  checkForCorrectAnswer(
+  checkForAnswerKeyPartOfChoice(
     {
       choices,
       correctAnswer,
@@ -155,5 +155,9 @@ export class ExamQuestionService {
   async delete(examQuestionId: string) {
     const question = await this.exists(examQuestionId);
     return await question.delete();
+  }
+
+  async countQuestionsInExam(examId) {
+    return this.examQuestionModel.countDocuments({ examId });
   }
 }

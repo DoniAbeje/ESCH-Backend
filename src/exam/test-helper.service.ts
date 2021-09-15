@@ -13,6 +13,13 @@ import {
   ExamQuestionDocument,
 } from './schema/exam-question.schema';
 import { ExamQuestionService } from './exam-question.service';
+import { EnrollForExamDto } from './dto/enroll-for-exam.dto';
+import {
+  EnrolledExam,
+  EnrolledExamDocument,
+} from './schema/enrolled-exam.schema';
+import { ExamEnrollmentService } from './exam-enrollment.service';
+import { AnswerExamQuestionDto } from './dto/answer-exam-question.dto';
 
 @Injectable()
 export class ExamTestHelperService {
@@ -20,8 +27,11 @@ export class ExamTestHelperService {
     @InjectModel(Exam.name) private examModel: Model<ExamDocument>,
     @InjectModel(ExamQuestion.name)
     private examQuestionModel: Model<ExamQuestionDocument>,
+    @InjectModel(EnrolledExam.name)
+    private enrolledExamModel: Model<EnrolledExamDocument>,
     private examService: ExamService,
     private examSQuestionervice: ExamQuestionService,
+    private examEnrollmentService: ExamEnrollmentService,
   ) {}
 
   async clearExams() {
@@ -29,6 +39,10 @@ export class ExamTestHelperService {
   }
   async clearExamQuestions() {
     return await this.examQuestionModel.deleteMany({});
+  }
+
+  async clearEnrolledExams() {
+    return await this.enrolledExamModel.deleteMany({});
   }
 
   generateCreateExamDto(override: Partial<CreateExamDto> = {}): CreateExamDto {
@@ -54,6 +68,17 @@ export class ExamTestHelperService {
     };
     return { ..._default, ...override };
   }
+
+  generateAnswerExamQuestionDto(
+    override: Partial<AnswerExamQuestionDto> = {},
+  ): AnswerExamQuestionDto {
+    const _default: AnswerExamQuestionDto = {
+      questionId: '',
+      answer: 'A',
+    };
+    return { ..._default, ...override };
+  }
+
   async createTestExam(
     override: Partial<CreateExamDto> = {},
   ): Promise<ExamDocument> {
@@ -78,6 +103,25 @@ export class ExamTestHelperService {
       exams.push(await this.createTestExam(createExamDto));
     }
     return exams;
+  }
+
+  async createTestEnrolledExam(exam, examinee): Promise<EnrolledExamDocument> {
+    const enrollForExamDto: EnrollForExamDto = { exam, examinee };
+    return this.examEnrollmentService.enroll(enrollForExamDto);
+  }
+
+  async createTestEnrolledExams(
+    amount: number,
+    userId: string,
+  ): Promise<EnrolledExamDocument[]> {
+    const enrolledExams = [];
+    const exams = await this.createTestExams(amount, { preparedBy: userId });
+
+    for (const exam of exams) {
+      enrolledExams.push(await this.createTestEnrolledExam(exam._id, userId));
+    }
+
+    return enrolledExams;
   }
 
   async addTestExamQuestions(
