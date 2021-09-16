@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { TfIdf } from 'natural';
 import { ExamService } from './exam.service';
 import { ExamDocument } from './schema/exam.schema';
+import * as Vector from 'vector-object';
 
 @Injectable()
 export class ExamRecommendationService {
@@ -36,5 +37,20 @@ export class ExamRecommendationService {
     });
 
     return examDoc;
+  }
+
+  private async vectorizeExams(examsCount: number) {
+    const vectors = [];
+
+    for (let index = 0; index < examsCount; index++) {
+      const vecObj = {};
+      this.tfidf.listTerms(index).forEach(function (item) {
+        vecObj[item.term] = item.tfidf;
+      });
+      const vec = new Vector(vecObj);
+      vectors.push(vec);
+    }
+
+    return vectors;
   }
 }
