@@ -9,25 +9,28 @@ export class ExamRecommendationService {
   private fromExamIdToIndex = {};
   private fromIndexToExamId = {};
   private tfidf: TfIdf;
+  private exams: ExamDocument[];
+  private needsSetup = true;
 
   constructor(private examService: ExamService) {
     this.tfidf = new TfIdf();
   }
 
-  async setup() {
-    this.fromExamIdToIndex = {};
-    this.fromIndexToExamId = {};
-    this.tfidf = new TfIdf();
+  async setup(newExamAdded = false) {
+    if (newExamAdded || this.needsSetup) {
+      this.fromExamIdToIndex = {};
+      this.fromIndexToExamId = {};
+      this.tfidf = new TfIdf();
 
-    const exams: ExamDocument[] = await this.examService.fetchAll(null);
+      this.exams = await this.examService.fetchAll(null);
 
-    exams.forEach((exam, index) => {
-      this.tfidf.addDocument(this.constructExamDocument(exam));
-      this.fromExamIdToIndex[exam._id] = index;
-      this.fromIndexToExamId[index] = exam._id;
-    });
-
-    return exams;
+      this.exams.forEach((exam, index) => {
+        this.tfidf.addDocument(this.constructExamDocument(exam));
+        this.fromExamIdToIndex[exam._id] = index;
+        this.fromIndexToExamId[index] = exam._id;
+      });
+      this.needsSetup = false;
+    }
   }
 
   private constructExamDocument(exam: ExamDocument) {
