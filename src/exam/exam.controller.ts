@@ -20,6 +20,7 @@ import { ExamEnrollmentService } from './exam-enrollment.service';
 import { AnswerExamQuestionDto } from './dto/answer-exam-question.dto';
 import { ExamSaleService } from './exam-sale.service';
 import { ExamSaleStatus } from './schema/exam-sale.schema';
+import { ExamRecommendationService } from './exam-recommendation.service';
 @ApiTags('Exam')
 @Controller('exam')
 export class ExamController {
@@ -28,6 +29,7 @@ export class ExamController {
     private examQuestionService: ExamQuestionService,
     private examEnrollmentService: ExamEnrollmentService,
     private examSaleService: ExamSaleService,
+    private examRecommendationService: ExamRecommendationService,
   ) {}
 
   @PostAuth('/', 'Create Exam')
@@ -69,7 +71,7 @@ export class ExamController {
   async searchQuestions(
     @Pagination() paginationOption: PaginationOption,
     @Query('keywords')
-    keywords: string = '',
+    keywords = '',
   ) {
     return this.examService.search(paginationOption, keywords);
   }
@@ -196,5 +198,16 @@ export class ExamController {
     const result = await this.examSaleService.buy(examId, user.id);
 
     return result;
+  }
+
+  @ApiPagination('/similar/:examId', 'Fetch Similar Exams For a Given Exam')
+  async fetchSingleQuestions(
+    @Pagination() paginationOption: PaginationOption,
+    @Param('examId') examId: string,
+  ) {
+    return this.examRecommendationService.fetchSimilarExams(
+      examId,
+      paginationOption.limit,
+    );
   }
 }

@@ -1,36 +1,41 @@
-import { Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { TfIdf } from 'natural';
 import { ExamService } from './exam.service';
 import { ExamDocument } from './schema/exam.schema';
 import * as Vector from 'vector-object';
+import { PaginationOption } from 'src/common/pagination-option';
 
 @Injectable()
 export class ExamRecommendationService {
   private fromExamIdToIndex = {};
   private fromIndexToExamId = {};
   private tfidf: TfIdf;
-  private exams: ExamDocument[];
   private needsSetup = true;
 
-  constructor(private examService: ExamService) {
+  constructor(
+    @Inject(forwardRef(() => ExamService))
+    private examService: ExamService,
+  ) {
     this.tfidf = new TfIdf();
   }
 
   async setup(newExamAdded = false) {
+    const exams: ExamDocument[] = await this.examService.fetchAll(null);
+
     if (newExamAdded || this.needsSetup) {
       this.fromExamIdToIndex = {};
       this.fromIndexToExamId = {};
       this.tfidf = new TfIdf();
 
-      this.exams = await this.examService.fetchAll(null);
-
-      this.exams.forEach((exam, index) => {
+      exams.forEach((exam, index) => {
         this.tfidf.addDocument(this.constructExamDocument(exam));
         this.fromExamIdToIndex[exam._id] = index;
         this.fromIndexToExamId[index] = exam._id;
       });
       this.needsSetup = false;
     }
+
+    return exams;
   }
 
   private constructExamDocument(exam: ExamDocument) {
@@ -55,5 +60,39 @@ export class ExamRecommendationService {
     }
 
     return vectors;
+  }
+
+  async fetchSimilarExams(
+    examId: string,
+    count = PaginationOption.DEFAULT_LIMIT,
+  ) {
+    await this.examService.exists(examId);
+
+    const exams = await this.setup();
+    const vectors = await this.vectorizeExams(exams.length);
+
+    const examIndex = this.fromExamIdToIndex[examId];
+    const itemScores = {};
+
+    for (let i = 0; i < exams.length; i++) {
+      if (examIndex == i) continue;
+      const score = vectors[examIndex].getCosineSimilarity(vectors[i]);
+      itemScores[this.fromIndexToExamId[i]] = score;
+    }
+
+    const sortedItemScore = Object.entries<number>(itemScores)
+      .sort(([, a], [, b]) => b - a)
+      .reduce((r, [k, v]) => ({ ...r, [k]: v }), {});
+
+    const recommendation: ExamDocument[] = [];
+
+    let cnt = 0;
+    for (const sortedId in sortedItemScore) {
+      if (cnt == count) break;
+      recommendation.push(exams[this.fromExamIdToIndex[sortedId]]);
+      cnt++;
+    }
+
+    return recommendation;
   }
 }
