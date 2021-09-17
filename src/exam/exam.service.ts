@@ -12,16 +12,19 @@ import { ExamEnrollmentService } from './exam-enrollment.service';
 import { QuestionDoesNotBelongToExamException } from './exceptions/question-doesnot-belong-to-exam.exception';
 import { AnswerExamQuestionDto } from './dto/answer-exam-question.dto';
 import { ExamReportDto } from './dto/exam-report.dto';
+import { RateService } from '../common/services/rate.service';
 
 @Injectable()
-export class ExamService {
+export class ExamService extends RateService {
   constructor(
     @InjectModel(Exam.name) public examModel: Model<ExamDocument>,
     @Inject(forwardRef(() => ExamQuestionService))
     private examQuestionService: ExamQuestionService,
     @Inject(forwardRef(() => ExamEnrollmentService))
     private examEnrollmentService: ExamEnrollmentService,
-  ) {}
+  ) {
+    super(examModel);
+  }
 
   async createExam(createExamDto: CreateExamDto) {
     return this.examModel.create(createExamDto);
@@ -36,6 +39,7 @@ export class ExamService {
     paginationOption: PaginationOption = PaginationOption.DEFAULT,
     tags: string[] = [],
     authors: string[] = [],
+    loggedInUserId: string = null,
   ) {
     return (
       await new ExamQueryBuilder(this.examModel)
@@ -43,14 +47,16 @@ export class ExamService {
         .filterByTags(tags)
         .filterByAuthors(authors)
         .populatePreparedBy()
+        .populateUserRating(loggedInUserId)
         .exec()
     ).all();
   }
 
-  async fetchOne(examId: string) {
+  async fetchOne(examId: string, loggedInUserId: string = null) {
     const result = await new ExamQueryBuilder(this.examModel)
       .filterByIds([examId])
       .populatePreparedBy()
+      .populateUserRating(loggedInUserId)
       .exec();
     if (result.isEmpty()) {
       throw new ExamDoesNotExistException();

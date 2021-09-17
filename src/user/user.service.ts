@@ -9,10 +9,13 @@ import { UserDoesNotExistException } from './exceptions/user-doesnot-exist.excep
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PaginationOption } from '../common/pagination-option';
 import { UserQuestionQueryBuilder } from './query/user-query-builder';
+import { RateService } from '../common/services/rate.service';
 
 @Injectable()
-export class UserService {
-  constructor(@InjectModel(User.name) public userModel: Model<UserDocument>) {}
+export class UserService extends RateService {
+  constructor(@InjectModel(User.name) public userModel: Model<UserDocument>) {
+    super(userModel);
+  }
 
   async createUser(createUserDto: CreateUserDto) {
     const phoneTaken = await this.existsByPhone(createUserDto.phone, false);
@@ -34,17 +37,20 @@ export class UserService {
 
   async fetchAll(
     paginationOption: PaginationOption = PaginationOption.DEFAULT,
+    loggedInUserId: string = null,
   ) {
     return (
       await new UserQuestionQueryBuilder(this.userModel)
         .paginate(paginationOption)
+        .populateUserRating(loggedInUserId)
         .exec()
     ).all();
   }
 
-  async fetchOne(userId: string) {
+  async fetchOne(userId: string, loggedInUserId: string = null) {
     const result = await new UserQuestionQueryBuilder(this.userModel)
       .filterByIds([userId])
+      .populateUserRating(loggedInUserId)
       .exec();
 
     if (result.isEmpty()) {
