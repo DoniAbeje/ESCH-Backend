@@ -62,4 +62,35 @@ export class QuestionRecommendationService {
 
     return vectors;
   }
+
+  private recommend(
+    vector,
+    vectors,
+    questions: QuestionDocument[],
+    count: number,
+    questionIndex = -1,
+  ) {
+    const itemScores = {};
+
+    for (let i = 0; i < questions.length; i++) {
+      if (questionIndex == i) continue;
+      const score = vector.getCosineSimilarity(vectors[i]);
+      itemScores[this.fromIndexToQuestionId[i]] = score;
+    }
+
+    const sortedItemScore = Object.entries<number>(itemScores)
+      .sort(([, a], [, b]) => b - a)
+      .reduce((r, [k, v]) => ({ ...r, [k]: v }), {});
+
+    const recommendation: QuestionDocument[] = [];
+
+    let cnt = 0;
+    for (const sortedId in sortedItemScore) {
+      if (cnt == count) break;
+      recommendation.push(questions[this.fromQuestionIdToIndex[sortedId]]);
+      cnt++;
+    }
+
+    return recommendation;
+  }
 }
