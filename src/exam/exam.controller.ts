@@ -112,6 +112,17 @@ export class ExamController {
     return this.examSaleService.onPaymentStatusChanged(examSaleId, status);
   }
 
+  @GetAuth('/recommended', 'Fetch recommended exams')
+  async fetchRecommendedExams(
+    @Pagination() paginationOption: PaginationOption,
+    @User('id') userId,
+  ) {
+    return this.examRecommendationService.fetchExams(
+      userId,
+      paginationOption.limit,
+    );
+  }
+
   @ApiTags('Get single exam')
   @Get('/:examId')
   async fetchSingleExam(@Param('examId') examId: string) {
@@ -201,7 +212,7 @@ export class ExamController {
   }
 
   @ApiPagination('/similar/:examId', 'Fetch Similar Exams For a Given Exam')
-  async fetchSingleQuestions(
+  async fetchSimilarExams(
     @Pagination() paginationOption: PaginationOption,
     @Param('examId') examId: string,
   ) {

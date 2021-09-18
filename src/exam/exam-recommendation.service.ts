@@ -3,7 +3,8 @@ import { TfIdf } from 'natural';
 import { ExamService } from './exam.service';
 import { ExamDocument } from './schema/exam.schema';
 import * as Vector from 'vector-object';
-import { PaginationOption } from 'src/common/pagination-option';
+import { PaginationOption } from '../common/pagination-option';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class ExamRecommendationService {
@@ -15,6 +16,7 @@ export class ExamRecommendationService {
   constructor(
     @Inject(forwardRef(() => ExamService))
     private examService: ExamService,
+    private userService: UserService,
   ) {
     this.tfidf = new TfIdf();
   }
@@ -72,11 +74,34 @@ export class ExamRecommendationService {
     const vectors = await this.vectorizeExams(exams.length);
 
     const examIndex = this.fromExamIdToIndex[examId];
+
+    return this.recommend(vectors[examIndex], vectors, exams, count, examIndex);
+  }
+
+  async fetchExams(userId: string, count = PaginationOption.DEFAULT_LIMIT) {
+    const user = await this.userService.exists(userId);
+    const exams = await this.setup();
+    const vectors = await this.vectorizeExams(exams.length);
+    // update the value assigned for a tag
+    const userVector = new Vector(
+      user.preferredTags.reduce((a, c) => ({ ...a, [c]: 2 }), {}),
+    );
+
+    return this.recommend(userVector, vectors, exams, count);
+  }
+
+  private recommend(
+    vector,
+    vectors,
+    exams: ExamDocument[],
+    count: number,
+    examIndex = -1,
+  ) {
     const itemScores = {};
 
     for (let i = 0; i < exams.length; i++) {
       if (examIndex == i) continue;
-      const score = vectors[examIndex].getCosineSimilarity(vectors[i]);
+      const score = vector.getCosineSimilarity(vectors[i]);
       itemScores[this.fromIndexToExamId[i]] = score;
     }
 
