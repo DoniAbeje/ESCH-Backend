@@ -1,5 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { TfIdf } from 'natural';
+import * as Vector from 'vector-object';
 import { QuestionService } from './question.service';
 import { QuestionDocument } from './schema/question.schema';
 
@@ -45,5 +46,20 @@ export class QuestionRecommendationService {
     });
 
     return questionDoc;
+  }
+
+  private async vectorizeQuestions(questionsCount: number) {
+    const vectors = [];
+
+    for (let index = 0; index < questionsCount; index++) {
+      const vecObj = {};
+      this.tfidf.listTerms(index).forEach(function (item) {
+        vecObj[item.term] = item.tfidf;
+      });
+      const vec = new Vector(vecObj);
+      vectors.push(vec);
+    }
+
+    return vectors;
   }
 }
