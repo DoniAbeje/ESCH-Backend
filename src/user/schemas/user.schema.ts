@@ -23,10 +23,13 @@ export class User {
   password: string;
 
   @Prop({ default: UserRole.STUDENT })
-  role: UserRole
+  role: UserRole;
 
   @Prop({ default: null })
   profilePicture: string;
+
+  @Prop({ type: [String], default: [] })
+  preferredTags: string[];
 
   @Prop({ default: Date.now })
   createdDate: Date;

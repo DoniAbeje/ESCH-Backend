@@ -16,6 +16,7 @@ export class UserQuestionQueryBuilder {
     phone: 1,
     profilePicture: 1,
     role: 1,
+    preferredTags: 1,
   };
 
   constructor(private userModel: Model<UserDocument>) {}
