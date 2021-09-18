@@ -18,6 +18,7 @@ import { AnswerQuestionDto } from './dto/answer-question.dto';
 import { RaiseQuestionDto } from './dto/raise-question.dto';
 import { QuestionService } from './question.service';
 import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
+import { QuestionRecommendationService } from './question-recommendation.service';
 
 @ApiTags('Question and Answer')
 @Controller('question')
@@ -25,6 +26,7 @@ export class QaController {
   constructor(
     private questionService: QuestionService,
     private answerService: AnswerService,
+    private questionRecommendationService: QuestionRecommendationService,
   ) {}
 
   @PostAuth('/', 'Raise Question')
@@ -53,10 +55,24 @@ export class QaController {
   async searchQuestions(
     @Pagination() paginationOption: PaginationOption,
     @Query('keywords')
-    keywords: string = '',
+    keywords = '',
     @User('id') userId,
   ) {
     return this.questionService.search(paginationOption, keywords, userId);
+  }
+
+  @ApiPagination(
+    '/similar/:questionId',
+    'Fetch Similar Question For a Given Question',
+  )
+  async fetchSimilarQuestions(
+    @Pagination() paginationOption: PaginationOption,
+    @Param('questionId') questionId: string,
+  ) {
+    return this.questionRecommendationService.fetchSimilarQuestions(
+      questionId,
+      paginationOption.limit,
+    );
   }
 
   @ApiTags('Fetch Single Question')

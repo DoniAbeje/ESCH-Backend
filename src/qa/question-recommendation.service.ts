@@ -1,5 +1,6 @@
 import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { TfIdf } from 'natural';
+import { PaginationOption } from '../common/pagination-option';
 import * as Vector from 'vector-object';
 import { QuestionService } from './question.service';
 import { QuestionDocument } from './schema/question.schema';
@@ -61,6 +62,26 @@ export class QuestionRecommendationService {
     }
 
     return vectors;
+  }
+
+  async fetchSimilarQuestions(
+    examId: string,
+    count = PaginationOption.DEFAULT_LIMIT,
+  ) {
+    await this.questionService.exists(examId);
+
+    const questions = await this.setup();
+    const vectors = await this.vectorizeQuestions(questions.length);
+
+    const examIndex = this.fromQuestionIdToIndex[examId];
+
+    return this.recommend(
+      vectors[examIndex],
+      vectors,
+      questions,
+      count,
+      examIndex,
+    );
   }
 
   private recommend(
