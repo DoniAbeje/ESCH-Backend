@@ -11,9 +11,26 @@ export class ExamQueryBuilder {
   private tagFilters: string[] = [];
   private authorFilters: mongoose.Types.ObjectId[] = [];
   private idFilters: mongoose.Types.ObjectId[] = [];
-  private searchFilter: string = '';
+  private searchFilter = '';
   private shouldPopulatePreparedBy = false;
 
+  private userRatingPopulation = {
+    shouldPopulate: false,
+    userId: null,
+  };
+
+  private projections = {
+    status: 1,
+    tags: 1,
+    samples: 1,
+    price: 1,
+    title: 1,
+    description: 1,
+    preparedBy: 1,
+    createdAt: 1,
+    ratingCount: { $size: '$ratings' },
+    avgRating: { $ifNull: [{ $avg: '$ratings.rating' }, 0] },
+  };
   constructor(private examModel: Model<ExamDocument>) {}
 
   paginate(paginationOption: PaginationOption) {
@@ -46,6 +63,12 @@ export class ExamQueryBuilder {
     return this;
   }
 
+  populateUserRating(userId: string, shouldPopulate = true) {
+    this.userRatingPopulation.shouldPopulate = shouldPopulate;
+    this.userRatingPopulation.userId = userId;
+    return this;
+  }
+
   build() {
     const match: ExamMatchQuery = this.processFilter();
     const sort = this.processSorting();
@@ -61,7 +84,7 @@ export class ExamQueryBuilder {
         $sort: sort,
       });
     }
-    
+
     // limit
     if (this.paginationOption) {
       this.aggregations.push({
@@ -73,6 +96,10 @@ export class ExamQueryBuilder {
       });
     }
 
+    // projection
+    this.aggregations.push({
+      $project: this.preProcessProjection(),
+    });
     this.isBuilt = true;
     return this.aggregations;
   }
@@ -109,6 +136,15 @@ export class ExamQueryBuilder {
     return match;
   }
 
+  private preProcessProjection() {
+    let tempProjections = this.projections;
+
+    if (this.userRatingPopulation.shouldPopulate) {
+      tempProjections = this.getUserRatingProjection(tempProjections);
+    }
+    return tempProjections;
+  }
+
   private async processPopulate(answers: any[]) {
     if (this.shouldPopulatePreparedBy) {
       answers = await this.examModel.populate(answers, {
@@ -128,6 +164,29 @@ export class ExamQueryBuilder {
 
   private hasSearchFilter() {
     return this.searchFilter != '';
+  }
+
+  private getUserRatingProjection(tempProjections) {
+    const userRatingProjction = {
+      userRating: {
+        $ifNull: [
+          {
+            $first: {
+              $filter: {
+                input: '$ratings',
+                as: 'r',
+                cond: {
+                  $eq: ['$$r.userId', this.userRatingPopulation.userId],
+                },
+              },
+            },
+          },
+          null,
+        ],
+      },
+    };
+    tempProjections = { ...tempProjections, ...userRatingProjction };
+    return tempProjections;
   }
 }
 

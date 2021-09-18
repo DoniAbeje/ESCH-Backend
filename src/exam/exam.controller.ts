@@ -21,6 +21,8 @@ import { AnswerExamQuestionDto } from './dto/answer-exam-question.dto';
 import { ExamSaleService } from './exam-sale.service';
 import { ExamSaleStatus } from './schema/exam-sale.schema';
 import { ExamRecommendationService } from './exam-recommendation.service';
+import { RateDto } from '../common/dto/rate.dto';
+import { CancelRateDto } from '../common/dto/cancel-rate.dto';
 @ApiTags('Exam')
 @Controller('exam')
 export class ExamController {
@@ -62,8 +64,14 @@ export class ExamController {
     tags: string[] = [],
     @QueryArray('authors')
     authors: string[] = [],
+    @User('id') loggedInUserId,
   ) {
-    return this.examService.fetchAll(paginationOption, tags, authors);
+    return this.examService.fetchAll(
+      paginationOption,
+      tags,
+      authors,
+      loggedInUserId,
+    );
   }
 
   @ApiPagination('/search', 'Search Exams')
@@ -125,8 +133,11 @@ export class ExamController {
 
   @ApiTags('Get single exam')
   @Get('/:examId')
-  async fetchSingleExam(@Param('examId') examId: string) {
-    return this.examService.fetchOne(examId);
+  async fetchSingleExam(
+    @Param('examId') examId: string,
+    @User('id') loggedInUserId,
+  ) {
+    return this.examService.fetchOne(examId, loggedInUserId);
   }
 
   @PostAuth('/question', 'Add question to exam')
@@ -220,5 +231,20 @@ export class ExamController {
       examId,
       paginationOption.limit,
     );
+  }
+
+  @PostAuth('/rate', 'Rate exam')
+  async rateExam(@Body() rateDto: RateDto, @User('id') userId) {
+    rateDto.userId = userId;
+    await this.examService.rate(rateDto);
+  }
+
+  @PostAuth('/cancel-rate', 'Cancel exam rating')
+  async cancelExamRating(
+    @Body() cancelRateDto: CancelRateDto,
+    @User('id') userId,
+  ) {
+    cancelRateDto.userId = userId;
+    await this.examService.cancelRate(cancelRateDto);
   }
 }

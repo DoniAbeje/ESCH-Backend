@@ -147,13 +147,19 @@ export class ExamTestHelperService {
     userDocument: UserDocument,
   ) {
     const user: LeanDocument<UserDocument> = toJSON(userDocument);
+    const exam = toJSON(examDocument);
     const preparedBy = {
       _id: user._id,
       firstName: user.firstName,
       lastName: user.lastName,
       profilePicture: user.profilePicture,
     };
-    return { ...toJSON(examDocument), preparedBy };
+    const ratingCount = 0;
+    const userRating = null;
+    const avgRating = 0;
+    delete exam.ratings;
+    delete exam.__v;
+    return { ...exam, preparedBy, ratingCount, userRating, avgRating };
   }
 
   getExamQuestionResponse(

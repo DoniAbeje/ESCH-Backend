@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+import { Rating } from '../../common/schemas/rating.schema';
 
 export type UserDocument = User & Document;
 export enum UserRole {
@@ -9,7 +10,7 @@ export enum UserRole {
 }
 
 @Schema()
-export class User {
+export class User extends Rating {
   @Prop({ required: true })
   firstName: string;
 
