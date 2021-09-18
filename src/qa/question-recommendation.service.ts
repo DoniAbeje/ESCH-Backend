@@ -4,6 +4,7 @@ import { PaginationOption } from '../common/pagination-option';
 import * as Vector from 'vector-object';
 import { QuestionService } from './question.service';
 import { QuestionDocument } from './schema/question.schema';
+import { UserService } from '../user/user.service';
 
 @Injectable()
 export class QuestionRecommendationService {
@@ -15,6 +16,7 @@ export class QuestionRecommendationService {
   constructor(
     @Inject(forwardRef(() => QuestionService))
     private questionService: QuestionService,
+    private userService: UserService,
   ) {
     this.tfidf = new TfIdf();
   }
@@ -65,23 +67,35 @@ export class QuestionRecommendationService {
   }
 
   async fetchSimilarQuestions(
-    examId: string,
+    questionId: string,
     count = PaginationOption.DEFAULT_LIMIT,
   ) {
-    await this.questionService.exists(examId);
+    await this.questionService.exists(questionId);
 
     const questions = await this.setup();
     const vectors = await this.vectorizeQuestions(questions.length);
 
-    const examIndex = this.fromQuestionIdToIndex[examId];
+    const questionIndex = this.fromQuestionIdToIndex[questionId];
 
     return this.recommend(
-      vectors[examIndex],
+      vectors[questionIndex],
       vectors,
       questions,
       count,
-      examIndex,
+      questionIndex,
     );
+  }
+
+  async fetchQuestions(userId: string, count = PaginationOption.DEFAULT_LIMIT) {
+    const user = await this.userService.exists(userId);
+    const questions = await this.setup();
+    const vectors = await this.vectorizeQuestions(questions.length);
+    // update the value assigned for a tag
+    const userVector = new Vector(
+      user.preferredTags.reduce((a, c) => ({ ...a, [c]: 2 }), {}),
+    );
+
+    return this.recommend(userVector, vectors, questions, count);
   }
 
   private recommend(

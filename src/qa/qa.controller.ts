@@ -1,11 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  ParseArrayPipe,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { PostAuth } from '../common/decorators/post-auth.decorator';
 import { User } from '../common/decorators/user.decorator';
@@ -17,8 +10,8 @@ import { AnswerService } from './answer.service';
 import { AnswerQuestionDto } from './dto/answer-question.dto';
 import { RaiseQuestionDto } from './dto/raise-question.dto';
 import { QuestionService } from './question.service';
-import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 import { QuestionRecommendationService } from './question-recommendation.service';
+import { GetAuth } from '../common/decorators/get-auth.decorator';
 
 @ApiTags('Question and Answer')
 @Controller('question')
@@ -71,6 +64,17 @@ export class QaController {
   ) {
     return this.questionRecommendationService.fetchSimilarQuestions(
       questionId,
+      paginationOption.limit,
+    );
+  }
+
+  @GetAuth('/recommended', 'Fetch recommended questions')
+  async fetchRecommendedQuestions(
+    @Pagination() paginationOption: PaginationOption,
+    @User('id') userId,
+  ) {
+    return this.questionRecommendationService.fetchQuestions(
+      userId,
       paginationOption.limit,
     );
   }
