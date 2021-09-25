@@ -85,7 +85,7 @@ describe('User Module (e2e)', () => {
 
       expect(body).toEqual({
         token: expect.any(String),
-        userInfo: {
+        accountInfo: {
           _id: expect.any(String),
           firstName: createUserDto.firstName,
           lastName: createUserDto.lastName,
@@ -95,7 +95,7 @@ describe('User Module (e2e)', () => {
         },
       });
 
-      const savedUser = await userService.exists(body.userInfo._id);
+      const savedUser = await userService.exists(body.accountInfo._id);
       const { firstName, lastName, phone, profilePicture } = createUserDto;
       const expectedSavedData = { firstName, lastName, phone, profilePicture };
 

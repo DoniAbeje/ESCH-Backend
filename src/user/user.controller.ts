@@ -30,8 +30,8 @@ export class UserController {
   async createUser(@Body() createUserDto: CreateUserDto) {
     const user = await this.userService.createUser(createUserDto);
     const token = await this.authService.signToken(user);
-    const userInfo = this.filterUserInfo(user);
-    return { token, userInfo };
+    const accountInfo = this.filterUserInfo(user);
+    return { token, accountInfo };
   }
 
   @ApiTags('Login')
