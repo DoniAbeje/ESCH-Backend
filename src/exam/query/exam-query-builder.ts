@@ -28,6 +28,7 @@ export class ExamQueryBuilder {
     description: 1,
     preparedBy: 1,
     createdAt: 1,
+    coverImage: 1,
     ratingCount: { $size: '$ratings' },
     avgRating: { $ifNull: [{ $avg: '$ratings.rating' }, 0] },
   };
