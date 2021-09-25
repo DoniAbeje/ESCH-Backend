@@ -23,7 +23,15 @@ export class UserService extends RateService {
       throw new PhoneTakenException();
     }
     const passwordHash = await this.hashPassword(createUserDto.password);
-    createUserDto = { ...createUserDto, password: passwordHash };
+    const preferredTagsScore = createUserDto.preferredTags.map((tag) => ({
+      tag,
+      score: 5,
+    }));
+    createUserDto = {
+      ...createUserDto,
+      password: passwordHash,
+      preferredTagsScore,
+    };
 
     return await this.userModel.create(createUserDto);
   }
