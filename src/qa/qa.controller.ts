@@ -12,6 +12,7 @@ import { RaiseQuestionDto } from './dto/raise-question.dto';
 import { QuestionService } from './question.service';
 import { QuestionRecommendationService } from './question-recommendation.service';
 import { GetAuth } from '../common/decorators/get-auth.decorator';
+import { TagScoreOption } from '../common/tag-score-option';
 
 @ApiTags('Question and Answer')
 @Controller('question')
@@ -119,6 +120,11 @@ export class QaController {
     @User('id') userId: string,
   ) {
     await this.questionService.upvote(questionId, userId);
+    await this.questionRecommendationService.updateUserPreference(
+      userId,
+      questionId,
+      TagScoreOption.DEFAULT_PRIMARY_SCORE_INC,
+    );
   }
 
   @PostAuth('/:questionId/downvote', 'Downvote question')
@@ -127,6 +133,11 @@ export class QaController {
     @User('id') userId: string,
   ) {
     await this.questionService.downvote(questionId, userId);
+    await this.questionRecommendationService.updateUserPreference(
+      userId,
+      questionId,
+      -1 * TagScoreOption.DEFAULT_SECONDARY_SCORE_INC,
+    );
   }
 
   @PostAuth('/:questionId/cancel-vote', 'Cancel question vote')

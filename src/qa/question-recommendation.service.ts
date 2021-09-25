@@ -5,6 +5,7 @@ import * as Vector from 'vector-object';
 import { QuestionService } from './question.service';
 import { QuestionDocument } from './schema/question.schema';
 import { UserService } from '../user/user.service';
+import { TagScoreOption } from '../common/tag-score-option';
 
 @Injectable()
 export class QuestionRecommendationService {
@@ -42,8 +43,13 @@ export class QuestionRecommendationService {
     return questions;
   }
 
-  private constructQuestionDocument(question: QuestionDocument) {
-    let questionDoc = question.question;
+  private constructQuestionDocument(
+    question: QuestionDocument,
+    useQuestionContent = true,
+  ) {
+    let questionDoc = '';
+
+    if (useQuestionContent) questionDoc += question.question;
     question.tags.forEach((tag) => {
       questionDoc += ` ${tag}`;
     });
@@ -130,5 +136,25 @@ export class QuestionRecommendationService {
     }
 
     return recommendation;
+  }
+
+  async updateUserPreference(
+    userId: string,
+    questionId: string,
+    score = TagScoreOption.DEFAULT_PRIMARY_SCORE_INC,
+  ) {
+    const question = await this.questionService.exists(questionId);
+
+    const tfidf = new TfIdf();
+
+    tfidf.addDocument(this.constructQuestionDocument(question, false));
+
+    const terms: string[] = [];
+
+    tfidf.listTerms(0).forEach((tfidfTerm) => {
+      terms.push(tfidfTerm.term);
+    });
+
+    this.userService.updatePreferredTagsScore(userId, terms, score);
   }
 }

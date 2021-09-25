@@ -10,6 +10,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { PaginationOption } from '../common/pagination-option';
 import { UserQuestionQueryBuilder } from './query/user-query-builder';
 import { RateService } from '../common/services/rate.service';
+import { TagScoreOption } from '../common/tag-score-option';
 
 @Injectable()
 export class UserService extends RateService {
@@ -43,7 +44,7 @@ export class UserService extends RateService {
   async updatePreferredTagsScore(
     id: string,
     preferredTags: string[],
-    score = 0.25,
+    score = TagScoreOption.DEFAULT_PRIMARY_SCORE_INC,
   ) {
     await this.exists(id);
     preferredTags.forEach(async (tag) => {
@@ -57,7 +58,7 @@ export class UserService extends RateService {
     });
   }
 
-  private async addTagScore(id: string, tag: string, score = 0.25) {
+  private async addTagScore(id: string, tag: string, score: number) {
     await this.userModel.updateOne(
       { _id: id },
       {
@@ -71,7 +72,7 @@ export class UserService extends RateService {
     );
   }
 
-  private async updateTagScore(id: string, tag: string, score = 0.25) {
+  private async updateTagScore(id: string, tag: string, score: number) {
     await this.userModel.updateOne(
       { _id: id, 'preferredTagsScore.tag': tag },
       {
