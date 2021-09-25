@@ -22,7 +22,7 @@ export class MedaPaymentGatewayService implements IPaymentGateway {
     examSale: ExamSaleDocument,
   ) {
     return {
-      paymentDetails: {
+      purchaseDetails: {
         orderId: examSale._id,
         description: exam.description,
         amount: examSale.price,
