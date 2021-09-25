@@ -1,4 +1,13 @@
-import { IsString, IsOptional, IsUrl, ArrayMinSize } from 'class-validator';
+import { ApiHideProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
+import {
+  IsString,
+  IsOptional,
+  IsUrl,
+  IsArray,
+  ValidateNested,
+} from 'class-validator';
+import { TagScore } from '../schemas/user.schema';
 
 export class UpdateUserDto {
   @IsString()
@@ -13,7 +22,14 @@ export class UpdateUserDto {
   @IsOptional()
   readonly profilePicture?: string;
 
+  @IsArray()
   @IsOptional()
-  @ArrayMinSize(1)
   readonly preferredTags?: string[];
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => TagScore)
+  @IsOptional()
+  @ApiHideProperty()
+  preferredTagsScore?: TagScore[];
 }

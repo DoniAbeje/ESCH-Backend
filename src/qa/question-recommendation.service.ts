@@ -92,7 +92,10 @@ export class QuestionRecommendationService {
     const vectors = await this.vectorizeQuestions(questions.length);
     // update the value assigned for a tag
     const userVector = new Vector(
-      user.preferredTags.reduce((a, c) => ({ ...a, [c]: 2 }), {}),
+      user.preferredTagsScore.reduce(
+        (a, c) => ({ ...a, [c.tag]: c.score }),
+        {},
+      ),
     );
 
     return this.recommend(userVector, vectors, questions, count);

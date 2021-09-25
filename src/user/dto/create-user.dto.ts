@@ -1,12 +1,15 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
+import { Type } from 'class-transformer';
 import {
   IsOptional,
   IsString,
   IsUrl,
   MinLength,
   Matches,
+  IsArray,
+  ValidateNested,
 } from 'class-validator';
-import { UserRole } from '../schemas/user.schema';
+import { TagScore, UserRole } from '../schemas/user.schema';
 
 export class CreateUserDto {
   @IsString()
@@ -34,4 +37,15 @@ export class CreateUserDto {
   })
   @IsOptional()
   readonly role?: UserRole = UserRole.STUDENT;
+
+  @IsArray()
+  @IsOptional()
+  readonly preferredTags?: string[];
+
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => TagScore)
+  @IsOptional()
+  @ApiHideProperty()
+  preferredTagsScore?: TagScore[];
 }

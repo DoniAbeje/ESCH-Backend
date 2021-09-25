@@ -9,6 +9,17 @@ export enum UserRole {
   INSTRUCTOR = 2,
 }
 
+@Schema({ _id: false })
+export class TagScore {
+  @Prop({ required: true })
+  tag: string;
+
+  @Prop({ required: true })
+  score: number;
+}
+
+const TagScoreSchema = SchemaFactory.createForClass(TagScore);
+
 @Schema()
 export class User extends Rating {
   @Prop({ required: true })
@@ -29,8 +40,8 @@ export class User extends Rating {
   @Prop({ default: null })
   profilePicture: string;
 
-  @Prop({ type: [String], default: [] })
-  preferredTags: string[];
+  @Prop({ type: [TagScoreSchema], default: [] })
+  preferredTagsScore: TagScore[];
 
   @Prop({ default: Date.now })
   createdDate: Date;
