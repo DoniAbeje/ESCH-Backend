@@ -1,5 +1,4 @@
-import { ApiHideProperty, ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
 import {
   IsOptional,
   IsString,
@@ -7,9 +6,8 @@ import {
   MinLength,
   Matches,
   IsArray,
-  ValidateNested,
 } from 'class-validator';
-import { TagScore, UserRole } from '../schemas/user.schema';
+import { UserRole } from '../schemas/user.schema';
 
 export class CreateUserDto {
   @IsString()
@@ -41,11 +39,4 @@ export class CreateUserDto {
   @IsArray()
   @IsOptional()
   readonly preferredTags?: string[];
-
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => TagScore)
-  @IsOptional()
-  @ApiHideProperty()
-  preferredTagsScore?: TagScore[];
 }

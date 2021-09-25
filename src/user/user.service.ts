@@ -23,24 +23,34 @@ export class UserService extends RateService {
       throw new PhoneTakenException();
     }
     const passwordHash = await this.hashPassword(createUserDto.password);
-    const preferredTagsScore = createUserDto.preferredTags.map((tag) => ({
-      tag,
-      score: 5,
-    }));
-    createUserDto = {
-      ...createUserDto,
-      password: passwordHash,
-      preferredTagsScore,
-    };
+    createUserDto = { ...createUserDto, password: passwordHash };
 
-    return await this.userModel.create(createUserDto);
+    return await this.userModel.create({
+      ...createUserDto,
+      preferredTagsScore: createUserDto.preferredTags
+        ? this.getPreferredTagsScore(createUserDto.preferredTags)
+        : [],
+    });
   }
 
   async updateUser(id: string, updateUserDto: UpdateUserDto): Promise<boolean> {
     const user = await this.exists(id);
-    user.set(updateUserDto);
+    user.set({
+      ...updateUserDto,
+      preferredTagsScore: updateUserDto.preferredTags
+        ? this.getPreferredTagsScore(updateUserDto.preferredTags)
+        : user.preferredTagsScore,
+    });
     await user.save();
     return true;
+  }
+
+  // update score value
+  private getPreferredTagsScore(preferredTags: string[], score = 5) {
+    return preferredTags.map((tag) => ({
+      tag,
+      score,
+    }));
   }
 
   async fetchAll(
