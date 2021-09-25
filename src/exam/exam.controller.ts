@@ -23,6 +23,7 @@ import { ExamSaleStatus } from './schema/exam-sale.schema';
 import { ExamRecommendationService } from './exam-recommendation.service';
 import { RateDto } from '../common/dto/rate.dto';
 import { CancelRateDto } from '../common/dto/cancel-rate.dto';
+import { TagScoreOption } from 'src/common/tag-score-option';
 @ApiTags('Exam')
 @Controller('exam')
 export class ExamController {
@@ -241,7 +242,9 @@ export class ExamController {
     await this.examRecommendationService.updateUserPreference(
       userId,
       rateDto.rateableResourceId,
-      rateDto.rating / 20,
+      rateDto.rating <= 2
+        ? -1 * TagScoreOption.DEFAULT_SECONDARY_SCORE_INC
+        : TagScoreOption.DEFAULT_PRIMARY_SCORE_INC,
     );
   }
 

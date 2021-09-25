@@ -5,6 +5,7 @@ import { ExamDocument } from './schema/exam.schema';
 import * as Vector from 'vector-object';
 import { PaginationOption } from '../common/pagination-option';
 import { UserService } from '../user/user.service';
+import { TagScoreOption } from '../common/tag-score-option';
 
 @Injectable()
 export class ExamRecommendationService {
@@ -125,7 +126,11 @@ export class ExamRecommendationService {
     return recommendation;
   }
 
-  async updateUserPreference(userId: string, examId: string, score = 0.25) {
+  async updateUserPreference(
+    userId: string,
+    examId: string,
+    score = TagScoreOption.DEFAULT_PRIMARY_SCORE_INC,
+  ) {
     const exam = await this.examService.exists(examId);
 
     const tfidf = new TfIdf();
