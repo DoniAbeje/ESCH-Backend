@@ -12,6 +12,7 @@ import { AuthService } from '../src/auth/auth.service';
 import { UpdateUserDto } from '../src/user/dto/update-user.dto';
 import { UserDoesNotExistException } from '../src/user/exceptions/user-doesnot-exist.exception';
 import * as mongoose from 'mongoose';
+import { UserRole } from '../src/user/schemas/user.schema';
 
 describe('User Module (e2e)', () => {
   let app: INestApplication;
@@ -89,7 +90,8 @@ describe('User Module (e2e)', () => {
           firstName: createUserDto.firstName,
           lastName: createUserDto.lastName,
           phone: createUserDto.phone,
-          profilePicture: createUserDto.profilePicture
+          profilePicture: createUserDto.profilePicture,
+          role: UserRole.STUDENT
         },
       });
 

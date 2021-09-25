@@ -81,7 +81,7 @@ export class UserController {
   }
 
   filterUserInfo(user: UserDocument) {
-    const { _id, firstName, lastName, phone, profilePicture } = user;
-    return { _id, firstName, lastName, phone, profilePicture };
+    const { _id, firstName, lastName, phone, profilePicture, role } = user;
+    return { _id, firstName, lastName, phone, profilePicture, role };
   }
 }
