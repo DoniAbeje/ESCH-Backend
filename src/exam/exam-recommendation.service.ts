@@ -40,8 +40,9 @@ export class ExamRecommendationService {
     return exams;
   }
 
-  private constructExamDocument(exam: ExamDocument) {
-    let examDoc = `${exam.title} ${exam.description}`;
+  private constructExamDocument(exam: ExamDocument, useDescription = true) {
+    let examDoc = exam.title;
+    if (useDescription) examDoc += ` ${exam.description}`;
     exam.tags.forEach((tag) => {
       examDoc += ` ${tag}`;
     });
@@ -122,5 +123,21 @@ export class ExamRecommendationService {
     }
 
     return recommendation;
+  }
+
+  async updateUserPreference(userId: string, examId: string, score = 0.25) {
+    const exam = await this.examService.exists(examId);
+
+    const tfidf = new TfIdf();
+
+    tfidf.addDocument(this.constructExamDocument(exam, false));
+
+    const terms: string[] = [];
+
+    tfidf.listTerms(0).forEach((tfidfTerm) => {
+      terms.push(tfidfTerm.term);
+    });
+
+    this.userService.updatePreferredTagsScore(userId, terms, score);
   }
 }

@@ -35,16 +35,59 @@ export class UserService extends RateService {
 
   async updateUser(id: string, updateUserDto: UpdateUserDto): Promise<boolean> {
     const user = await this.exists(id);
-    user.set({
-      ...updateUserDto,
-      preferredTagsScore: updateUserDto.preferredTags
-        ? this.getPreferredTagsScore(updateUserDto.preferredTags)
-        : user.preferredTagsScore,
-    });
+    user.set(updateUserDto);
     await user.save();
     return true;
   }
 
+  async updatePreferredTagsScore(
+    id: string,
+    preferredTags: string[],
+    score = 0.25,
+  ) {
+    await this.exists(id);
+    preferredTags.forEach(async (tag) => {
+      const scoredBefore = await this.isScoredBefore(id, tag);
+
+      if (scoredBefore) {
+        await this.updateTagScore(id, tag, score);
+      } else {
+        await this.addTagScore(id, tag, score);
+      }
+    });
+  }
+
+  private async addTagScore(id: string, tag: string, score = 0.25) {
+    await this.userModel.updateOne(
+      { _id: id },
+      {
+        $push: {
+          preferredTagsScore: {
+            tag,
+            score,
+          },
+        },
+      },
+    );
+  }
+
+  private async updateTagScore(id: string, tag: string, score = 0.25) {
+    await this.userModel.updateOne(
+      { _id: id, 'preferredTagsScore.tag': tag },
+      {
+        $inc: {
+          'preferredTagsScore.$.score': score,
+        },
+      },
+    );
+  }
+
+  async isScoredBefore(_id: string, tag: string): Promise<boolean> {
+    return await this.userModel.exists({
+      _id,
+      'preferredTagsScore.tag': tag,
+    });
+  }
   // update score value
   private getPreferredTagsScore(preferredTags: string[], score = 5) {
     return preferredTags.map((tag) => ({

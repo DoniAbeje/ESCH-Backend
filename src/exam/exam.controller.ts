@@ -237,6 +237,12 @@ export class ExamController {
   async rateExam(@Body() rateDto: RateDto, @User('id') userId) {
     rateDto.userId = userId;
     await this.examService.rate(rateDto);
+    // update score value
+    await this.examRecommendationService.updateUserPreference(
+      userId,
+      rateDto.rateableResourceId,
+      rateDto.rating / 20,
+    );
   }
 
   @PostAuth('/cancel-rate', 'Cancel exam rating')

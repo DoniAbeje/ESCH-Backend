@@ -21,7 +21,6 @@ export class UserQuestionQueryBuilder {
     phone: 1,
     profilePicture: 1,
     role: 1,
-    preferredTags: 1,
     ratingCount: { $size: '$ratings' },
     avgRating: { $ifNull: [{ $avg: '$ratings.rating' }, 0] },
   };
