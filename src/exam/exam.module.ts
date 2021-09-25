@@ -19,6 +19,7 @@ import { ExamSale, ExamSaleSchema } from './schema/exam-sale.schema';
 import { UserModule } from '../user/user.module';
 import { FakeGatewayService } from './fake-gateway.service';
 import { IPaymentGateway } from './IPaymentGateway.service'
+import { MedaPaymentGatewayService } from './meda.service';
 @Module({
   imports: [
     MongooseModule.forFeature([
@@ -36,7 +37,7 @@ import { IPaymentGateway } from './IPaymentGateway.service'
     ExamSaleService,
     ExamTestHelperService,
     { provide: 'IPaymentGateway',
-    useClass: FakeGatewayService}
+    useClass: MedaPaymentGatewayService}
   ],
   controllers: [ExamController],
 })
