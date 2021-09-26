@@ -16,6 +16,9 @@ export class TagScore {
 
   @Prop({ required: true })
   score: number;
+
+  @Prop({ default: false })
+  addedByUser: boolean;
 }
 
 const TagScoreSchema = SchemaFactory.createForClass(TagScore);

@@ -1,4 +1,4 @@
-import { IsString, IsOptional, IsUrl } from 'class-validator';
+import { IsString, IsOptional, IsUrl, ArrayMinSize } from 'class-validator';
 
 export class UpdateUserDto {
   @IsString()
@@ -12,4 +12,8 @@ export class UpdateUserDto {
   @IsUrl()
   @IsOptional()
   readonly profilePicture?: string;
+
+  @ArrayMinSize(1)
+  @IsOptional()
+  readonly preferredTags?: string[];
 }

@@ -29,7 +29,7 @@ export class UserService extends RateService {
     return await this.userModel.create({
       ...createUserDto,
       preferredTagsScore: createUserDto.preferredTags
-        ? this.getPreferredTagsScore(createUserDto.preferredTags)
+        ? this.getPreferredTagsScore(createUserDto.preferredTags, true)
         : [],
     });
   }
@@ -38,27 +38,61 @@ export class UserService extends RateService {
     const user = await this.exists(id);
     user.set(updateUserDto);
     await user.save();
+    if (updateUserDto.preferredTags) {
+      await this.removeUserAddedPreferenceTags(id, updateUserDto.preferredTags);
+      await this.updatePreferredTagsScore(
+        id,
+        updateUserDto.preferredTags,
+        5,
+        0,
+        true,
+      );
+    }
     return true;
+  }
+
+  private async removeUserAddedPreferenceTags(
+    id: string,
+    newPreferredTags: string[],
+  ) {
+    await this.userModel.updateOne(
+      { _id: id },
+      {
+        $pull: {
+          preferredTagsScore: {
+            addedByUser: true,
+            tag: { $nin: newPreferredTags },
+          },
+        },
+      },
+    );
   }
 
   async updatePreferredTagsScore(
     id: string,
     preferredTags: string[],
     score = TagScoreOption.DEFAULT_PRIMARY_SCORE_INC,
+    updateScore = TagScoreOption.DEFAULT_PRIMARY_SCORE_INC,
+    addedByUser = false,
   ) {
     await this.exists(id);
     preferredTags.forEach(async (tag) => {
       const scoredBefore = await this.isScoredBefore(id, tag);
 
       if (scoredBefore) {
-        await this.updateTagScore(id, tag, score);
+        await this.updateTagScore(id, tag, updateScore);
       } else {
-        await this.addTagScore(id, tag, score);
+        await this.addTagScore(id, tag, score, addedByUser);
       }
     });
   }
 
-  private async addTagScore(id: string, tag: string, score: number) {
+  private async addTagScore(
+    id: string,
+    tag: string,
+    score: number,
+    addedByUser = false,
+  ) {
     await this.userModel.updateOne(
       { _id: id },
       {
@@ -66,6 +100,7 @@ export class UserService extends RateService {
           preferredTagsScore: {
             tag,
             score,
+            addedByUser,
           },
         },
       },
@@ -90,10 +125,15 @@ export class UserService extends RateService {
     });
   }
   // update score value
-  private getPreferredTagsScore(preferredTags: string[], score = 5) {
+  private getPreferredTagsScore(
+    preferredTags: string[],
+    addedByUser = false,
+    score = 5,
+  ) {
     return preferredTags.map((tag) => ({
       tag,
       score,
+      addedByUser,
     }));
   }
 

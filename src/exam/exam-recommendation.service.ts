@@ -143,6 +143,6 @@ export class ExamRecommendationService {
       terms.push(tfidfTerm.term);
     });
 
-    this.userService.updatePreferredTagsScore(userId, terms, score);
+    this.userService.updatePreferredTagsScore(userId, terms, score, score);
   }
 }
