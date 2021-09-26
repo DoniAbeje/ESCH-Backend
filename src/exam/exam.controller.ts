@@ -126,10 +126,7 @@ export class ExamController {
     @Pagination() paginationOption: PaginationOption,
     @User('id') userId,
   ) {
-    return this.examRecommendationService.fetchExams(
-      userId,
-      paginationOption.limit,
-    );
+    return this.examRecommendationService.fetchExams(userId, paginationOption);
   }
 
   @ApiTags('Get single exam')
@@ -230,7 +227,7 @@ export class ExamController {
   ) {
     return this.examRecommendationService.fetchSimilarExams(
       examId,
-      paginationOption.limit,
+      paginationOption,
     );
   }
 

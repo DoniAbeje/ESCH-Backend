@@ -68,7 +68,7 @@ export class ExamRecommendationService {
 
   async fetchSimilarExams(
     examId: string,
-    count = PaginationOption.DEFAULT_LIMIT,
+    paginationOption: PaginationOption = PaginationOption.DEFAULT,
   ) {
     await this.examService.exists(examId);
 
@@ -77,14 +77,22 @@ export class ExamRecommendationService {
 
     const examIndex = this.fromExamIdToIndex[examId];
 
-    return this.recommend(vectors[examIndex], vectors, exams, count, examIndex);
+    return this.recommend(
+      vectors[examIndex],
+      vectors,
+      exams,
+      paginationOption,
+      examIndex,
+    );
   }
 
-  async fetchExams(userId: string, count = PaginationOption.DEFAULT_LIMIT) {
+  async fetchExams(
+    userId: string,
+    paginationOption: PaginationOption = PaginationOption.DEFAULT,
+  ) {
     const user = await this.userService.exists(userId);
     const exams = await this.setup();
     const vectors = await this.vectorizeExams(exams.length);
-    // update the value assigned for a tag
     const userVector = new Vector(
       user.preferredTagsScore.reduce(
         (a, c) => ({ ...a, [c.tag]: c.score }),
@@ -92,14 +100,14 @@ export class ExamRecommendationService {
       ),
     );
 
-    return this.recommend(userVector, vectors, exams, count);
+    return this.recommend(userVector, vectors, exams, paginationOption);
   }
 
   private recommend(
     vector,
     vectors,
     exams: ExamDocument[],
-    count: number,
+    paginationOption: PaginationOption,
     examIndex = -1,
   ) {
     const itemScores = {};
@@ -114,14 +122,17 @@ export class ExamRecommendationService {
       .sort(([, a], [, b]) => b - a)
       .reduce((r, [k, v]) => ({ ...r, [k]: v }), {});
 
-    const recommendation: ExamDocument[] = [];
+    const sortedItems = Object.keys(sortedItemScore);
 
-    let cnt = 0;
-    for (const sortedId in sortedItemScore) {
-      if (cnt == count) break;
-      recommendation.push(exams[this.fromExamIdToIndex[sortedId]]);
-      cnt++;
-    }
+    const startingIndex = paginationOption.offset * paginationOption.limit;
+    const selectedItems = sortedItems.slice(
+      startingIndex,
+      startingIndex + paginationOption.limit,
+    );
+
+    const recommendation: ExamDocument[] = selectedItems.map(
+      (sortedId) => exams[this.fromExamIdToIndex[sortedId]],
+    );
 
     return recommendation;
   }
