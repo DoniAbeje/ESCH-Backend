@@ -91,7 +91,7 @@ describe('User Module (e2e)', () => {
           lastName: createUserDto.lastName,
           phone: createUserDto.phone,
           profilePicture: createUserDto.profilePicture,
-          role: UserRole.STUDENT,
+          role: createUserDto.role,
         },
       });
 
