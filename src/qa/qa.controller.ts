@@ -65,7 +65,7 @@ export class QaController {
   ) {
     return this.questionRecommendationService.fetchSimilarQuestions(
       questionId,
-      paginationOption.limit,
+      paginationOption,
     );
   }
 
@@ -76,7 +76,7 @@ export class QaController {
   ) {
     return this.questionRecommendationService.fetchQuestions(
       userId,
-      paginationOption.limit,
+      paginationOption,
     );
   }
 

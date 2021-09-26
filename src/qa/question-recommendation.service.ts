@@ -74,7 +74,7 @@ export class QuestionRecommendationService {
 
   async fetchSimilarQuestions(
     questionId: string,
-    count = PaginationOption.DEFAULT_LIMIT,
+    paginationOption: PaginationOption = PaginationOption.DEFAULT,
   ) {
     await this.questionService.exists(questionId);
 
@@ -87,16 +87,18 @@ export class QuestionRecommendationService {
       vectors[questionIndex],
       vectors,
       questions,
-      count,
+      paginationOption,
       questionIndex,
     );
   }
 
-  async fetchQuestions(userId: string, count = PaginationOption.DEFAULT_LIMIT) {
+  async fetchQuestions(
+    userId: string,
+    paginationOption: PaginationOption = PaginationOption.DEFAULT,
+  ) {
     const user = await this.userService.exists(userId);
     const questions = await this.setup();
     const vectors = await this.vectorizeQuestions(questions.length);
-    // update the value assigned for a tag
     const userVector = new Vector(
       user.preferredTagsScore.reduce(
         (a, c) => ({ ...a, [c.tag]: c.score }),
@@ -104,14 +106,14 @@ export class QuestionRecommendationService {
       ),
     );
 
-    return this.recommend(userVector, vectors, questions, count);
+    return this.recommend(userVector, vectors, questions, paginationOption);
   }
 
   private recommend(
     vector,
     vectors,
     questions: QuestionDocument[],
-    count: number,
+    paginationOption: PaginationOption,
     questionIndex = -1,
   ) {
     const itemScores = {};
@@ -126,14 +128,17 @@ export class QuestionRecommendationService {
       .sort(([, a], [, b]) => b - a)
       .reduce((r, [k, v]) => ({ ...r, [k]: v }), {});
 
-    const recommendation: QuestionDocument[] = [];
+    const sortedItems = Object.keys(sortedItemScore);
 
-    let cnt = 0;
-    for (const sortedId in sortedItemScore) {
-      if (cnt == count) break;
-      recommendation.push(questions[this.fromQuestionIdToIndex[sortedId]]);
-      cnt++;
-    }
+    const startingIndex = paginationOption.offset * paginationOption.limit;
+    const selectedItems = sortedItems.slice(
+      startingIndex,
+      startingIndex + paginationOption.limit,
+    );
+
+    const recommendation: QuestionDocument[] = selectedItems.map(
+      (sortedId) => questions[this.fromQuestionIdToIndex[sortedId]],
+    );
 
     return recommendation;
   }
