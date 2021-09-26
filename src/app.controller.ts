@@ -7,7 +7,7 @@ import { UserRole } from './user/schemas/user.schema';
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  @GetAuth('/report', 'Get dashboard report', UserRole.ADMIN)
+  @GetAuth('/report', 'Get dashboard report', [UserRole.ADMIN])
   async stat() {
     return await this.appService.getStat();
   }
