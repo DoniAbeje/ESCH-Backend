@@ -11,9 +11,9 @@ export class ExamQueryBuilder {
   private tagFilters: string[] = [];
   private authorFilters: mongoose.Types.ObjectId[] = [];
   private idFilters: mongoose.Types.ObjectId[] = [];
-  private searchFilter: string = '';
+  private searchFilter = '';
   private shouldPopulatePreparedBy = false;
-  
+
   private userRatingPopulation = {
     shouldPopulate: false,
     userId: null,

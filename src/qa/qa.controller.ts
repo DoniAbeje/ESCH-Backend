@@ -56,7 +56,7 @@ export class QaController {
   async searchQuestions(
     @Pagination() paginationOption: PaginationOption,
     @Query('keywords')
-    keywords: string = '',
+    keywords = '',
     @User('id') userId,
   ) {
     return this.questionService.search(paginationOption, keywords, userId);
@@ -78,16 +78,13 @@ export class QaController {
     @Param('questionId') questionId: string,
   ) {
     await this.questionService.updateQuestion(questionId, updateQuestionDto);
-    return ;
+    return;
   }
 
   @DeleteAuth('/:questionId', 'Delete Question')
-  async deleteQuestion(
-    @User() user,
-    @Param('questionId') questionId: string,
-  ) {
+  async deleteQuestion(@User() user, @Param('questionId') questionId: string) {
     await this.questionService.deleteQuestion(questionId);
-    return ;
+    return;
   }
 
   @PostAuth('/:questionId/answer', 'Answer Question')

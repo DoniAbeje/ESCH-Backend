@@ -10,7 +10,7 @@ export class QuestionQueryBuilder {
   private paginationOption: PaginationOption;
   private tagFilters: string[] = [];
   private idFilters: mongoose.Types.ObjectId[] = [];
-  private searchFilter: string = '';
+  private searchFilter = '';
   private shouldPopulateAskedBy = false;
 
   private voteFlagPopulation = {
@@ -57,7 +57,7 @@ export class QuestionQueryBuilder {
   populateUserVoteFlag(userId: string, shouldPopulate = true) {
     this.voteFlagPopulation.shouldPopulate = shouldPopulate;
     this.voteFlagPopulation.userId = userId;
-    
+
     return this;
   }
 
@@ -128,7 +128,7 @@ export class QuestionQueryBuilder {
     };
     return tempProjections;
   }
-  
+
   private processFilter(): QuestionMatchQuery {
     const match: QuestionMatchQuery = {};
 

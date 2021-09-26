@@ -27,7 +27,7 @@ export class ExamEnrollmentService {
     private examQuestionService: ExamQuestionService,
   ) {}
 
-  async enroll(enrollForExamDto: EnrollForExamDto, checkPrice=true) {
+  async enroll(enrollForExamDto: EnrollForExamDto, checkPrice = true) {
     const exam = await this.examService.exists(enrollForExamDto.exam);
     const enrolled = await this.exists(
       enrollForExamDto.exam,

@@ -15,4 +15,3 @@ export class Rating {
   @Prop({ type: [RatingDetailSchema], default: [] })
   ratings: RatingDetail[];
 }
-

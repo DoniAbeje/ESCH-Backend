@@ -9,5 +9,4 @@ export class UpdateQuestionDto {
   @IsOptional()
   @ArrayMinSize(1)
   readonly tags?: string[];
-
 }

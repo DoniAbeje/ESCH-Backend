@@ -10,7 +10,7 @@ class ExamAnswer {
   @Prop({ required: true })
   answer: string;
 
-  @Prop({ required: true})
+  @Prop({ required: true })
   isCorrect: boolean;
 }
 

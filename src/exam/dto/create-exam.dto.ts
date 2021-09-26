@@ -1,5 +1,11 @@
 import { ApiHideProperty } from '@nestjs/swagger';
-import { ArrayMinSize, IsOptional, IsString, IsUrl, Min } from 'class-validator';
+import {
+  ArrayMinSize,
+  IsOptional,
+  IsString,
+  IsUrl,
+  Min,
+} from 'class-validator';
 
 export class CreateExamDto {
   @IsString()
@@ -18,7 +24,7 @@ export class CreateExamDto {
   @IsUrl()
   @IsOptional()
   readonly coverImage?: string;
-  
+
   @ApiHideProperty()
   preparedBy: string;
 }

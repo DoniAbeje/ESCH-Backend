@@ -77,7 +77,7 @@ export class ExamController {
   async searchQuestions(
     @Pagination() paginationOption: PaginationOption,
     @Query('keywords')
-    keywords: string = '',
+    keywords = '',
   ) {
     return this.examService.search(paginationOption, keywords);
   }
@@ -208,7 +208,7 @@ export class ExamController {
 
     return result;
   }
-  
+
   @PostAuth('/rate', 'Rate exam')
   async rateExam(@Body() rateDto: RateDto, @User('id') userId) {
     rateDto.userId = userId;

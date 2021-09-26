@@ -7,7 +7,6 @@ export abstract class RateService {
 
   abstract exists(questionId);
 
-  
   async rate({ userId, rateableResourceId, rating }: RateDto) {
     await this.cancelRate({ userId, rateableResourceId });
 

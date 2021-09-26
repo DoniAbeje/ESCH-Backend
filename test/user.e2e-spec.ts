@@ -91,7 +91,7 @@ describe('User Module (e2e)', () => {
           lastName: createUserDto.lastName,
           phone: createUserDto.phone,
           profilePicture: createUserDto.profilePicture,
-          role: UserRole.STUDENT
+          role: UserRole.STUDENT,
         },
       });
 
@@ -180,7 +180,7 @@ describe('User Module (e2e)', () => {
         firstName: user.firstName,
         lastName: user.lastName,
         phone: user.phone,
-        profilePicture: user.profilePicture
+        profilePicture: user.profilePicture,
       });
     });
   });

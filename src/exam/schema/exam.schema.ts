@@ -34,7 +34,7 @@ export class Exam extends Rating {
 
   @Prop({ default: null })
   coverImage: string;
-  
+
   @Prop({ default: Date.now })
   createdAt: Date;
 }

@@ -10,7 +10,7 @@ export enum UserRole {
 }
 
 @Schema()
-export class User extends Rating{
+export class User extends Rating {
   @Prop({ required: true })
   firstName: string;
 
@@ -24,7 +24,7 @@ export class User extends Rating{
   password: string;
 
   @Prop({ default: UserRole.STUDENT })
-  role: UserRole
+  role: UserRole;
 
   @Prop({ default: null })
   profilePicture: string;

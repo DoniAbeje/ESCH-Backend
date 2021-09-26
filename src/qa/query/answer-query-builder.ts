@@ -39,14 +39,14 @@ export class AnswerQueryBuilder {
   }
 
   filterByQuestionIds(ids: string[]) {
-    this.questionIdFilters = ids
+    this.questionIdFilters = ids;
     return this;
   }
 
   populateUserVoteFlag(userId: string, shouldPopulate = true) {
     this.voteFlagPopulation.shouldPopulate = shouldPopulate;
     this.voteFlagPopulation.userId = userId;
-    
+
     return this;
   }
 

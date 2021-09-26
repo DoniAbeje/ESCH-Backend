@@ -10,7 +10,7 @@ import { VoteService } from '../common/services/vote.service';
 import { AnswerDoesNotExistException } from './exceptions/answer-doesnot-exist.exception';
 
 @Injectable()
-export class AnswerService extends VoteService{
+export class AnswerService extends VoteService {
   constructor(
     @InjectModel(Answer.name) public answerModel: Model<AnswerDocument>,
     private questionService: QuestionService,

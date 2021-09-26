@@ -6,7 +6,6 @@ export class RolesGuard implements CanActivate {
   constructor(private requiredRoles: UserRole[]) {}
 
   canActivate(context: ExecutionContext): boolean {
-
     if (!this.requiredRoles) {
       return true;
     }

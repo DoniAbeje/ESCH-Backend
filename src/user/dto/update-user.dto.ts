@@ -11,5 +11,5 @@ export class UpdateUserDto {
 
   @IsUrl()
   @IsOptional()
-  readonly profilePicture?: string
+  readonly profilePicture?: string;
 }
