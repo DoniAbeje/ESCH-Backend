@@ -13,6 +13,10 @@ import { QuestionService } from './question.service';
 import { QuestionRecommendationService } from './question-recommendation.service';
 import { GetAuth } from '../common/decorators/get-auth.decorator';
 import { TagScoreOption } from '../common/tag-score-option';
+import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
+import { UpdateQuestionDto } from './dto/update-question.dto';
+import { PutAuth } from '../common/decorators/put-auth.decorator';
+import { DeleteAuth } from '../common/decorators/delete-auth.decorator';
 
 @ApiTags('Question and Answer')
 @Controller('question')
@@ -87,6 +91,22 @@ export class QaController {
     @User('id') userId,
   ) {
     return this.questionService.fetchOne(questionId, userId);
+  }
+
+  @PutAuth('/:questionId', 'Update Question')
+  async updateQuestion(
+    @Body() updateQuestionDto: UpdateQuestionDto,
+    @User() user,
+    @Param('questionId') questionId: string,
+  ) {
+    await this.questionService.updateQuestion(questionId, updateQuestionDto);
+    return;
+  }
+
+  @DeleteAuth('/:questionId', 'Delete Question')
+  async deleteQuestion(@User() user, @Param('questionId') questionId: string) {
+    await this.questionService.deleteQuestion(questionId);
+    return;
   }
 
   @PostAuth('/:questionId/answer', 'Answer Question')

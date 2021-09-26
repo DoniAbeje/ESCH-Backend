@@ -5,6 +5,6 @@ export function ApiPagination(route: string, title: string) {
     ApiQuery({ name: 'limit', type: Number, required: false }),
     ApiQuery({ name: 'offset', type: Number, required: false }),
     ApiTags(title),
-    Get(route)
+    Get(route),
   );
 }

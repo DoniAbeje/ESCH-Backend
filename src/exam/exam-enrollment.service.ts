@@ -27,7 +27,7 @@ export class ExamEnrollmentService {
     private examQuestionService: ExamQuestionService,
   ) {}
 
-  async enroll(enrollForExamDto: EnrollForExamDto, checkPrice=true) {
+  async enroll(enrollForExamDto: EnrollForExamDto, checkPrice = true) {
     const exam = await this.examService.exists(enrollForExamDto.exam);
     const enrolled = await this.exists(
       enrollForExamDto.exam,
@@ -168,6 +168,10 @@ export class ExamEnrollmentService {
       examinee,
       'answers.question': questionId,
     });
+  }
+
+  async count() {
+    return await this.enrolledExamModel.countDocuments();
   }
 
   async exists(exam: string, examinee: string, throwException = true) {

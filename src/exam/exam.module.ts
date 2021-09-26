@@ -17,9 +17,9 @@ import { ExamTestHelperService } from './test-helper.service';
 import { ExamSaleService } from './exam-sale.service';
 import { ExamSale, ExamSaleSchema } from './schema/exam-sale.schema';
 import { UserModule } from '../user/user.module';
-import { FakeGatewayService } from './fake-gateway.service';
 import { IPaymentGateway } from './IPaymentGateway.service';
 import { ExamRecommendationService } from './exam-recommendation.service';
+import { MedaPaymentGatewayService } from './meda.service';
 @Module({
   imports: [
     MongooseModule.forFeature([
@@ -36,9 +36,15 @@ import { ExamRecommendationService } from './exam-recommendation.service';
     ExamEnrollmentService,
     ExamSaleService,
     ExamTestHelperService,
-    { provide: 'IPaymentGateway', useClass: FakeGatewayService },
     ExamRecommendationService,
+    { provide: 'IPaymentGateway', useClass: MedaPaymentGatewayService },
   ],
   controllers: [ExamController],
+  exports: [
+    ExamService,
+    ExamSaleService,
+    ExamEnrollmentService,
+    ExamQuestionService,
+  ],
 })
 export class ExamModule {}

@@ -4,7 +4,7 @@ import { Model } from 'mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserService } from './user.service';
 import * as faker from 'faker';
-import { UserDocument, User } from './schemas/user.schema';
+import { UserDocument, User, UserRole } from './schemas/user.schema';
 
 @Injectable()
 export class UserTestHelperService {
@@ -21,6 +21,7 @@ export class UserTestHelperService {
       password: 'password',
       profilePicture:
         'https://www.gravatar.com/avatar/7d1caf9df777b3b2cf474ff743494335?s=64&d=identicon&r=PG',
+      role: UserRole.INSTRUCTOR,
     };
     return { ..._default, ...override };
   }

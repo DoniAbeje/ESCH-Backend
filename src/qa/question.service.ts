@@ -7,6 +7,7 @@ import { Question, QuestionDocument } from './schema/question.schema';
 import { VoteService } from '../common/services/vote.service';
 import { PaginationOption } from '../common/pagination-option';
 import { QuestionQueryBuilder } from './query/question-query-builder';
+import { UpdateQuestionDto } from './dto/update-question.dto';
 
 @Injectable()
 export class QuestionService extends VoteService {
@@ -18,6 +19,21 @@ export class QuestionService extends VoteService {
 
   async raiseQuestion(raiseQuestionDto: RaiseQuestionDto) {
     return await this.questionModel.create(raiseQuestionDto);
+  }
+
+  async updateQuestion(
+    id: string,
+    updateQuestionDto: UpdateQuestionDto,
+  ): Promise<boolean> {
+    const question = await this.exists(id);
+    question.set(updateQuestionDto);
+    await question.save();
+    return true;
+  }
+
+  async deleteQuestion(questionId: string) {
+    const question = await this.exists(questionId);
+    return await question.delete();
   }
 
   async fetchAll(
@@ -63,6 +79,10 @@ export class QuestionService extends VoteService {
         .populateUserVoteFlag(loggedInUserId)
         .exec()
     ).all();
+  }
+
+  async count() {
+    return await this.questionModel.countDocuments();
   }
 
   async exists(id: string, throwException = true) {

@@ -4,7 +4,6 @@ export class AnswerExamQuestionDto {
   @IsString()
   readonly questionId: string;
 
-
   @IsString()
   readonly answer: string;
 }

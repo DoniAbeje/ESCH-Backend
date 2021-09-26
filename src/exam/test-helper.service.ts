@@ -51,6 +51,8 @@ export class ExamTestHelperService {
       description: faker.lorem.sentence(),
       price: 0,
       tags: [faker.lorem.word()],
+      coverImage:
+        'https://www.gravatar.com/avatar/7d1caf9df777b3b2cf474ff743494335?s=64&d=identicon&r=PG',
       preparedBy: '',
     };
     return { ..._default, ...override };

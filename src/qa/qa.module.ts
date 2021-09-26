@@ -24,6 +24,6 @@ import { UserModule } from '../user/user.module';
     QuestionRecommendationService,
   ],
   controllers: [QaController],
-  exports: [QaTestHelperService],
+  exports: [QaTestHelperService, QuestionService, AnswerService],
 })
 export class QaModule {}

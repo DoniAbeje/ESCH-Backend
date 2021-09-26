@@ -24,6 +24,7 @@ import { ExamRecommendationService } from './exam-recommendation.service';
 import { RateDto } from '../common/dto/rate.dto';
 import { CancelRateDto } from '../common/dto/cancel-rate.dto';
 import { TagScoreOption } from 'src/common/tag-score-option';
+import { UserRole } from '../user/schemas/user.schema';
 @ApiTags('Exam')
 @Controller('exam')
 export class ExamController {
@@ -35,7 +36,7 @@ export class ExamController {
     private examRecommendationService: ExamRecommendationService,
   ) {}
 
-  @PostAuth('/', 'Create Exam')
+  @PostAuth('/', 'Create Exam', [UserRole.INSTRUCTOR, UserRole.ADMIN])
   async createExam(@Body() createExamDto: CreateExamDto, @User() user) {
     createExamDto.preparedBy = user.id;
 
@@ -51,7 +52,7 @@ export class ExamController {
     await this.examService.updateExam(examId, updateExamDto);
   }
 
-  @DeleteAuth('/:examId', 'Delete exam')
+  @DeleteAuth('/:examId', 'Delete exam', [UserRole.INSTRUCTOR, UserRole.ADMIN])
   async deleteExam(@Param('examId') examId: string) {
     await this.examService.delete(examId);
   }
@@ -138,7 +139,10 @@ export class ExamController {
     return this.examService.fetchOne(examId, loggedInUserId);
   }
 
-  @PostAuth('/question', 'Add question to exam')
+  @PostAuth('/question', 'Add question to exam', [
+    UserRole.INSTRUCTOR,
+    UserRole.ADMIN,
+  ])
   async addExamQuestion(@Body() addExamQuestionDto: AddExamQuestionDto) {
     const examQuestion = await this.examQuestionService.addQuestionToExam(
       addExamQuestionDto,
@@ -172,7 +176,10 @@ export class ExamController {
     return { _id: examQuestion._id };
   }
 
-  @DeleteAuth('question/:examQuestionId', 'Delete Exam Question')
+  @DeleteAuth('question/:examQuestionId', 'Delete Exam Question', [
+    UserRole.INSTRUCTOR,
+    UserRole.ADMIN,
+  ])
   async deleteExamQuestion(@Param('examQuestionId') examQuestionId: string) {
     await this.examQuestionService.delete(examQuestionId);
   }

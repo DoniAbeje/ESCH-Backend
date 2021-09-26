@@ -1,25 +1,25 @@
-import { ExecResultCanNotBeNullException } from "./exec-result-can-not-be-null-exception";
+import { ExecResultCanNotBeNullException } from './exec-result-can-not-be-null-exception';
 
 export class ExecResult {
-    private data = [];
-    constructor(data: any[]) {
-      if (data == null) {
-        throw new ExecResultCanNotBeNullException(
-          'You can not pass null as result',
-        );
-      }
-      this.data = data;
+  private data = [];
+  constructor(data: any[]) {
+    if (data == null) {
+      throw new ExecResultCanNotBeNullException(
+        'You can not pass null as result',
+      );
     }
-  
-    all() {
-      return this.data;
-    }
-  
-    first() {
-      return this.data[0];
-    }
-
-    isEmpty() {
-      return this.data.length == 0;
-    }
+    this.data = data;
   }
+
+  all() {
+    return this.data;
+  }
+
+  first() {
+    return this.data[0];
+  }
+
+  isEmpty() {
+    return this.data.length == 0;
+  }
+}

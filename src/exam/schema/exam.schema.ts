@@ -32,6 +32,9 @@ export class Exam extends Rating {
   @Prop({ default: ExamStatus.DRAFT })
   status: ExamStatus = ExamStatus.DRAFT;
 
+  @Prop({ default: null })
+  coverImage: string;
+
   @Prop({ default: Date.now })
   createdAt: Date;
 }

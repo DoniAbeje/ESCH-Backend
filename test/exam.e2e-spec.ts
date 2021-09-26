@@ -154,6 +154,8 @@ describe('Exam Module (e2e)', () => {
         tags: ['new tag'],
         price: 10,
         samples: [sampleQuestion],
+        coverImage:
+          'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQZNF05Ymlsd3de84JpDW08jpblIY5a7GLu5w&usqp=CAU',
         status: 1,
       };
 
@@ -1170,7 +1172,11 @@ describe('Exam Module (e2e)', () => {
       });
       const addExamQuestionDto: AddExamQuestionDto =
         examTestHelper.generateAddExamQuestionDto({
-          examId: exam._id, choices: [{choice: 'A', key: 'A'}, { choice: 'B', key: 'B'}]
+          examId: exam._id,
+          choices: [
+            { choice: 'A', key: 'A' },
+            { choice: 'B', key: 'B' },
+          ],
         });
 
       const question = await examQuestionService.addQuestionToExam(

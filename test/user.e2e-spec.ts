@@ -12,6 +12,7 @@ import { AuthService } from '../src/auth/auth.service';
 import { UpdateUserDto } from '../src/user/dto/update-user.dto';
 import { UserDoesNotExistException } from '../src/user/exceptions/user-doesnot-exist.exception';
 import * as mongoose from 'mongoose';
+import { UserRole } from '../src/user/schemas/user.schema';
 
 describe('User Module (e2e)', () => {
   let app: INestApplication;
@@ -84,16 +85,17 @@ describe('User Module (e2e)', () => {
 
       expect(body).toEqual({
         token: expect.any(String),
-        userInfo: {
+        accountInfo: {
           _id: expect.any(String),
           firstName: createUserDto.firstName,
           lastName: createUserDto.lastName,
           phone: createUserDto.phone,
-          profilePicture: createUserDto.profilePicture
+          profilePicture: createUserDto.profilePicture,
+          role: createUserDto.role,
         },
       });
 
-      const savedUser = await userService.exists(body.userInfo._id);
+      const savedUser = await userService.exists(body.accountInfo._id);
       const { firstName, lastName, phone, profilePicture } = createUserDto;
       const expectedSavedData = { firstName, lastName, phone, profilePicture };
 
@@ -178,7 +180,7 @@ describe('User Module (e2e)', () => {
         firstName: user.firstName,
         lastName: user.lastName,
         phone: user.phone,
-        profilePicture: user.profilePicture
+        profilePicture: user.profilePicture,
       });
     });
   });

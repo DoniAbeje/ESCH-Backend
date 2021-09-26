@@ -3,7 +3,6 @@ import { ExamSaleDocument } from './schema/exam-sale.schema';
 import { ExamDocument } from './schema/exam.schema';
 
 export interface IPaymentGateway {
-
   createBill(
     user: UserDocument,
     exam: ExamDocument,
@@ -12,6 +11,6 @@ export interface IPaymentGateway {
 }
 
 export class BillCreatedResponse {
-  reference: String;
-  redirectUrl: String;
+  reference: string;
+  redirectUrl: string;
 }

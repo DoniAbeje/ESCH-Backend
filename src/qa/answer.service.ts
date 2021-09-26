@@ -10,7 +10,7 @@ import { VoteService } from '../common/services/vote.service';
 import { AnswerDoesNotExistException } from './exceptions/answer-doesnot-exist.exception';
 
 @Injectable()
-export class AnswerService extends VoteService{
+export class AnswerService extends VoteService {
   constructor(
     @InjectModel(Answer.name) public answerModel: Model<AnswerDocument>,
     private questionService: QuestionService,
@@ -37,6 +37,10 @@ export class AnswerService extends VoteService{
   async answerQuestion(answerQuestionDto: AnswerQuestionDto) {
     await this.questionService.exists(answerQuestionDto.question);
     return await this.answerModel.create(answerQuestionDto);
+  }
+
+  async count() {
+    return await this.answerModel.countDocuments();
   }
 
   async exists(id: string, throwException = true) {

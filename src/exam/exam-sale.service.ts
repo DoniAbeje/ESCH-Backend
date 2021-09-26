@@ -102,6 +102,10 @@ export class ExamSaleService {
     }
   }
 
+  async count(status: ExamSaleStatus) {
+    return await this.examSaleModel.countDocuments({ status });
+  }
+
   async exists(exam: string, buyer: string) {
     const examSale = await this.examSaleModel.findOne({
       exam,
