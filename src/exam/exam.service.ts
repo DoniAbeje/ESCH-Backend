@@ -79,6 +79,10 @@ export class ExamService extends RateService {
     ).all();
   }
 
+  async count() {
+    return await this.examModel.countDocuments();
+  }
+
   async exists(examId: string, throwException = true) {
     const exam = await this.examModel.findById(examId);
 

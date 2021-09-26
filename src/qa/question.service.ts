@@ -81,6 +81,10 @@ export class QuestionService extends VoteService {
     ).all();
   }
 
+  async count() {
+    return await this.questionModel.countDocuments();
+  }
+
   async exists(id: string, throwException = true) {
     const question = await this.questionModel.findById(id);
     if (!question && throwException) {

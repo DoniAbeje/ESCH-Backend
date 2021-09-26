@@ -160,4 +160,8 @@ export class ExamQuestionService {
   async countQuestionsInExam(examId) {
     return this.examQuestionModel.countDocuments({ examId });
   }
+
+  async count() {
+    return await this.examQuestionModel.countDocuments();
+  }
 }

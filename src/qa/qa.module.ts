@@ -16,6 +16,6 @@ import { QaTestHelperService } from './test-helper.service';
   ],
   providers: [QuestionService, AnswerService, QaTestHelperService],
   controllers: [QaController],
-  exports: [QaTestHelperService]
+  exports: [QaTestHelperService, QuestionService, AnswerService],
 })
 export class QaModule {}

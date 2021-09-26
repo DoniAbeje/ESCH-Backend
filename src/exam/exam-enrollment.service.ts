@@ -170,6 +170,10 @@ export class ExamEnrollmentService {
     });
   }
 
+  async count() {
+    return await this.enrolledExamModel.countDocuments();
+  }
+
   async exists(exam: string, examinee: string, throwException = true) {
     const enrolledExam = await this.enrolledExamModel.findOne({
       exam,

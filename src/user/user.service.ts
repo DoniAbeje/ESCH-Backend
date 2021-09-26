@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { User, UserDocument } from './schemas/user.schema';
+import { User, UserDocument, UserRole } from './schemas/user.schema';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -57,6 +57,10 @@ export class UserService extends RateService {
       throw new UserDoesNotExistException();
     }
     return result.first();
+  }
+
+  async count(role: UserRole) {
+    return await this.userModel.countDocuments({ role });
   }
 
   async exists(id: string, throwException = true) {
