@@ -7,6 +7,7 @@ import { Question, QuestionDocument } from './schema/question.schema';
 import { VoteService } from '../common/services/vote.service';
 import { PaginationOption } from '../common/pagination-option';
 import { QuestionQueryBuilder } from './query/question-query-builder';
+import { UpdateQuestionDto } from './dto/update-question.dto';
 
 @Injectable()
 export class QuestionService extends VoteService {
@@ -19,6 +20,17 @@ export class QuestionService extends VoteService {
   async raiseQuestion(raiseQuestionDto: RaiseQuestionDto) {
     return await this.questionModel.create(raiseQuestionDto);
   }
+
+  async updateQuestion(
+    id: string,
+    updateQuestionDto: UpdateQuestionDto,
+  ): Promise<boolean> {
+    const question = await this.exists(id);
+    question.set(updateQuestionDto);
+    await question.save();
+    return true;
+  }
+
 
   async fetchAll(
     paginationOption: PaginationOption = PaginationOption.DEFAULT,

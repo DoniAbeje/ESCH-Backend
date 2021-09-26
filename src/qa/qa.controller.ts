@@ -18,6 +18,8 @@ import { AnswerQuestionDto } from './dto/answer-question.dto';
 import { RaiseQuestionDto } from './dto/raise-question.dto';
 import { QuestionService } from './question.service';
 import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
+import { UpdateQuestionDto } from './dto/update-question.dto';
+import { PutAuth } from '../common/decorators/put-auth.decorator';
 
 @ApiTags('Question and Answer')
 @Controller('question')
@@ -66,6 +68,16 @@ export class QaController {
     @User('id') userId,
   ) {
     return this.questionService.fetchOne(questionId, userId);
+  }
+
+  @PutAuth('/:questionId', 'Update Question')
+  async updateQuestion(
+    @Body() updateQuestionDto: UpdateQuestionDto,
+    @User() user,
+    @Param('questionId') questionId: string,
+  ) {
+    const answer = await this.questionService.updateQuestion(questionId, updateQuestionDto);
+    return ;
   }
 
   @PostAuth('/:questionId/answer', 'Answer Question')
