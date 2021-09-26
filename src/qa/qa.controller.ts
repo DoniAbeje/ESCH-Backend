@@ -20,6 +20,7 @@ import { QuestionService } from './question.service';
 import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 import { UpdateQuestionDto } from './dto/update-question.dto';
 import { PutAuth } from '../common/decorators/put-auth.decorator';
+import { DeleteAuth } from '../common/decorators/delete-auth.decorator';
 
 @ApiTags('Question and Answer')
 @Controller('question')
@@ -76,7 +77,16 @@ export class QaController {
     @User() user,
     @Param('questionId') questionId: string,
   ) {
-    const answer = await this.questionService.updateQuestion(questionId, updateQuestionDto);
+    await this.questionService.updateQuestion(questionId, updateQuestionDto);
+    return ;
+  }
+
+  @DeleteAuth('/:questionId', 'Delete Question')
+  async deleteQuestion(
+    @User() user,
+    @Param('questionId') questionId: string,
+  ) {
+    await this.questionService.deleteQuestion(questionId);
     return ;
   }
 

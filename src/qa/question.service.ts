@@ -31,6 +31,10 @@ export class QuestionService extends VoteService {
     return true;
   }
 
+  async deleteQuestion(questionId: string) {
+    const question = await this.exists(questionId);
+    return await question.delete();
+  }
 
   async fetchAll(
     paginationOption: PaginationOption = PaginationOption.DEFAULT,
