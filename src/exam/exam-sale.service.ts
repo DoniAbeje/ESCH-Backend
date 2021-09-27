@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { forwardRef, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
@@ -26,6 +26,7 @@ export class ExamSaleService {
     @InjectModel(ExamSale.name) public examSaleModel: Model<ExamSaleDocument>,
     private examService: ExamService,
     private userService: UserService,
+    @Inject(forwardRef(() => ExamEnrollmentService))
     private enrollmentService: ExamEnrollmentService,
     @Inject('IPaymentGateway')
     private paymentGateway: IPaymentGateway,
@@ -104,6 +105,10 @@ export class ExamSaleService {
 
   async count(status: ExamSaleStatus) {
     return await this.examSaleModel.countDocuments({ status });
+  }
+
+  async findByExamId(examId: string) {
+    return await this.examSaleModel.find({ exam: examId });
   }
 
   async exists(exam: string, buyer: string) {

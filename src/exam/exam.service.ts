@@ -79,6 +79,16 @@ export class ExamService extends RateService {
     return await this.examModel.countDocuments();
   }
 
+  async findByAuthor(userId: string){
+    return (
+      await new ExamQueryBuilder(this.examModel)
+        .filterByAuthors([userId])
+        .populatePreparedBy()
+        .populateUserRating(userId)
+        .exec()
+    ).all();
+  }
+
   async exists(examId: string, throwException = true) {
     const exam = await this.examModel.findById(examId);
 

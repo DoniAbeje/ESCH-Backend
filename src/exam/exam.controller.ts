@@ -102,6 +102,11 @@ export class ExamController {
     return this.examSaleService.fetchAll(paginationOption);
   }
 
+  @GetAuth('/instructor-report', 'Fetch report for instructor',[UserRole.INSTRUCTOR])
+  async getInstructorReport(@User('id') userId) {
+    return this.examEnrollmentService.fetchInstructorReport(userId);
+  }
+
   @GetAuth('/my-orders', 'Fetch orders')
   async fetchLoggedInUsersOrders(
     @Pagination() paginationOption: PaginationOption,

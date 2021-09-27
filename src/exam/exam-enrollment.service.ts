@@ -16,6 +16,8 @@ import {
   EnrolledExamDocument,
 } from './schema/enrolled-exam.schema';
 import { ExamReportDto } from './dto/exam-report.dto';
+import { ExamSaleService } from './exam-sale.service';
+import { ExamSaleStatus } from './schema/exam-sale.schema';
 
 @Injectable()
 export class ExamEnrollmentService {
@@ -25,6 +27,8 @@ export class ExamEnrollmentService {
     @Inject(forwardRef(() => ExamService)) private examService: ExamService,
     @Inject(forwardRef(() => ExamQuestionService))
     private examQuestionService: ExamQuestionService,
+    @Inject(forwardRef(() => ExamSaleService))
+    private examSaleService: ExamSaleService,
   ) {}
 
   async enroll(enrollForExamDto: EnrollForExamDto, checkPrice = true) {
@@ -172,6 +176,32 @@ export class ExamEnrollmentService {
 
   async count() {
     return await this.enrolledExamModel.countDocuments();
+  }
+
+  async countByExamId(examId: string) {
+    return await this.enrolledExamModel.countDocuments({ exam: examId });
+  }
+
+  async fetchInstructorReport(userId: string) {
+    const exams = await this.examService.findByAuthor(userId);
+
+    const result = [];
+    for await (const exam of exams) {
+      const enrollmentsCount = await this.countByExamId(exam._id);
+      const orders = await this.examSaleService.findByExamId(exam._id);
+      const earning = orders.reduce((prev, curr) => {
+        return curr.status == ExamSaleStatus.COMPLETE
+          ? prev + curr.price
+          : prev;
+      }, 0);
+      result.push({
+        exam,
+        ordersCount: orders.length,
+        earning,
+        enrollmentsCount,
+      });
+    }
+    return result;
   }
 
   async exists(exam: string, examinee: string, throwException = true) {
