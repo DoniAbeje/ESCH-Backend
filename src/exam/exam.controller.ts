@@ -23,7 +23,7 @@ import { ExamSaleStatus } from './schema/exam-sale.schema';
 import { ExamRecommendationService } from './exam-recommendation.service';
 import { RateDto } from '../common/dto/rate.dto';
 import { CancelRateDto } from '../common/dto/cancel-rate.dto';
-import { TagScoreOption } from 'src/common/tag-score-option';
+import { TagScoreOption } from '../common/tag-score-option';
 import { UserRole } from '../user/schemas/user.schema';
 @ApiTags('Exam')
 @Controller('exam')
