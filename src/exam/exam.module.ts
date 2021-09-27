@@ -17,8 +17,8 @@ import { ExamTestHelperService } from './test-helper.service';
 import { ExamSaleService } from './exam-sale.service';
 import { ExamSale, ExamSaleSchema } from './schema/exam-sale.schema';
 import { UserModule } from '../user/user.module';
-import { FakeGatewayService } from './fake-gateway.service';
 import { IPaymentGateway } from './IPaymentGateway.service';
+import { ExamRecommendationService } from './exam-recommendation.service';
 import { MedaPaymentGatewayService } from './meda.service';
 @Module({
   imports: [
@@ -36,6 +36,7 @@ import { MedaPaymentGatewayService } from './meda.service';
     ExamEnrollmentService,
     ExamSaleService,
     ExamTestHelperService,
+    ExamRecommendationService,
     { provide: 'IPaymentGateway', useClass: MedaPaymentGatewayService },
   ],
   controllers: [ExamController],

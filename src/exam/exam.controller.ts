@@ -20,8 +20,10 @@ import { ExamEnrollmentService } from './exam-enrollment.service';
 import { AnswerExamQuestionDto } from './dto/answer-exam-question.dto';
 import { ExamSaleService } from './exam-sale.service';
 import { ExamSaleStatus } from './schema/exam-sale.schema';
+import { ExamRecommendationService } from './exam-recommendation.service';
 import { RateDto } from '../common/dto/rate.dto';
 import { CancelRateDto } from '../common/dto/cancel-rate.dto';
+import { TagScoreOption } from 'src/common/tag-score-option';
 import { UserRole } from '../user/schemas/user.schema';
 @ApiTags('Exam')
 @Controller('exam')
@@ -31,6 +33,7 @@ export class ExamController {
     private examQuestionService: ExamQuestionService,
     private examEnrollmentService: ExamEnrollmentService,
     private examSaleService: ExamSaleService,
+    private examRecommendationService: ExamRecommendationService,
   ) {}
 
   @PostAuth('/', 'Create Exam', [UserRole.INSTRUCTOR, UserRole.ADMIN])
@@ -119,6 +122,14 @@ export class ExamController {
     return this.examSaleService.onPaymentStatusChanged(examSaleId, status);
   }
 
+  @GetAuth('/recommended', 'Fetch recommended exams')
+  async fetchRecommendedExams(
+    @Pagination() paginationOption: PaginationOption,
+    @User('id') userId,
+  ) {
+    return this.examRecommendationService.fetchExams(userId, paginationOption);
+  }
+
   @ApiTags('Get single exam')
   @Get('/:examId')
   async fetchSingleExam(
@@ -165,7 +176,10 @@ export class ExamController {
     return { _id: examQuestion._id };
   }
 
-  @DeleteAuth('question/:examQuestionId', 'Delete Exam Question', [UserRole.INSTRUCTOR, UserRole.ADMIN])
+  @DeleteAuth('question/:examQuestionId', 'Delete Exam Question', [
+    UserRole.INSTRUCTOR,
+    UserRole.ADMIN,
+  ])
   async deleteExamQuestion(@Param('examQuestionId') examQuestionId: string) {
     await this.examQuestionService.delete(examQuestionId);
   }
@@ -213,10 +227,29 @@ export class ExamController {
     return result;
   }
 
+  @ApiPagination('/similar/:examId', 'Fetch Similar Exams For a Given Exam')
+  async fetchSimilarExams(
+    @Pagination() paginationOption: PaginationOption,
+    @Param('examId') examId: string,
+  ) {
+    return this.examRecommendationService.fetchSimilarExams(
+      examId,
+      paginationOption,
+    );
+  }
+
   @PostAuth('/rate', 'Rate exam')
   async rateExam(@Body() rateDto: RateDto, @User('id') userId) {
     rateDto.userId = userId;
     await this.examService.rate(rateDto);
+    // update score value
+    await this.examRecommendationService.updateUserPreference(
+      userId,
+      rateDto.rateableResourceId,
+      rateDto.rating <= 2
+        ? -1 * TagScoreOption.DEFAULT_SECONDARY_SCORE_INC
+        : TagScoreOption.DEFAULT_PRIMARY_SCORE_INC,
+    );
   }
 
   @PostAuth('/cancel-rate', 'Cancel exam rating')

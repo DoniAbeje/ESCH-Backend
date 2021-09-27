@@ -1,11 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  ParseArrayPipe,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Get, Param, Query } from '@nestjs/common';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { PostAuth } from '../common/decorators/post-auth.decorator';
 import { User } from '../common/decorators/user.decorator';
@@ -17,6 +10,9 @@ import { AnswerService } from './answer.service';
 import { AnswerQuestionDto } from './dto/answer-question.dto';
 import { RaiseQuestionDto } from './dto/raise-question.dto';
 import { QuestionService } from './question.service';
+import { QuestionRecommendationService } from './question-recommendation.service';
+import { GetAuth } from '../common/decorators/get-auth.decorator';
+import { TagScoreOption } from '../common/tag-score-option';
 import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 import { UpdateQuestionDto } from './dto/update-question.dto';
 import { PutAuth } from '../common/decorators/put-auth.decorator';
@@ -28,6 +24,7 @@ export class QaController {
   constructor(
     private questionService: QuestionService,
     private answerService: AnswerService,
+    private questionRecommendationService: QuestionRecommendationService,
   ) {}
 
   @PostAuth('/', 'Raise Question')
@@ -62,6 +59,31 @@ export class QaController {
     @User('id') userId,
   ) {
     return this.questionService.search(paginationOption, keywords, userId);
+  }
+
+  @ApiPagination(
+    '/similar/:questionId',
+    'Fetch Similar Question For a Given Question',
+  )
+  async fetchSimilarQuestions(
+    @Pagination() paginationOption: PaginationOption,
+    @Param('questionId') questionId: string,
+  ) {
+    return this.questionRecommendationService.fetchSimilarQuestions(
+      questionId,
+      paginationOption,
+    );
+  }
+
+  @GetAuth('/recommended', 'Fetch recommended questions')
+  async fetchRecommendedQuestions(
+    @Pagination() paginationOption: PaginationOption,
+    @User('id') userId,
+  ) {
+    return this.questionRecommendationService.fetchQuestions(
+      userId,
+      paginationOption,
+    );
   }
 
   @ApiTags('Fetch Single Question')
@@ -120,6 +142,11 @@ export class QaController {
     @User('id') userId: string,
   ) {
     await this.questionService.upvote(questionId, userId);
+    await this.questionRecommendationService.updateUserPreference(
+      userId,
+      questionId,
+      TagScoreOption.DEFAULT_PRIMARY_SCORE_INC,
+    );
   }
 
   @PostAuth('/:questionId/downvote', 'Downvote question')
@@ -128,6 +155,11 @@ export class QaController {
     @User('id') userId: string,
   ) {
     await this.questionService.downvote(questionId, userId);
+    await this.questionRecommendationService.updateUserPreference(
+      userId,
+      questionId,
+      -1 * TagScoreOption.DEFAULT_SECONDARY_SCORE_INC,
+    );
   }
 
   @PostAuth('/:questionId/cancel-vote', 'Cancel question vote')

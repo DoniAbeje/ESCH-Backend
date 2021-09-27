@@ -5,6 +5,7 @@ import {
   IsUrl,
   MinLength,
   Matches,
+  IsArray,
 } from 'class-validator';
 import { UserRole } from '../schemas/user.schema';
 
@@ -34,4 +35,8 @@ export class CreateUserDto {
   })
   @IsOptional()
   readonly role?: UserRole = UserRole.STUDENT;
+
+  @IsArray()
+  @IsOptional()
+  readonly preferredTags?: string[];
 }

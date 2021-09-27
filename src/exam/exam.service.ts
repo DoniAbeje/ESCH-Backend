@@ -7,27 +7,23 @@ import { ExamDoesNotExistException } from './exceptions/exam-doesnot-exist.excep
 import { UpdateExamDto } from './dto/update-exam.dto';
 import { PaginationOption } from '../common/pagination-option';
 import { ExamQueryBuilder } from './query/exam-query-builder';
-import { ExamQuestionService } from './exam-question.service';
-import { ExamEnrollmentService } from './exam-enrollment.service';
-import { QuestionDoesNotBelongToExamException } from './exceptions/question-doesnot-belong-to-exam.exception';
-import { AnswerExamQuestionDto } from './dto/answer-exam-question.dto';
-import { ExamReportDto } from './dto/exam-report.dto';
+import { ExamRecommendationService } from './exam-recommendation.service';
 import { RateService } from '../common/services/rate.service';
 
 @Injectable()
 export class ExamService extends RateService {
   constructor(
     @InjectModel(Exam.name) public examModel: Model<ExamDocument>,
-    @Inject(forwardRef(() => ExamQuestionService))
-    private examQuestionService: ExamQuestionService,
-    @Inject(forwardRef(() => ExamEnrollmentService))
-    private examEnrollmentService: ExamEnrollmentService,
+    @Inject(forwardRef(() => ExamRecommendationService))
+    private examRecommendationService: ExamRecommendationService,
   ) {
     super(examModel);
   }
 
   async createExam(createExamDto: CreateExamDto) {
-    return this.examModel.create(createExamDto);
+    const exam = await this.examModel.create(createExamDto);
+    this.examRecommendationService.setup(true);
+    return exam;
   }
 
   async updateExam(examId: string, updateExamDto: UpdateExamDto) {
