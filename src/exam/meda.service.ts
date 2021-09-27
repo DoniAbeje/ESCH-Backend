@@ -35,11 +35,11 @@ export class MedaPaymentGatewayService implements IPaymentGateway {
           '?exam_sale_id=' +
           examSale._id,
         cancelUrl:
-          this.configService.get<string>('ESCH_MEDA_PAY_RETURN_URL') +
+          this.configService.get<string>('ESCH_MEDA_PAY_CANCEL_URL') +
           '?exam_sale_id=' +
           examSale._id,
         callbackUrl:
-          this.configService.get<string>('ESCH_MEDA_PAY_RETURN_URL') +
+          this.configService.get<string>('ESCH_MEDA_PAY_CALLBACK_URL') +
           '?exam_sale_id=' +
           examSale._id,
       },
