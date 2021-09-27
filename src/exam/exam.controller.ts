@@ -1,6 +1,6 @@
 import { ExamQuestionService } from './exam-question.service';
 import { ExamService } from './exam.service';
-import { Body, Controller, Get, Param, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
 import { ApiQuery, ApiTags } from '@nestjs/swagger';
 import { CreateExamDto } from './dto/create-exam.dto';
 import { User } from '../common/decorators/user.decorator';
@@ -113,7 +113,7 @@ export class ExamController {
   }
 
   @ApiTags('Payment confirmation callback')
-  @Get('/payment/callback')
+  @Post('/payment/callback')
   async confirmPayment(@Query('exam_sale_id') examSaleId) {
     const status = ExamSaleStatus.COMPLETE;
     return this.examSaleService.onPaymentStatusChanged(examSaleId, status);
