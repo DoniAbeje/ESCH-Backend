@@ -12,6 +12,7 @@ export class QuestionQueryBuilder {
   private idFilters: mongoose.Types.ObjectId[] = [];
   private searchFilter = '';
   private shouldPopulateAskedBy = false;
+  private sortQuestions = false;
 
   private voteFlagPopulation = {
     shouldPopulate: false,
@@ -41,6 +42,11 @@ export class QuestionQueryBuilder {
 
   filterByIds(ids: string[]) {
     this.idFilters = ids.map((id) => mongoose.Types.ObjectId(id));
+    return this;
+  }
+
+  sort(sort: boolean) {
+    this.sortQuestions = sort;
     return this;
   }
 
@@ -159,6 +165,8 @@ export class QuestionQueryBuilder {
   private processSorting() {
     if (this.hasSearchFilter()) {
       return { score: { $meta: 'textScore' } };
+    } else if (this.sortQuestions) {
+      return { createdAt: -1 };
     }
     return null;
   }

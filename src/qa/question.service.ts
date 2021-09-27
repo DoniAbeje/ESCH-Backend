@@ -40,12 +40,14 @@ export class QuestionService extends VoteService {
     paginationOption: PaginationOption = PaginationOption.DEFAULT,
     tags: string[] = [],
     loggedInUserId = null,
+    sort = false,
   ) {
     return (
       await new QuestionQueryBuilder(this.questionModel)
         .filterByTags(tags)
         .paginate(paginationOption)
         .populateAskedBy()
+        .sort(sort)
         .populateUserVoteFlag(loggedInUserId)
         .exec()
     ).all();

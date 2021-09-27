@@ -47,8 +47,10 @@ export class QaController {
     @QueryArray('tags')
     tags: string[] = [],
     @User('id') userId,
+    @Query('sort') sort
   ) {
-    return this.questionService.fetchAll(paginationOption, tags, userId);
+    sort = sort == 'createdAt';
+    return this.questionService.fetchAll(paginationOption, tags, userId, sort);
   }
 
   @ApiPagination('/search', 'Search Questions')
